@@ -1,0 +1,13 @@
+.vscode
+.changeset
+logs
+src
+node_modules
+.gitignore
+.prettierignore
+.prettierrc.cjs
+vite.config.ts
+eslint.config.js
+pnpm-lock.yaml
+tsconfig.json
+test-results

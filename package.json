@@ -1,0 +1,85 @@
+{
+  "name": "mcp-sketch",
+  "version": "1.0.0",
+  "description": "A Local MCP server for parsing sketch files",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --noEmit",
+    "start": "node dist/index.js",
+    "dev": "vite build && node dist/index.js",
+    "watch": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "simple-git-hooks",
+    "csadd": "changeset",
+    "csver": "pnpm changeset version",
+    "release-only": "changeset publish --registry=https://registry.npmjs.com/",
+    "release": "pnpm build && pnpm release-only",
+    "test": "vitest",
+    "test:watch": "vitest watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YamadaAoi/mcp-sketch.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "ai",
+    "sketch",
+    "ts"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "zhouyinkui",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YamadaAoi/mcp-sketch/issues"
+  },
+  "homepage": "https://github.com/YamadaAoi/mcp-sketch#readme",
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "@vitest/coverage-v8": "^4.0.16",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "simple-git-hooks": "^2.13.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^4.0.16"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged --allow-empty --concurrent false"
+  },
+  "lint-staged": {
+    "*": [
+      "prettier --write --cache --ignore-unknown"
+    ],
+    "*.{ts,tsx,vue}": [
+      "eslint --cache --fix"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "simple-git-hooks",
+      "esbuild"
+    ]
+  }
+}
