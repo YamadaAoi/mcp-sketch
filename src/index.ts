@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-import { MCPServer } from './utils/mcpServer'
-import { createSketchTools } from './services'
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { tools } from './tools'
 
 function main() {
-  const server = new MCPServer('local-mcp-sketch-server', __VERSION__)
+  const server = new McpServer({
+    name: 'sketch-mcp-server',
+    version: __VERSION__
+  })
 
-  const sketchTool = createSketchTools()
-  server.registerTools(sketchTool)
-
-  server.start()
+  tools.forEach(([name, config, cb]) => {
+    server.registerTool(name, config, cb)
+  })
 }
 
 main()
