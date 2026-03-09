@@ -27,6 +27,12 @@ importers:
       '@changesets/cli':
         specifier: ^2.29.8
         version: 2.29.8(@types/node@22.19.3)
+      '@sketch-hq/sketch-file-format-ts':
+        specifier: ^6.5.0
+        version: 6.5.0
+      '@types/adm-zip':
+        specifier: ^0.5.7
+        version: 0.5.7
       '@types/node':
         specifier: ^22.10.2
         version: 22.19.3
@@ -682,8 +688,14 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@sketch-hq/sketch-file-format-ts@6.5.0':
+    resolution: {integrity: sha512-shaGl4ttFDpHjYBoMaZpciOtsi/lKvJ3VfcBYk6+PjjbFs6H5GxPAyhbiSqy3Vmx30aos284pd88QzD3rE6iag==}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@types/adm-zip@0.5.7':
+    resolution: {integrity: sha512-DNEs/QvmyRLurdQPChqq0Md4zGvPwHerAJYWk9l2jCbD1VPpnzRJorOdiq4zsw09NFbYnhfsoEhWtxIzXpn2yw==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2609,7 +2621,13 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.55.1':
     optional: true
 
+  '@sketch-hq/sketch-file-format-ts@6.5.0': {}
+
   '@standard-schema/spec@1.1.0': {}
+
+  '@types/adm-zip@0.5.7':
+    dependencies:
+      '@types/node': 22.19.3
 
   '@types/chai@5.2.3':
     dependencies:
