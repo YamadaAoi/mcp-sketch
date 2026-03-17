@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => {
     define: {
       __VERSION__: JSON.stringify(pkg.version)
     },
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src')
+      }
+    },
     build: {
       target: 'node18',
       lib: {

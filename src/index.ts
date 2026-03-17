@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { tools } from './tools'
+import { tools } from '@/tools'
 
 function main() {
   const server = new McpServer({

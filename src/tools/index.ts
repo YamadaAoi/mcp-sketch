@@ -1,10 +1,4 @@
-import type { RegisterToolParams } from '../types'
-import { toolInitSession } from './initSession'
-import { toolGetNextTask } from './getNextTask'
-import { toolMarkComplete } from './markComplete'
+import type { RegisterToolParams } from '@/types'
+import { toolSketchAnalyze } from './sketchAnalyze'
 
-export const tools: RegisterToolParams[] = [
-  toolInitSession(),
-  toolGetNextTask(),
-  toolMarkComplete()
-]
+export const tools: RegisterToolParams[] = [toolSketchAnalyze()]
