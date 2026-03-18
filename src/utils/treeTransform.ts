@@ -10,8 +10,6 @@ interface StackItem<T, R> {
   originalNode: T
   newNode: R
   parentChildrenArray: R[]
-  index: number
-  path: T[]
 }
 
 /**
@@ -24,7 +22,7 @@ interface StackItem<T, R> {
  */
 export function treeTransform<T, R>(
   tree: T[],
-  transform: (node: T, index: number, path: T[]) => R,
+  transform: (node: T) => R | undefined,
   getTChildren: (node: T) => T[] | undefined,
   getRChildren: (node: R) => R[]
 ): R[] {
@@ -32,20 +30,16 @@ export function treeTransform<T, R>(
 
   const result: R[] = []
   const stack: StackItem<T, R>[] = []
-  const initialPath: T[] = []
   const tempRoots: R[] = []
 
   for (let i = tree.length - 1; i >= 0; i--) {
     const originalNode = tree[i]
-    const path = [...initialPath, originalNode]
-    const newNode = transform(originalNode, i, path)
-
+    const newNode = transform(originalNode)
+    if (!newNode) continue
     stack.push({
       originalNode,
       newNode,
-      parentChildrenArray: result,
-      index: i,
-      path
+      parentChildrenArray: result
     })
 
     tempRoots.push(newNode)
@@ -55,7 +49,7 @@ export function treeTransform<T, R>(
   result.push(...tempRoots)
 
   while (stack.length > 0) {
-    const { originalNode, newNode, path } = stack.pop()!
+    const { originalNode, newNode } = stack.pop()!
     const originalChildren = getTChildren(originalNode)
 
     if (originalChildren && originalChildren.length > 0) {
@@ -64,15 +58,13 @@ export function treeTransform<T, R>(
 
       for (let i = originalChildren.length - 1; i >= 0; i--) {
         const childNode = originalChildren[i]
-        const newPath = [...path, childNode]
-        const newChildNode = transform(childNode, i, newPath)
+        const newChildNode = transform(childNode)
+        if (!newChildNode) continue
 
         stack.push({
           originalNode: childNode,
           newNode: newChildNode,
-          parentChildrenArray: newChildrenArray,
-          index: i,
-          path: newPath
+          parentChildrenArray: newChildrenArray
         })
 
         tempChildren.push(newChildNode)
