@@ -30,7 +30,8 @@ export function assembleNode(
     if (
       !node.isVisible ||
       node._class === 'slice' ||
-      node._class === 'MSImmutableHotspotLayer'
+      node._class === 'MSImmutableHotspotLayer' ||
+      node._class === 'symbolMaster'
     ) {
       return undefined
     }

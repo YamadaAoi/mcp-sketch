@@ -20,6 +20,7 @@ export type RegisterToolParams = [string, RegisterToolConfig, RegisterToolCB]
  * Artboard里的图层类型
  */
 export type Layer =
+  | Sketch.Artboard
   | Sketch.Group
   | Sketch.Oval
   | Sketch.Polygon
