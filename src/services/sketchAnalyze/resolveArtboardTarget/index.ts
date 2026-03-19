@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
+import type AdmZip from 'adm-zip'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
-import AdmZip from 'adm-zip'
 import { logger } from '@/utils/logger'
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import type { Layer } from '@/types'
@@ -15,7 +15,11 @@ export const inputSchema = z.object({
   artboard_id: z.string().describe('指定画板ID(可选)').optional(),
   artboard_name: z.string().describe('指定画板名称(可选)').optional(),
   node_id: z.string().describe('指定节点ID(可选)').optional(),
-  node_name: z.string().describe('指定节点名称(可选)').optional()
+  node_name: z.string().describe('指定节点名称(可选)').optional(),
+  assets_path: z
+    .string()
+    .describe('指定静态资源存放路径(可选)，默认src/assets/sketch')
+    .optional()
 })
 
 /**
@@ -27,6 +31,7 @@ export const inputSchema = z.object({
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
+ * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
  */
 export type InputSchema = SchemaOutput<typeof inputSchema>
 
@@ -220,6 +225,7 @@ function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
  * 3、根据 artboard_id/artboard_name 锁定目标 Artboard，若未指定则默认取第一个 Artboard。若指定了 artboard_id/artboard_name 但未找到，则返回具体错误信息。
  * 4、根据 node_id/node_name 锁定目标 Node，若未指定则默认取 Artboard 内所有 Node。若指定了 node_id/node_name 但未找到，则返回具体错误信息。
  * @param {InputSchema} args - sketch文件分析参数
+ * @param {AdmZip} zip - sketch文件zip对象
  * @property {string} file_path - sketch文件路径(必填)
  * @property {string} page_id - 指定页面ID(可选)
  * @property {string} page_name - 指定页面名称(可选)
@@ -227,10 +233,10 @@ function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
+ * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
  */
-export function resolveArtboardTarget(args: InputSchema) {
+export function resolveArtboardTarget(args: InputSchema, zip: AdmZip) {
   logger.debug(args, 'resolveArtboardTarget')
-  const zip = new AdmZip(args.file_path)
   const metaJson = zip.readAsText(METAJSON)
   const artboard = getArtboard(metaJson, args)
   const artboardJson = zip.readAsText(`${PAGEFOLDER}/${artboard.id}.json`)

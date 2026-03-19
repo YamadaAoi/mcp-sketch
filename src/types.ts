@@ -156,4 +156,8 @@ export interface Structure {
    * (bitmap) 裁剪遮罩路径
    */
   clippingMask?: string
+  /**
+   * (bitmap) 图片路径
+   */
+  image?: string
 }
