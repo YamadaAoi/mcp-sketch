@@ -1,31 +1,34 @@
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import fs from 'fs/promises'
 import path from 'path'
+import crypto from 'crypto'
 import type { InputSchema } from '../resolveArtboardTarget'
 import { logger } from '@/utils/logger'
 import type { SketchFile } from '@/utils/zip'
 
-/**
- * 保存图片到指定路径
- * @param imagePath - 图片路径
- * @param data - 图片数据
- * @param dest - 存储路径
- */
-async function saveImage(imagePath: string, data: Buffer, dest: string) {
+const MIME_TO_EXT: Record<string, string> = {
+  '/9j/': 'jpg',
+  iVBOR: 'png',
+  R0lGO: 'gif',
+  UklGR: 'webp'
+}
+
+function detectImageFormat(base64Data: string): string {
+  const header = base64Data.substring(0, 10)
+  for (const [sig, ext] of Object.entries(MIME_TO_EXT)) {
+    if (header.startsWith(sig)) {
+      return ext
+    }
+  }
+  return 'png'
+}
+
+async function saveImage(data: Buffer, dest: string, fileName: string) {
   await fs.mkdir(dest, { recursive: true })
-  const fileName = path.basename(imagePath)
   const targetPath = path.join(dest, fileName)
   await fs.writeFile(targetPath, data)
 }
 
-/**
- * 从Sketch文件中提取图片，先实现提取MSJSONFileReference类型
- * 先拼接图片存储目标路径，拼接规则为：存储路径/文件名.扩展名
- * @param image - 图片引用
- * @param args - sketch文件分析参数
- * @param sketchFile - sketch文件内容
- * @returns - 图片路径
- */
 export function extractBeatmap(
   image: Sketch.FileRef | Sketch.DataRef,
   args: InputSchema,
@@ -38,8 +41,40 @@ export function extractBeatmap(
     const imageData = sketchFile.images.get(image._ref)
     if (imageData) {
       imagePath = path.join(dest, path.basename(image._ref))
-      saveImage(image._ref, imageData, dest).catch(error => {
+      saveImage(imageData, dest, path.basename(image._ref)).catch(error => {
         logger.error(`Failed to save image ${image._ref}: ${error}`)
+      })
+    }
+  }
+
+  if (image._class === 'MSJSONOriginalDataReference') {
+    const dataRef = image
+    if (dataRef.data?._data) {
+      const base64Data = dataRef.data._data
+      const imageBuffer = Buffer.from(base64Data, 'base64')
+
+      let fileName: string
+      if (dataRef._ref_class === 'MSImageData') {
+        const sha1Hash =
+          dataRef.sha1?._data ||
+          crypto.createHash('sha1').update(imageBuffer).digest('hex')
+        const ext = detectImageFormat(base64Data)
+        fileName = `${sha1Hash}.${ext}`
+      } else if (dataRef._ref_class === 'MSFontData') {
+        const sha1Hash =
+          dataRef.sha1?._data ||
+          crypto.createHash('sha1').update(imageBuffer).digest('hex')
+        fileName = `${sha1Hash}.ttf`
+      } else {
+        const sha1Hash =
+          dataRef.sha1?._data ||
+          crypto.createHash('sha1').update(imageBuffer).digest('hex')
+        fileName = `${sha1Hash}.bin`
+      }
+
+      imagePath = path.join(dest, fileName)
+      saveImage(imageBuffer, dest, fileName).catch(error => {
+        logger.error(`Failed to save DataRef image: ${error}`)
       })
     }
   }
