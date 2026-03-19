@@ -47,7 +47,9 @@ export function assembleNode(
             y: node.frame.y
           }
         : undefined,
-      style: node.style ? assembleStyle(node.style) : undefined
+      style: node.style
+        ? assembleStyle(node.style, args, sketchFile)
+        : undefined
     }
     if (node._class === 'rectangle') {
       newLayer.fixedRadius = node.fixedRadius

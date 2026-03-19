@@ -5,13 +5,21 @@ import { extractPatternFillType } from './extractPattern'
 import { extractBorderPosition } from './extractBorder'
 import { extractTextStyle } from './extractText'
 import { extractFill } from './extractFill'
+import type { InputSchema } from '../resolveArtboardTarget'
+import type { SketchFile } from '@/utils/zip'
 
 /**
  * 组装 Sketch 样式为 LayerStyle 类型
  * @param style - Sketch 样式
+ * @param args - 输入参数
+ * @param sketchFile - Sketch 文件
  * @returns 组装后的 LayerStyle 类型
  */
-export function assembleStyle(style: Sketch.Style) {
+export function assembleStyle(
+  style: Sketch.Style,
+  args: InputSchema,
+  sketchFile: SketchFile
+) {
   const layerStyle: LayerStyle = {}
 
   if (style.contextSettings?.opacity !== undefined) {
@@ -22,7 +30,7 @@ export function assembleStyle(style: Sketch.Style) {
     const enabledFills = style.fills.filter(fill => fill.isEnabled)
     layerStyle.fills = enabledFills.map(fill => {
       const fillStyle: LayerFill = {
-        fill: extractFill(fill)
+        fill: extractFill(fill, args, sketchFile)
       }
       if (fill.fillType === Sketch.FillType.Pattern) {
         fillStyle.patternFillType = extractPatternFillType(fill.patternFillType)
@@ -36,7 +44,7 @@ export function assembleStyle(style: Sketch.Style) {
     const enabledBorders = style.borders.filter(border => border.isEnabled)
     if (enabledBorders.length > 0) {
       layerStyle.borders = enabledBorders.map(border => ({
-        fill: extractFill(border),
+        fill: extractFill(border, args, sketchFile),
         thickness: border.thickness,
         position: extractBorderPosition(border.position)
       }))
