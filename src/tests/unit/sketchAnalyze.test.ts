@@ -30,7 +30,7 @@ describe('handleSketchAnalyze', () => {
       file_path: sketchFilePath
     }
 
-    const result = handleSketchAnalyze(args)
+    const result = await handleSketchAnalyze(args)
 
     expect(result).toBeDefined()
     expect(typeof result).toBe('string')
@@ -43,7 +43,7 @@ describe('handleSketchAnalyze', () => {
       page_name: '页面 1'
     }
 
-    const result = handleSketchAnalyze(args)
+    const result = await handleSketchAnalyze(args)
 
     expect(result).toBeDefined()
     expect(result).toContain('938A76BB-E3F8-4A44-82D7-3DFA8AE122BE')
@@ -55,7 +55,7 @@ describe('handleSketchAnalyze', () => {
       artboard_name: '00 _登录页'
     }
 
-    const result = handleSketchAnalyze(args)
+    const result = await handleSketchAnalyze(args)
 
     expect(result).toBeDefined()
   })
@@ -67,7 +67,7 @@ describe('handleSketchAnalyze', () => {
       node_name: '编组'
     }
 
-    const result = handleSketchAnalyze(args)
+    const result = await handleSketchAnalyze(args)
 
     expect(result).toBeDefined()
     expect(result).not.toContain('_all.json')
@@ -79,9 +79,9 @@ describe('handleSketchAnalyze', () => {
       file_path: sketchFilePath
     }
 
-    const result = handleSketchAnalyze(args)
+    const result = await handleSketchAnalyze(args)
 
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 200))
 
     const jsonExists = await fs
       .access(result)
@@ -97,21 +97,21 @@ describe('handleSketchAnalyze', () => {
     }
   })
 
-  it('should throw error for invalid page_name', () => {
+  it('should throw error for invalid page_name', async () => {
     const args: InputSchema = {
       file_path: sketchFilePath,
       page_name: 'NonExistentPage'
     }
 
-    expect(() => handleSketchAnalyze(args)).toThrow(/Sketch 解析失败/)
+    await expect(handleSketchAnalyze(args)).rejects.toThrow(/Sketch 解析失败/)
   })
 
-  it('should throw error for invalid artboard_name', () => {
+  it('should throw error for invalid artboard_name', async () => {
     const args: InputSchema = {
       file_path: sketchFilePath,
       artboard_name: 'NonExistentArtboard'
     }
 
-    expect(() => handleSketchAnalyze(args)).toThrow(/Sketch 解析失败/)
+    await expect(handleSketchAnalyze(args)).rejects.toThrow(/Sketch 解析失败/)
   })
 })

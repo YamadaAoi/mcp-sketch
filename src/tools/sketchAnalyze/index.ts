@@ -28,9 +28,9 @@ const toolName = 'sketch_analyze'
  * @property {string} node_name - 指定节点名称(可选)
  * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的设计结构json文件作为参考
  */
-function sketchAnalyze(args: InputSchema): CallToolResult {
+async function sketchAnalyze(args: InputSchema): Promise<CallToolResult> {
   logger.debug(args, 'sketchAnalyze')
-  const targetPath = handleSketchAnalyze(args)
+  const targetPath = await handleSketchAnalyze(args)
   return {
     content: [
       {

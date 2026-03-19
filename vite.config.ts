@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src')
-      }
+      },
+      conditions: ['node']
     },
     build: {
       target: 'node18',
@@ -25,13 +26,30 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       minify: isProduction,
       sourcemap: !isProduction,
+      ssr: true,
       rollupOptions: {
-        external: [/^node:.*/],
+        external: [
+          /^node:.*/,
+          'path',
+          'fs',
+          'os',
+          'crypto',
+          'stream',
+          'events',
+          'util',
+          'http',
+          'https',
+          'zlib'
+        ],
         output: {
           preserveModules: false,
-          inlineDynamicImports: true
+          inlineDynamicImports: true,
+          interop: 'auto'
         }
       }
+    },
+    optimizeDeps: {
+      noDiscovery: true // 禁止预打包依赖，因为 Node 环境不需要
     }
   }
 })

@@ -11,4 +11,4 @@ eslint.config.js
 pnpm-lock.yaml
 tsconfig.json
 test-results
-sketch
+*.sketch

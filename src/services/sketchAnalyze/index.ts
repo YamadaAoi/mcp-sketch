@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
-import AdmZip from 'adm-zip'
+import { openSketchFile } from '@/utils/zip'
 import { logger } from '@/utils/logger'
 import {
   resolveArtboardTarget,
@@ -27,11 +27,11 @@ async function writeJsonFile(filePath: string, data: Structure[]) {
  * @param args 分析参数
  * @returns json文件位置
  */
-export function handleSketchAnalyze(args: InputSchema) {
+export async function handleSketchAnalyze(args: InputSchema) {
   logger.debug(args, 'resolveArtboardTarget')
-  const zip = new AdmZip(args.file_path)
-  const nodeInfo = resolveArtboardTarget(args, zip)
-  const nodes = assembleNode(nodeInfo, args, zip)
+  const sketchFile = await openSketchFile(args.file_path)
+  const nodeInfo = resolveArtboardTarget(args, sketchFile)
+  const nodes = assembleNode(nodeInfo, args, sketchFile)
   const parsed = path.parse(args.file_path)
   const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
   writeJsonFile(targetPath, nodes).catch(() => {

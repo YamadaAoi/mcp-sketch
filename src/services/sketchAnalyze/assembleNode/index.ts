@@ -1,11 +1,10 @@
-// import type Sketch from '@sketch-hq/sketch-file-format-ts'
-import type AdmZip from 'adm-zip'
 import type { Layer, Structure } from '@/types'
 import { treeTransform } from '@/utils/treeTransform'
 import { assembleStyle } from './assembleStyle'
 import { extractTextBehavior, extractTextOverrideStyle } from './extractText'
 import { extractBeatmap } from './extractBeatmap'
 import type { InputSchema, NodeInfo } from '../resolveArtboardTarget'
+import type { SketchFile } from '@/utils/zip'
 
 function getTChildren(node: Layer) {
   let layers: Layer[] | undefined
@@ -25,7 +24,7 @@ function getRChildren(node: Structure) {
 export function assembleNode(
   nodeInfo: NodeInfo,
   args: InputSchema,
-  zip: AdmZip
+  sketchFile: SketchFile
 ) {
   function transform(node: Layer): Structure | undefined {
     if (
@@ -71,7 +70,7 @@ export function assembleNode(
     if (node._class === 'bitmap') {
       newLayer.rotation = node.rotation
       newLayer.clippingMask = node.clippingMask
-      newLayer.image = extractBeatmap(node.image, args, zip)
+      newLayer.image = extractBeatmap(node.image, args, sketchFile)
     }
     return newLayer
   }

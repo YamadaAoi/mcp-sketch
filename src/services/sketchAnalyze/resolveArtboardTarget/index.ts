@@ -1,9 +1,9 @@
 import { z } from 'zod/v4'
-import type AdmZip from 'adm-zip'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { logger } from '@/utils/logger'
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import type { Layer } from '@/types'
+import { METAJSON, PAGEFOLDER, type SketchFile } from '@/utils/zip'
 
 /**
  * 解析skecth文件分析参数
@@ -59,9 +59,6 @@ interface Artboard {
 interface Page extends Artboard {
   artboards: Artboard[]
 }
-
-const METAJSON = 'meta.json'
-const PAGEFOLDER = 'pages'
 
 /**
  * 获取指定ID或名称的对象
@@ -262,7 +259,6 @@ function getArtboardNode(
  * 3、根据 artboard_id/artboard_name 锁定目标 Artboard，若未指定则默认取第一个 Artboard。若指定了 artboard_id/artboard_name 但未找到，则返回具体错误信息。
  * 4、根据 node_id/node_name 锁定目标 Node，若未指定则默认取 Artboard 内所有 Node。若指定了 node_id/node_name 但未找到，则返回具体错误信息。
  * @param {InputSchema} args - sketch文件分析参数
- * @param {AdmZip} zip - sketch文件zip对象
  * @property {string} file_path - sketch文件路径(必填)
  * @property {string} page_id - 指定页面ID(可选)
  * @property {string} page_name - 指定页面名称(可选)
@@ -271,15 +267,20 @@ function getArtboardNode(
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
+ * @param {SketchFile} sketchFile - sketch文件对象
  */
-export function resolveArtboardTarget(args: InputSchema, zip: AdmZip) {
+export function resolveArtboardTarget(
+  args: InputSchema,
+  sketchFile: SketchFile
+) {
   logger.debug(args, 'resolveArtboardTarget')
-  const metaJson = zip.readAsText(METAJSON)
-  const artboardInfo = getArtboard(metaJson, args)
-  const pageJson = zip.readAsText(`${PAGEFOLDER}/${artboardInfo.pageId}.json`)
+  const artboardInfo = getArtboard(sketchFile.metaJson, args)
+  const pageJson = sketchFile.pagesJson.get(
+    `${PAGEFOLDER}/${artboardInfo.pageId}.json`
+  )
   return getArtboardNode(
     artboardInfo.pageId,
-    pageJson,
+    pageJson ?? '',
     args,
     artboardInfo.artboard.id
   )
