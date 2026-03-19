@@ -5,7 +5,7 @@ import { treeTransform } from '@/utils/treeTransform'
 import { assembleStyle } from './assembleStyle'
 import { extractTextBehavior, extractTextOverrideStyle } from './extractText'
 import { extractBeatmap } from './extractBeatmap'
-import type { InputSchema } from '../resolveArtboardTarget'
+import type { InputSchema, NodeInfo } from '../resolveArtboardTarget'
 
 function getTChildren(node: Layer) {
   let layers: Layer[] | undefined
@@ -22,7 +22,11 @@ function getRChildren(node: Structure) {
   return node.layers
 }
 
-export function assembleNode(layers: Layer[], args: InputSchema, zip: AdmZip) {
+export function assembleNode(
+  nodeInfo: NodeInfo,
+  args: InputSchema,
+  zip: AdmZip
+) {
   function transform(node: Layer): Structure | undefined {
     if (
       !node.isVisible ||
@@ -72,5 +76,5 @@ export function assembleNode(layers: Layer[], args: InputSchema, zip: AdmZip) {
     return newLayer
   }
 
-  return treeTransform(layers, transform, getTChildren, getRChildren)
+  return treeTransform(nodeInfo.layers, transform, getTChildren, getRChildren)
 }

@@ -36,6 +36,16 @@ export const inputSchema = z.object({
 export type InputSchema = SchemaOutput<typeof inputSchema>
 
 /**
+ * 锁定的节点信息
+ */
+export interface NodeInfo {
+  layers: Layer[]
+  artboardId: string
+  pageId: string
+  nodeId?: string
+}
+
+/**
  * 画板
  */
 interface Artboard {
@@ -174,16 +184,21 @@ function getArtboard(metaJson: string, args: InputSchema) {
       )
     }
   }
-  return artboard
+  return { artboard, pageId: page.id }
 }
 
 /**
  * 锁定Artboard内目标节点
+ * @param pageId - 页面ID
  * @param artboardJson - 画板数据
  * @param args - sketch文件分析参数
  * @returns - 目标节点
  */
-function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
+function getArtboardNode(
+  pageId: string,
+  artboardJson: string,
+  args: InputSchema
+): NodeInfo {
   if (!artboardJson) {
     throw new Error(`Sketch 解析失败： 画板数据读取失败！`)
   }
@@ -204,7 +219,12 @@ function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
         `Sketch 解析失败：${artboard.name ?? artboard.do_objectID}内${args.node_id}不存在！`
       )
     }
-    return [node]
+    return {
+      layers: [node],
+      artboardId: artboard.do_objectID,
+      pageId,
+      nodeId: node.do_objectID
+    }
   }
   if (args.node_name) {
     const node = getNode(artboard.layers, args.node_name, 'name')
@@ -213,9 +233,18 @@ function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
         `Sketch 解析失败：${artboard.name ?? artboard.do_objectID}内${args.node_name}不存在！`
       )
     }
-    return [node]
+    return {
+      layers: [node],
+      artboardId: artboard.do_objectID,
+      pageId,
+      nodeId: node.do_objectID
+    }
   }
-  return artboard.layers
+  return {
+    layers: artboard.layers,
+    artboardId: artboard.do_objectID,
+    pageId
+  }
 }
 
 /**
@@ -238,7 +267,9 @@ function getArtboardNode(artboardJson: string, args: InputSchema): Layer[] {
 export function resolveArtboardTarget(args: InputSchema, zip: AdmZip) {
   logger.debug(args, 'resolveArtboardTarget')
   const metaJson = zip.readAsText(METAJSON)
-  const artboard = getArtboard(metaJson, args)
-  const artboardJson = zip.readAsText(`${PAGEFOLDER}/${artboard.id}.json`)
-  return getArtboardNode(artboardJson, args)
+  const artboardInfo = getArtboard(metaJson, args)
+  const artboardJson = zip.readAsText(
+    `${PAGEFOLDER}/${artboardInfo.artboard.id}.json`
+  )
+  return getArtboardNode(artboardInfo.pageId, artboardJson, args)
 }
