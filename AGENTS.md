@@ -8,7 +8,7 @@ This document provides guidelines for AI agents working in this repository.
 - **Type**: Local MCP (Model Context Protocol) server for parsing Sketch files
 - **Language**: TypeScript (ESM, Node.js 18+)
 - **Package Manager**: pnpm
-- **Key Dependencies**: @modelcontextprotocol/sdk, adm-zip, zod, pino
+- **Key Dependencies**: @modelcontextprotocol/sdk, adm-zip, zod, pino, vite
 
 ## Build, Lint, and Test Commands
 
@@ -58,6 +58,7 @@ pnpm vitest run src/tests/unit/
 - **Module System**: ESM (ECMAScript Modules) - use `import`/`export`, not CommonJS
 - **TypeScript**: Strict mode enabled in `tsconfig.json`
 - **Node Version**: Minimum Node.js 18
+- **Bundle**: Uses Vite for building
 
 ### Formatting (Prettier)
 
@@ -81,6 +82,7 @@ Configured in `eslint.config.js`:
   - `@typescript-eslint/no-explicit-any`: Warn
   - `@typescript-eslint/no-floating-promises`: Warn
   - `@typescript-eslint/no-misused-promises`: Warn
+  - `prettier/prettier`: Error
 
 ### Naming Conventions
 
@@ -94,6 +96,7 @@ Configured in `eslint.config.js`:
 - Use path aliases: `@/*` maps to `./src/*`
 - Use `import type` for types only
 - Group imports: external libraries → internal modules → types
+- Always include `.js` extension for ESM imports from external packages
 
 ```typescript
 // External
@@ -114,6 +117,7 @@ import type { RegisterToolParams } from '@/types'
 - Use `logger.error()` or `logger.debug()` for logging (pino)
 - Return proper `CallToolResult` with `isError: true` for tool errors
 - Always include descriptive error messages
+- For fire-and-forget async operations, use `.catch()` to handle errors without blocking
 
 ```typescript
 // Good error handling pattern
@@ -125,6 +129,13 @@ function myTool(args: InputSchema): CallToolResult {
     }
   }
   // ... implementation
+}
+
+// Fire-and-forget async with error handling
+function writeFileAsync(path: string, data: Buffer) {
+  fs.writeFile(path, data).catch(err =>
+    console.error('Failed to write file:', err)
+  )
 }
 ```
 
@@ -140,9 +151,10 @@ function myTool(args: InputSchema): CallToolResult {
 
 ```
 src/
-├── index.ts              # Entry point
+├── index.ts              # Entry point (CLI)
 ├── types.ts              # Global types
 ├── constants.ts          # Constants
+├── global.d.ts            # Type declarations (e.g., __VERSION__)
 ├── tools/                # MCP tool definitions
 │   ├── index.ts
 │   └── sketchAnalyze/
@@ -151,6 +163,15 @@ src/
 │       ├── index.ts
 │       ├── resolveArtboardTarget/
 │       └── assembleNode/
+│           ├── index.ts
+│           ├── assembleStyle.ts
+│           ├── extractBeatmap.ts
+│           ├── extractBorder.ts
+│           ├── extractColor.ts
+│           ├── extractFill.ts
+│           ├── extractGradient.ts
+│           ├── extractPattern.ts
+│           └── extractText.ts
 └── utils/                # Utility functions
     ├── logger.ts
     ├── treeTransform.ts
@@ -190,3 +211,13 @@ The project uses `simple-git-hooks` with `lint-staged`:
 - Follow existing code patterns in the repository
 - Keep functions small and focused
 - Add JSDoc comments for exported functions
+- When working with Sketch files, use `@sketch-hq/sketch-file-format-ts` types
+
+## Project Dependencies
+
+- **MCP SDK**: `@modelcontextprotocol/sdk` - MCP server implementation
+- **Sketch Format**: `@sketch-hq/sketch-file-format-ts` - Sketch file type definitions
+- **Zip**: `adm-zip` - ZIP file handling (Sketch files are ZIP archives)
+- **Validation**: `zod` - Input validation
+- **Logging**: `pino` - Structured logging
+- **Env**: `dotenv` - Environment variable management

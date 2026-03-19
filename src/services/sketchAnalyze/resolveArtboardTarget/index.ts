@@ -190,27 +190,35 @@ function getArtboard(metaJson: string, args: InputSchema) {
 /**
  * 锁定Artboard内目标节点
  * @param pageId - 页面ID
- * @param artboardJson - 画板数据
+ * @param pageJson - 页面JSON
  * @param args - sketch文件分析参数
+ * @param artboardId - 目标画板ID
  * @returns - 目标节点
  */
 function getArtboardNode(
   pageId: string,
-  artboardJson: string,
-  args: InputSchema
+  pageJson: string,
+  args: InputSchema,
+  artboardId: string
 ): NodeInfo {
-  if (!artboardJson) {
-    throw new Error(`Sketch 解析失败： 画板数据读取失败！`)
+  if (!pageJson) {
+    throw new Error(`Sketch 解析失败： 页面数据读取失败！`)
   }
-  let artboard: Sketch.Artboard
+  let page: Sketch.Page
   try {
-    artboard = JSON.parse(artboardJson) as Sketch.Artboard
+    page = JSON.parse(pageJson) as Sketch.Page
   } catch (error) {
-    logger.error(error, `Sketch 解析失败： 画板数据格式错误！`)
-    throw new Error(`Sketch 解析失败： 画板数据格式错误！`)
+    logger.error(error, `Sketch 解析失败： 页面数据格式错误！`)
+    throw new Error(`Sketch 解析失败： 页面数据格式错误！`)
   }
-  if (!artboard?.layers) {
-    throw new Error(`Sketch 解析失败： 画板数据格式错误！`)
+  if (!page?.layers) {
+    throw new Error(`Sketch 解析失败： 页面数据格式错误！`)
+  }
+  const artboard = page.layers.find(
+    l => l._class === 'artboard' && l.do_objectID === artboardId
+  ) as Sketch.Artboard | undefined
+  if (!artboard) {
+    throw new Error(`Sketch 解析失败： 画板 ${artboardId} 不存在！`)
   }
   if (args.node_id) {
     const node = getNode(artboard.layers, args.node_id, 'do_objectID')
@@ -268,8 +276,11 @@ export function resolveArtboardTarget(args: InputSchema, zip: AdmZip) {
   logger.debug(args, 'resolveArtboardTarget')
   const metaJson = zip.readAsText(METAJSON)
   const artboardInfo = getArtboard(metaJson, args)
-  const artboardJson = zip.readAsText(
-    `${PAGEFOLDER}/${artboardInfo.artboard.id}.json`
+  const pageJson = zip.readAsText(`${PAGEFOLDER}/${artboardInfo.pageId}.json`)
+  return getArtboardNode(
+    artboardInfo.pageId,
+    pageJson,
+    args,
+    artboardInfo.artboard.id
   )
-  return getArtboardNode(artboardInfo.pageId, artboardJson, args)
 }
