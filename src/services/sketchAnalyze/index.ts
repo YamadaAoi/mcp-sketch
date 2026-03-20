@@ -2,12 +2,9 @@ import path from 'path'
 import fs from 'fs/promises'
 import { openSketchFile } from '@/utils/zip'
 import { logger } from '@/utils/logger'
-import {
-  resolveArtboardTarget,
-  type InputSchema
-} from './resolveArtboardTarget'
+import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
-import type { Structure } from '@/types'
+import type { InputSchema, Structure } from '@/types'
 
 /**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖

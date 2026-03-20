@@ -2,9 +2,9 @@ import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
-import type { InputSchema } from '../resolveArtboardTarget'
 import { logger } from '@/utils/logger'
 import type { SketchFile } from '@/utils/zip'
+import type { InputSchema } from '@/types'
 
 const MIME_TO_EXT: Record<string, string> = {
   '/9j/': 'jpg',

@@ -27,7 +27,7 @@ export interface SketchFile {
    * key: symbolID
    * value: symbol对象
    */
-  symbolMasters: Map<string, Sketch.SymbolMaster>
+  symbolMasters: Map<string, string>
 }
 
 export const METAJSON = 'meta.json'
@@ -98,7 +98,7 @@ export async function openSketchFile(filePath: string): Promise<SketchFile> {
 
   const pagesJson = new Map<string, string>()
   const images = new Map<string, Buffer>()
-  const symbolMasters = new Map<string, Sketch.SymbolMaster>()
+  const symbolMasters = new Map<string, string>()
 
   for (const file of directory.files) {
     if (file.path.startsWith(`${PAGEFOLDER}/`) && file.path.endsWith('.json')) {
@@ -106,7 +106,7 @@ export async function openSketchFile(filePath: string): Promise<SketchFile> {
       const symbolMastersInPage = filterSymbolMaster(pageJson)
       if (symbolMastersInPage.length) {
         symbolMastersInPage.forEach(symbolMaster => {
-          symbolMasters.set(symbolMaster.symbolID, symbolMaster)
+          symbolMasters.set(symbolMaster.symbolID, JSON.stringify(symbolMaster))
         })
       }
       pagesJson.set(file.path, pageJson)

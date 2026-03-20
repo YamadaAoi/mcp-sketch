@@ -1,11 +1,10 @@
 import Sketch from '@sketch-hq/sketch-file-format-ts'
-import type { LayerFill, LayerStyle } from '@/types'
+import type { InputSchema, LayerFill, LayerStyle } from '@/types'
 import { extractColor } from './extractColor'
 import { extractPatternFillType } from './extractPattern'
 import { extractBorderPosition } from './extractBorder'
 import { extractTextStyle } from './extractText'
 import { extractFill } from './extractFill'
-import type { InputSchema } from '../resolveArtboardTarget'
 import type { SketchFile } from '@/utils/zip'
 
 /**
@@ -15,7 +14,7 @@ import type { SketchFile } from '@/utils/zip'
  * @param sketchFile - Sketch 文件
  * @returns 组装后的 LayerStyle 类型
  */
-export function assembleStyle(
+export function extractStyle(
   style: Sketch.Style,
   args: InputSchema,
   sketchFile: SketchFile

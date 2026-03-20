@@ -1,10 +1,14 @@
-import type { Layer, Structure } from '@/types'
-import { treeTransform } from '@/utils/treeTransform'
-import { assembleStyle } from './assembleStyle'
-import { extractTextBehavior, extractTextOverrideStyle } from './extractText'
-import { extractBeatmap } from './extractBeatmap'
-import type { InputSchema, NodeInfo } from '../resolveArtboardTarget'
+import type { InputSchema, Layer, Structure } from '@/types'
+import type { NodeInfo } from '../resolveArtboardTarget'
 import type { SketchFile } from '@/utils/zip'
+import { treeTransform } from '@/utils/treeTransform'
+import {
+  extractTextBehavior,
+  extractTextOverrideStyle
+} from '@/utils/extract/extractText'
+import { extractBeatmap } from '@/utils/extract/extractBeatmap'
+import { extractBooleanOperation } from '@/utils/extract/extractBooleanOperation'
+import { extractStyle } from '@/utils/extract/extractStyle'
 
 function getTChildren(node: Layer) {
   let layers: Layer[] | undefined
@@ -39,6 +43,7 @@ export function assembleNode(
       type: node._class,
       name: node.name,
       isLocked: node.isLocked,
+      booleanOperation: extractBooleanOperation(node.booleanOperation),
       layers: [],
       frame: node.frame
         ? {
@@ -48,9 +53,7 @@ export function assembleNode(
             y: node.frame.y
           }
         : undefined,
-      style: node.style
-        ? assembleStyle(node.style, args, sketchFile)
-        : undefined
+      style: node.style ? extractStyle(node.style, args, sketchFile) : undefined
     }
     if (node._class === 'rectangle') {
       newLayer.fixedRadius = node.fixedRadius

@@ -1,10 +1,7 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import type { RegisterToolParams } from '@/types'
 import { logger } from '@/utils/logger'
-import {
-  inputSchema,
-  type InputSchema
-} from '@/services/sketchAnalyze/resolveArtboardTarget'
+import { inputSchema, type InputSchema } from '@/types'
 import { handleSketchAnalyze } from '@/services/sketchAnalyze'
 
 const toolName = 'sketch_analyze'

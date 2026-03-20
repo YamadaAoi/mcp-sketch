@@ -1,9 +1,9 @@
 import Sketch from '@sketch-hq/sketch-file-format-ts'
 import { extractColor } from './extractColor'
 import { extractGradient } from './extractGradient'
-import type { InputSchema } from '../resolveArtboardTarget'
 import type { SketchFile } from '@/utils/zip'
 import { extractBeatmap } from './extractBeatmap'
+import type { InputSchema } from '@/types'
 
 /**
  * 提取填充颜色/渐变色/背景图片路径

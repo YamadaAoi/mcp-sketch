@@ -1,39 +1,7 @@
-import { z } from 'zod/v4'
-import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { logger } from '@/utils/logger'
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
-import type { Layer } from '@/types'
+import type { InputSchema, Layer } from '@/types'
 import { METAJSON, PAGEFOLDER, type SketchFile } from '@/utils/zip'
-
-/**
- * 解析skecth文件分析参数
- */
-export const inputSchema = z.object({
-  file_path: z.string().describe('sketch文件路径'),
-  page_id: z.string().describe('指定页面ID(可选)').optional(),
-  page_name: z.string().describe('指定页面名称(可选)').optional(),
-  artboard_id: z.string().describe('指定画板ID(可选)').optional(),
-  artboard_name: z.string().describe('指定画板名称(可选)').optional(),
-  node_id: z.string().describe('指定节点ID(可选)').optional(),
-  node_name: z.string().describe('指定节点名称(可选)').optional(),
-  assets_path: z
-    .string()
-    .describe('指定静态资源存放路径(可选)，默认src/assets/sketch')
-    .optional()
-})
-
-/**
- * 解析skecth文件分析参数类型
- * @property {string} file_path - sketch文件路径(必填)
- * @property {string} page_id - 指定页面ID(可选)
- * @property {string} page_name - 指定页面名称(可选)
- * @property {string} artboard_id - 指定画板ID(可选)
- * @property {string} artboard_name - 指定画板名称(可选)
- * @property {string} node_id - 指定节点ID(可选)
- * @property {string} node_name - 指定节点名称(可选)
- * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
- */
-export type InputSchema = SchemaOutput<typeof inputSchema>
 
 /**
  * 锁定的节点信息

@@ -3,7 +3,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { handleSketchAnalyze } from '@/services/sketchAnalyze/index'
-import type { InputSchema } from '@/services/sketchAnalyze/resolveArtboardTarget/index'
+import type { InputSchema } from '@/types'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
