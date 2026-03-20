@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import 'dotenv/config'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { tools } from '@/tools'
+import { logger } from '@/utils/logger'
 
 function main() {
   const server = new McpServer({
@@ -11,6 +13,12 @@ function main() {
 
   tools.forEach(([name, config, cb]) => {
     server.registerTool(name, config, cb)
+  })
+
+  const transport = new StdioServerTransport()
+
+  server.connect(transport).catch(error => {
+    logger.error(error)
   })
 }
 
