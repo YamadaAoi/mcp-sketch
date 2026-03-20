@@ -147,20 +147,6 @@ export interface LayerStyle {
 }
 
 /**
- * 解析后的sketch文件内容
- */
-export interface SketchPrompt {
-  meta: {
-    description: string
-  }
-  globalResources: {
-    sharedStyles: Record<string, Sketch.Style>
-    symbolMasters: Record<string, Sketch.SymbolMaster>
-  }
-  layers: Structure[]
-}
-
-/**
  * 解析后的图层结构
  */
 export interface Structure {
@@ -224,4 +210,33 @@ export interface Structure {
    * 图层ID，普通节点不存放，只存放symbolMaster.layers的ID，用于symbolInstance覆盖
    */
   id?: string
+  /**
+   * (symbolInstance/symbolMaster) 模板 ID
+   */
+  symbolID?: string
+  /**
+   * (symbolMaster) 可覆盖字段
+   */
+  overrideProperties?: string[]
+  /**
+   * (symbolInstance) 覆盖字段和值
+   */
+  overrideValues?: Array<{
+    value: string
+    overrideName: string
+  }>
+}
+
+/**
+ * 解析后的sketch文件内容
+ */
+export interface SketchPrompt {
+  meta: {
+    description: string
+  }
+  globalResources: {
+    sharedStyles: Record<string, LayerStyle>
+    symbolMasters: Record<string, Structure>
+  }
+  layers: Structure[]
 }

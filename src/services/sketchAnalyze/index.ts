@@ -5,6 +5,7 @@ import { logger } from '@/utils/logger'
 import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
 import type { InputSchema, SketchPrompt } from '@/types'
+import { assembleGlobalResource } from './assembleGlobalResource'
 
 /**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
@@ -26,25 +27,43 @@ async function writeJsonFile(filePath: string, data: SketchPrompt) {
  */
 export async function handleSketchAnalyze(args: InputSchema) {
   logger.debug(args, 'resolveArtboardTarget')
+
   const sketchFile = await openSketchFile(args.file_path)
+
   const nodeInfo = resolveArtboardTarget(args, sketchFile)
-  const layers = assembleNode(nodeInfo, sketchFile.images, args.assets_path)
+
+  const result = assembleNode(
+    nodeInfo.layers,
+    sketchFile.images,
+    args.assets_path
+  )
+
+  const { sharedStyles, symbolMasters } = assembleGlobalResource(
+    {
+      sharedStyleIDs: result.sharedStyleIDs,
+      symbolMasterIDs: result.symbolMasterIDs
+    },
+    sketchFile,
+    args.assets_path
+  )
+
   const prompt: SketchPrompt = {
     meta: {
-      description: '这是一个 Sketch 文件片段，包含页面结构和全局资源定义。'
+      description: `This is sanitized structural data from a Sketch design file.All frame properties (x, y, w, h) are relative to the parent container. `
     },
     globalResources: {
-      sharedStyles: Object.fromEntries(sketchFile.globalResources.sharedStyles),
-      symbolMasters: Object.fromEntries(
-        sketchFile.globalResources.symbolMasters
-      )
+      sharedStyles,
+      symbolMasters
     },
-    layers
+    layers: result.layers
   }
+
   const parsed = path.parse(args.file_path)
   const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
+
   writeJsonFile(targetPath, prompt).catch(() => {
     logger.error(`writeJsonFile ${targetPath} error`)
   })
+
   return targetPath
 }

@@ -1,5 +1,4 @@
 import type { Layer, Structure } from '@/types'
-import type { NodeInfo } from '../resolveArtboardTarget'
 import { treeTransform } from '@/utils/treeTransform'
 import {
   extractTextBehavior,
@@ -12,7 +11,9 @@ import { extractStyle } from '@/utils/extract/extractStyle'
 function getTChildren(node: Layer) {
   let layers: Layer[] | undefined
   if (
-    (node._class === 'group' || node._class === 'shapeGroup') &&
+    (node._class === 'group' ||
+      node._class === 'shapeGroup' ||
+      node._class === 'symbolMaster') &&
     node.layers?.length
   ) {
     layers = node.layers
@@ -25,16 +26,19 @@ function getRChildren(node: Structure) {
 }
 
 export function assembleNode(
-  nodeInfo: NodeInfo,
+  layers: Layer[],
   images: Map<string, Buffer>,
-  assetsPath?: string
+  assetsPath?: string,
+  isSymbolMaster?: boolean
 ) {
+  const sharedStyleIDs = new Set<string>()
+  const symbolMasterIDs = new Set<string>()
   function transform(node: Layer): Structure | undefined {
     if (
       !node.isVisible ||
       node._class === 'slice' ||
       node._class === 'MSImmutableHotspotLayer' ||
-      node._class === 'symbolMaster'
+      (!isSymbolMaster && node._class === 'symbolMaster')
     ) {
       return undefined
     }
@@ -52,10 +56,16 @@ export function assembleNode(
             y: node.frame.y
           }
         : undefined,
-      sharedStyleID: node.sharedStyleID,
       style: node.style
         ? extractStyle(node.style, images, assetsPath)
         : undefined
+    }
+    if (isSymbolMaster) {
+      newLayer.id = node.do_objectID
+    }
+    if (node.sharedStyleID) {
+      newLayer.sharedStyleID = node.sharedStyleID
+      sharedStyleIDs.add(node.sharedStyleID)
     }
     if (node._class === 'rectangle') {
       newLayer.fixedRadius = node.fixedRadius
@@ -72,8 +82,24 @@ export function assembleNode(
     if (node._class === 'shapeGroup') {
       newLayer.hasClippingMask = node.hasClippingMask
     }
-    if (node._class === 'symbolInstance') {
-      // TODO: 处理 symbolInstance
+    if (node._class === 'symbolMaster' && node.symbolID) {
+      newLayer.symbolID = node.symbolID
+      newLayer.overrideProperties = node.overrideProperties
+        ?.filter(item => item.canOverride)
+        ?.map(item => item.overrideName)
+    }
+    if (node._class === 'symbolInstance' && node.symbolID) {
+      newLayer.symbolID = node.symbolID
+      symbolMasterIDs.add(node.symbolID)
+      if (node.overrideValues?.length) {
+        newLayer.overrideValues = node.overrideValues.map(item => ({
+          value:
+            typeof item.value === 'string'
+              ? item.value
+              : extractBeatmap(item.value, images, assetsPath),
+          overrideName: item.overrideName
+        }))
+      }
     }
     if (node._class === 'bitmap') {
       newLayer.rotation = node.rotation
@@ -83,5 +109,11 @@ export function assembleNode(
     return newLayer
   }
 
-  return treeTransform(nodeInfo.layers, transform, getTChildren, getRChildren)
+  const newLayers = treeTransform(layers, transform, getTChildren, getRChildren)
+
+  return {
+    sharedStyleIDs: Array.from(sharedStyleIDs),
+    symbolMasterIDs: Array.from(symbolMasterIDs),
+    layers: newLayers
+  }
 }
