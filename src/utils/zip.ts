@@ -23,14 +23,22 @@ export interface SketchFile {
    */
   images: Map<string, Buffer>
   /**
-   * symbolMasters文件内容
-   * key: symbolID
-   * value: symbol对象
+   * document.json内的共享样式和组件
    */
-  symbolMasters: Map<string, string>
+  globalResources: {
+    /**
+     * 包括document内layerStyles、layerTextStyles、foreignLayerStyles里的localSharedStyle、foreignTextStyles里的localSharedStyle
+     */
+    sharedStyles: Map<string, Sketch.Style>
+    /**
+     * 包括pages里扫描出来的symbolMaster对象、document内foreignSymbols里的symbolMaster
+     */
+    symbolMasters: Map<string, Sketch.SymbolMaster>
+  }
 }
 
 export const METAJSON = 'meta.json'
+export const DOCUMENTJSON = 'document.json'
 export const PAGEFOLDER = 'pages'
 export const IMAGEFOLDER = 'images'
 
@@ -72,16 +80,70 @@ function filterSymbolMaster(pageJson: string) {
 }
 
 /**
- * 全量提取sketch文件中的所有symbolMaster后，处理symbolMaster内包含symbolInstance的情况
- * 1. 遍历所有symbolMaster，递归迭代layers检查是否包含symbolInstance
- * 2. 如果包含symbolInstance，找到对应的symbolMaster，替换symbolInstance
- * 3. 读取SymbolInstance.overrides动态修改该节点的属性（文本内容、填充颜色、是否隐藏、图片源等）
- * 4. 如果找到的symbolMaster还包含symbolInstance，递归处理
- * @param symbolMasters
+ * 处理document.json文件
+ * 提取所有共享样式和组件
+ * 包括document内layerStyles、layerTextStyles、foreignLayerStyles里的localSharedStyle、foreignTextStyles里的localSharedStyle
+ * 包括document内foreignSymbols里的symbolMaster
+ * @param documentJson - document.json文件内容
+ * @param sketch - sketch文件
  */
-// function assembleSymbolMasters(
-//   symbolMasters: Map<string, Sketch.SymbolMaster>
-// ) {}
+function handleDocumentJson(documentJson: string, sketch: SketchFile) {
+  const document = JSON.parse(documentJson) as Sketch.Document
+  if (document?.layerStyles?.objects?.length) {
+    document.layerStyles.objects.forEach(sharedStyle => {
+      if (sharedStyle.value) {
+        sketch.globalResources.sharedStyles.set(
+          sharedStyle.do_objectID,
+          sharedStyle.value
+        )
+      }
+    })
+  }
+
+  if (document?.layerTextStyles?.objects?.length) {
+    document.layerTextStyles.objects.forEach(sharedStyle => {
+      if (sharedStyle.value) {
+        sketch.globalResources.sharedStyles.set(
+          sharedStyle.do_objectID,
+          sharedStyle.value
+        )
+      }
+    })
+  }
+
+  if (document?.foreignLayerStyles?.length) {
+    document.foreignLayerStyles.forEach(foreignLayerStyle => {
+      if (foreignLayerStyle.localSharedStyle?.value) {
+        sketch.globalResources.sharedStyles.set(
+          foreignLayerStyle.localSharedStyle.do_objectID,
+          foreignLayerStyle.localSharedStyle.value
+        )
+      }
+    })
+  }
+
+  if (document?.foreignTextStyles?.length) {
+    document.foreignTextStyles.forEach(foreignTextStyle => {
+      if (foreignTextStyle.localSharedStyle?.value) {
+        sketch.globalResources.sharedStyles.set(
+          foreignTextStyle.localSharedStyle.do_objectID,
+          foreignTextStyle.localSharedStyle.value
+        )
+      }
+    })
+  }
+
+  if (document.foreignSymbols?.length) {
+    document.foreignSymbols.forEach(foreignSymbol => {
+      if (foreignSymbol.symbolMaster) {
+        sketch.globalResources.symbolMasters.set(
+          foreignSymbol.symbolMaster.symbolID,
+          foreignSymbol.symbolMaster
+        )
+      }
+    })
+  }
+}
 
 /**
  * 打开sketch文件, 并解析meta.json和pages/*.json, 提取所有图片和symbolMasters
@@ -96,9 +158,23 @@ export async function openSketchFile(filePath: string): Promise<SketchFile> {
     ? (await metaJsonEntry.buffer()).toString('utf8')
     : ''
 
-  const pagesJson = new Map<string, string>()
-  const images = new Map<string, Buffer>()
-  const symbolMasters = new Map<string, string>()
+  const sketch: SketchFile = {
+    metaJson,
+    pagesJson: new Map<string, string>(),
+    images: new Map<string, Buffer>(),
+    globalResources: {
+      sharedStyles: new Map<string, Sketch.Style>(),
+      symbolMasters: new Map<string, Sketch.SymbolMaster>()
+    }
+  }
+  const documentJsonEntry = directory.files.find(f => f.path === DOCUMENTJSON)
+  const documentJson = documentJsonEntry
+    ? (await documentJsonEntry.buffer()).toString('utf8')
+    : ''
+
+  if (documentJson) {
+    handleDocumentJson(documentJson, sketch)
+  }
 
   for (const file of directory.files) {
     if (file.path.startsWith(`${PAGEFOLDER}/`) && file.path.endsWith('.json')) {
@@ -106,20 +182,18 @@ export async function openSketchFile(filePath: string): Promise<SketchFile> {
       const symbolMastersInPage = filterSymbolMaster(pageJson)
       if (symbolMastersInPage.length) {
         symbolMastersInPage.forEach(symbolMaster => {
-          symbolMasters.set(symbolMaster.symbolID, JSON.stringify(symbolMaster))
+          sketch.globalResources.symbolMasters.set(
+            symbolMaster.symbolID,
+            symbolMaster
+          )
         })
       }
-      pagesJson.set(file.path, pageJson)
+      sketch.pagesJson.set(file.path, pageJson)
     } else if (file.path.startsWith(`${IMAGEFOLDER}/`)) {
       const buffer = await file.buffer()
-      images.set(file.path, buffer)
+      sketch.images.set(file.path, buffer)
     }
   }
 
-  return {
-    metaJson,
-    pagesJson,
-    images,
-    symbolMasters
-  }
+  return sketch
 }

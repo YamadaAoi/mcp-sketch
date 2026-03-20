@@ -1,6 +1,5 @@
-import type { InputSchema, Layer, Structure } from '@/types'
+import type { Layer, Structure } from '@/types'
 import type { NodeInfo } from '../resolveArtboardTarget'
-import type { SketchFile } from '@/utils/zip'
 import { treeTransform } from '@/utils/treeTransform'
 import {
   extractTextBehavior,
@@ -27,8 +26,8 @@ function getRChildren(node: Structure) {
 
 export function assembleNode(
   nodeInfo: NodeInfo,
-  args: InputSchema,
-  sketchFile: SketchFile
+  images: Map<string, Buffer>,
+  assetsPath?: string
 ) {
   function transform(node: Layer): Structure | undefined {
     if (
@@ -53,7 +52,10 @@ export function assembleNode(
             y: node.frame.y
           }
         : undefined,
-      style: node.style ? extractStyle(node.style, args, sketchFile) : undefined
+      sharedStyleID: node.sharedStyleID,
+      style: node.style
+        ? extractStyle(node.style, images, assetsPath)
+        : undefined
     }
     if (node._class === 'rectangle') {
       newLayer.fixedRadius = node.fixedRadius
@@ -76,7 +78,7 @@ export function assembleNode(
     if (node._class === 'bitmap') {
       newLayer.rotation = node.rotation
       newLayer.clippingMask = node.clippingMask
-      newLayer.image = extractBeatmap(node.image, args, sketchFile)
+      newLayer.image = extractBeatmap(node.image, images, assetsPath)
     }
     return newLayer
   }

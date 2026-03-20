@@ -3,8 +3,6 @@ import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
 import { logger } from '@/utils/logger'
-import type { SketchFile } from '@/utils/zip'
-import type { InputSchema } from '@/types'
 
 const MIME_TO_EXT: Record<string, string> = {
   '/9j/': 'jpg',
@@ -31,14 +29,14 @@ async function saveImage(data: Buffer, dest: string, fileName: string) {
 
 export function extractBeatmap(
   image: Sketch.FileRef | Sketch.DataRef,
-  args: InputSchema,
-  sketchFile: SketchFile
+  images: Map<string, Buffer>,
+  assetsPath?: string
 ): string {
-  const dest = args.assets_path || 'src/assets/sketch'
+  const dest = assetsPath ?? 'src/assets/sketch'
   let imagePath = ''
 
   if (image._class === 'MSJSONFileReference' && image._ref) {
-    const imageData = sketchFile.images.get(image._ref)
+    const imageData = images.get(image._ref)
     if (imageData) {
       imagePath = path.join(dest, path.basename(image._ref))
       saveImage(imageData, dest, path.basename(image._ref)).catch(error => {

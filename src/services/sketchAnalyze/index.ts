@@ -4,14 +4,14 @@ import { openSketchFile } from '@/utils/zip'
 import { logger } from '@/utils/logger'
 import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
-import type { InputSchema, Structure } from '@/types'
+import type { InputSchema, SketchPrompt } from '@/types'
 
 /**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
  * @param filePath - json文件路径
  * @param data - 要写入的数据
  */
-async function writeJsonFile(filePath: string, data: Structure[]) {
+async function writeJsonFile(filePath: string, data: SketchPrompt) {
   const dir = path.dirname(filePath)
   await fs.mkdir(dir, { recursive: true })
   const jsonString = JSON.stringify(data)
@@ -28,10 +28,22 @@ export async function handleSketchAnalyze(args: InputSchema) {
   logger.debug(args, 'resolveArtboardTarget')
   const sketchFile = await openSketchFile(args.file_path)
   const nodeInfo = resolveArtboardTarget(args, sketchFile)
-  const nodes = assembleNode(nodeInfo, args, sketchFile)
+  const layers = assembleNode(nodeInfo, sketchFile.images, args.assets_path)
+  const prompt: SketchPrompt = {
+    meta: {
+      description: '这是一个 Sketch 文件片段，包含页面结构和全局资源定义。'
+    },
+    globalResources: {
+      sharedStyles: Object.fromEntries(sketchFile.globalResources.sharedStyles),
+      symbolMasters: Object.fromEntries(
+        sketchFile.globalResources.symbolMasters
+      )
+    },
+    layers
+  }
   const parsed = path.parse(args.file_path)
   const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
-  writeJsonFile(targetPath, nodes).catch(() => {
+  writeJsonFile(targetPath, prompt).catch(() => {
     logger.error(`writeJsonFile ${targetPath} error`)
   })
   return targetPath

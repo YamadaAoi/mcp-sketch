@@ -1,11 +1,10 @@
 import Sketch from '@sketch-hq/sketch-file-format-ts'
-import type { InputSchema, LayerFill, LayerStyle } from '@/types'
+import type { LayerFill, LayerStyle } from '@/types'
 import { extractColor } from './extractColor'
 import { extractPatternFillType } from './extractPattern'
 import { extractBorderPosition } from './extractBorder'
 import { extractTextStyle } from './extractText'
 import { extractFill } from './extractFill'
-import type { SketchFile } from '@/utils/zip'
 
 /**
  * 组装 Sketch 样式为 LayerStyle 类型
@@ -16,8 +15,8 @@ import type { SketchFile } from '@/utils/zip'
  */
 export function extractStyle(
   style: Sketch.Style,
-  args: InputSchema,
-  sketchFile: SketchFile
+  images: Map<string, Buffer>,
+  assetsPath?: string
 ) {
   const layerStyle: LayerStyle = {}
 
@@ -29,7 +28,7 @@ export function extractStyle(
     const enabledFills = style.fills.filter(fill => fill.isEnabled)
     layerStyle.fills = enabledFills.map(fill => {
       const fillStyle: LayerFill = {
-        fill: extractFill(fill, args, sketchFile)
+        fill: extractFill(fill, images, assetsPath)
       }
       if (fill.fillType === Sketch.FillType.Pattern) {
         fillStyle.patternFillType = extractPatternFillType(fill.patternFillType)
@@ -43,7 +42,7 @@ export function extractStyle(
     const enabledBorders = style.borders.filter(border => border.isEnabled)
     if (enabledBorders.length > 0) {
       layerStyle.borders = enabledBorders.map(border => ({
-        fill: extractFill(border, args, sketchFile),
+        fill: extractFill(border, images, assetsPath),
         thickness: border.thickness,
         position: extractBorderPosition(border.position)
       }))

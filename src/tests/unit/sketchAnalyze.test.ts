@@ -92,8 +92,10 @@ describe('handleSketchAnalyze', () => {
     if (jsonExists) {
       const content = await fs.readFile(result, 'utf8')
       const data = JSON.parse(content)
-      expect(Array.isArray(data)).toBe(true)
-      expect(data.length).toBeGreaterThan(0)
+      expect(data.meta.description).toBe(
+        '这是一个 Sketch 文件片段，包含页面结构和全局资源定义。'
+      )
+      expect(data.layers.length).toBeGreaterThan(0)
     }
   })
 

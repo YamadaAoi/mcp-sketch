@@ -147,6 +147,20 @@ export interface LayerStyle {
 }
 
 /**
+ * 解析后的sketch文件内容
+ */
+export interface SketchPrompt {
+  meta: {
+    description: string
+  }
+  globalResources: {
+    sharedStyles: Record<string, Sketch.Style>
+    symbolMasters: Record<string, Sketch.SymbolMaster>
+  }
+  layers: Structure[]
+}
+
+/**
  * 解析后的图层结构
  */
 export interface Structure {
@@ -164,6 +178,10 @@ export interface Structure {
     | 'None'
   layers: Structure[]
   frame?: { height: number; width: number; x: number; y: number }
+  /**
+   * 共享样式ID
+   */
+  sharedStyleID?: string
   style?: LayerStyle
   /**
    * (Rectangle) 圆角半径
@@ -202,4 +220,8 @@ export interface Structure {
    * (bitmap) 图片路径
    */
   image?: string
+  /**
+   * 图层ID，普通节点不存放，只存放symbolMaster.layers的ID，用于symbolInstance覆盖
+   */
+  id?: string
 }

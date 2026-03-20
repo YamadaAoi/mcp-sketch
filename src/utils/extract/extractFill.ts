@@ -1,9 +1,7 @@
 import Sketch from '@sketch-hq/sketch-file-format-ts'
 import { extractColor } from './extractColor'
 import { extractGradient } from './extractGradient'
-import type { SketchFile } from '@/utils/zip'
 import { extractBeatmap } from './extractBeatmap'
-import type { InputSchema } from '@/types'
 
 /**
  * 提取填充颜色/渐变色/背景图片路径
@@ -14,15 +12,15 @@ import type { InputSchema } from '@/types'
  */
 export function extractFill(
   fill: Pick<Sketch.Fill, 'fillType' | 'color' | 'gradient' | 'image'>,
-  args: InputSchema,
-  sketchFile: SketchFile
+  images: Map<string, Buffer>,
+  assetsPath?: string
 ) {
   if (fill.fillType === Sketch.FillType.Color) {
     return extractColor(fill.color)
   } else if (fill.fillType === Sketch.FillType.Gradient) {
     return extractGradient(fill.gradient)
   } else if (fill.fillType === Sketch.FillType.Pattern && fill.image) {
-    return extractBeatmap(fill.image, args, sketchFile)
+    return extractBeatmap(fill.image, images, assetsPath)
   } else {
     return 'unkown'
   }
