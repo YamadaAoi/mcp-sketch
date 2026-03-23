@@ -8,7 +8,6 @@ This document provides guidelines for AI agents working in this repository.
 - **Type**: Local MCP (Model Context Protocol) server for parsing Sketch files
 - **Language**: TypeScript (ESM, Node.js 18+)
 - **Package Manager**: pnpm
-- **Key Dependencies**: @modelcontextprotocol/sdk, adm-zip, zod, pino, vite
 
 ## Build, Lint, and Test Commands
 
@@ -46,81 +45,60 @@ pnpm vitest run src/tests/example.test.ts
 
 # Run tests matching a pattern
 pnpm vitest run --grep "pattern"
-
-# Run tests in a specific directory
-pnpm vitest run src/tests/unit/
 ```
 
 ## Code Style Guidelines
 
 ### General
 
-- **Module System**: ESM (ECMAScript Modules) - use `import`/`export`, not CommonJS
-- **TypeScript**: Strict mode enabled in `tsconfig.json`
-- **Node Version**: Minimum Node.js 18
-- **Bundle**: Uses Vite for building
+- **Module System**: ESM (no CommonJS)
+- **TypeScript**: Strict mode enabled
+- **Bundle**: Vite
 
 ### Formatting (Prettier)
 
-Configured in `.prettierrc.cjs`:
-
-- **Indentation**: 2 spaces (no tabs)
-- **Quotes**: Single quotes (`'`)
-- **Semicolons**: No (omit at end of statements)
-- **Trailing Commas**: None
-- **Line Width**: 80 characters
-- **Arrow Functions**: Omit parentheses when possible (`x => x`)
+- Indentation: 2 spaces
+- Quotes: Single quotes (`'`)
+- Semicolons: No
+- Trailing Commas: None
+- Line Width: 80 characters
 
 ### Linting (ESLint)
 
-Configured in `eslint.config.js`:
-
-- Uses TypeScript ESLint parser with type-aware rules
-- Extends recommended rules + prettier
-- **Key Rules**:
-  - `@typescript-eslint/no-unused-vars`: Error (ignore pattern: `^_`)
+- TypeScript ESLint parser with type-aware rules
+- Key rules:
+  - `@typescript-eslint/no-unused-vars`: Error (ignore: `^_`)
   - `@typescript-eslint/no-explicit-any`: Warn
   - `@typescript-eslint/no-floating-promises`: Warn
-  - `@typescript-eslint/no-misused-promises`: Warn
-  - `prettier/prettier`: Error
 
 ### Naming Conventions
 
-- **Files**: kebab-case (e.g., `extract-color.ts`, `resolve-artboard-target.ts`)
+- **Files**: kebab-case (`extract-color.ts`)
 - **Functions/variables**: camelCase
-- **Interfaces/Types**: PascalCase (e.g., `LayerFill`, `LayerStyle`)
-- **Constants**: UPPER_SNAKE_CASE or camelCase with prefix (e.g., `MAX_RETRIES` or `defaultTimeout`)
+- **Interfaces/Types**: PascalCase (`LayerFill`)
+- **Constants**: UPPER_SNAKE_CASE or `defaultTimeout`
 
 ### Import Conventions
 
-- Use path aliases: `@/*` maps to `./src/*`
+- Use path alias: `@/*` maps to `./src/*`
 - Use `import type` for types only
-- Group imports: external libraries → internal modules → types
-- Always include `.js` extension for ESM imports from external packages
+- Group: external → internal → types
+- Include `.js` extension for external packages
 
 ```typescript
-// External
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js'
-
-// Internal
 import { logger } from '@/utils/logger'
-import { tools } from '@/tools'
-
-// Types
 import type { RegisterToolParams } from '@/types'
 ```
 
 ### Error Handling
 
-- Use Zod for input validation (already integrated with MCP SDK)
-- Use `logger.error()` or `logger.debug()` for logging (pino)
-- Return proper `CallToolResult` with `isError: true` for tool errors
-- Always include descriptive error messages
-- For fire-and-forget async operations, use `.catch()` to handle errors without blocking
+- Use Zod for input validation (integrated with MCP SDK)
+- Use `logger.error()`/`logger.debug()` for logging (pino)
+- Return `CallToolResult` with `isError: true` for tool errors
 
 ```typescript
-// Good error handling pattern
 function myTool(args: InputSchema): CallToolResult {
   if (!args.file_path) {
     return {
@@ -128,96 +106,50 @@ function myTool(args: InputSchema): CallToolResult {
       isError: true
     }
   }
-  // ... implementation
-}
-
-// Fire-and-forget async with error handling
-function writeFileAsync(path: string, data: Buffer) {
-  fs.writeFile(path, data).catch(err =>
-    console.error('Failed to write file:', err)
-  )
 }
 ```
 
 ### TypeScript Best Practices
 
-- Enable `strict: true` in tsconfig
 - Avoid `any` - use `unknown` or proper types
-- Use `type` for unions/intersections, `interface` for object shapes
-- Enable explicit return types for exported functions
+- Use `type` for unions/intersections, `interface` for objects
 - Use optional chaining (`?.`) and nullish coalescing (`??`)
 
-### File Organization
+## File Organization
 
 ```
 src/
-├── index.ts              # Entry point (CLI)
-├── types.ts              # Global types
-├── constants.ts          # Constants
-├── global.d.ts            # Type declarations (e.g., __VERSION__)
-├── tools/                # MCP tool definitions
-│   ├── index.ts
-│   └── sketchAnalyze/
-├── services/             # Business logic
-│   └── sketchAnalyze/
-│       ├── index.ts
-│       ├── resolveArtboardTarget/
-│       └── assembleNode/
-│           ├── index.ts
-│           ├── assembleStyle.ts
-│           ├── extractBeatmap.ts
-│           ├── extractBorder.ts
-│           ├── extractColor.ts
-│           ├── extractFill.ts
-│           ├── extractGradient.ts
-│           ├── extractPattern.ts
-│           └── extractText.ts
-└── utils/                # Utility functions
-    ├── logger.ts
-    ├── treeTransform.ts
-    └── mutex.ts
+├── index.ts           # Entry point (CLI)
+├── types.ts           # Global types
+├── tools/             # MCP tool definitions
+├── services/          # Business logic (sketchAnalyze)
+│   └── assembleNode/  # Style extraction (extractColor, extractFill, etc.)
+└── utils/             # Utility functions (logger, treeTransform, mutex)
 ```
 
-### Testing
+## Testing
 
-- Test files go in `src/tests/` (configured in `vitest.config.ts`)
+- Test files in `src/tests/`
 - Use `.test.ts` or `.spec.ts` extension
-- Vitest is configured with:
-  - Node environment
-  - 10 second timeout
-  - JSON reporter outputting to `test-results/results.json`
-  - Path aliases: `@` and `@tests`
+- Vitest: Node env, 10s timeout, JSON reporter to `test-results/results.json`
+- Path aliases: `@` and `@tests`
 
-## Working with the MCP SDK
+## Working with MCP SDK
 
-This project uses `@modelcontextprotocol/sdk` for MCP server implementation. Key patterns:
-
-- Register tools using `server.registerTool(name, config, callback)`
-- Tools return `CallToolResult` with content array
-- Use Zod schemas for input validation via `inputSchema`
-- Follow existing tool patterns in `src/tools/`
+- Register tools: `server.registerTool(name, config, callback)`
+- Return `CallToolResult` with content array
+- Use Zod schemas for `inputSchema`
 
 ## Git Hooks
 
-The project uses `simple-git-hooks` with `lint-staged`:
-
-- Pre-commit runs prettier on all files + ESLint fix on TypeScript
-- Configure in `package.json` under `lint-staged` and `simple-git-hooks`
+- Uses `simple-git-hooks` + `lint-staged`
+- Pre-commit: prettier (all files) + ESLint fix (TypeScript)
 
 ## Notes for AI Agents
 
-- Always run `pnpm typecheck` and `pnpm lint` before committing
-- Use `pnpm build` to verify compilation succeeds
-- Follow existing code patterns in the repository
+- Run `pnpm typecheck` and `pnpm lint` before committing
+- Use `pnpm build` to verify compilation
+- Follow existing code patterns
 - Keep functions small and focused
 - Add JSDoc comments for exported functions
-- When working with Sketch files, use `@sketch-hq/sketch-file-format-ts` types
-
-## Project Dependencies
-
-- **MCP SDK**: `@modelcontextprotocol/sdk` - MCP server implementation
-- **Sketch Format**: `@sketch-hq/sketch-file-format-ts` - Sketch file type definitions
-- **Zip**: `adm-zip` - ZIP file handling (Sketch files are ZIP archives)
-- **Validation**: `zod` - Input validation
-- **Logging**: `pino` - Structured logging
-- **Env**: `dotenv` - Environment variable management
+- Use `@sketch-hq/sketch-file-format-ts` types for Sketch files
