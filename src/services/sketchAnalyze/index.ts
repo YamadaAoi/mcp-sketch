@@ -14,7 +14,7 @@ import { assembleGlobalResource } from './assembleGlobalResource'
 async function writeJsonFile(filePath: string, data: SketchPrompt) {
   const dir = path.dirname(filePath)
   await fs.mkdir(dir, { recursive: true })
-  const jsonString = JSON.stringify(data)
+  const jsonString = JSON.stringify(data, null, 2)
   await fs.writeFile(filePath, jsonString, 'utf8')
 }
 
