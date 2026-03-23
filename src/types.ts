@@ -19,7 +19,8 @@ export const inputSchema = z.object({
   assets_path: z
     .string()
     .describe('assets path (optional), default src/assets/sketch')
-    .optional()
+    .optional(),
+  compress: z.boolean().describe('compress (optional), default true').optional()
 })
 
 /**
@@ -32,6 +33,7 @@ export const inputSchema = z.object({
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
+ * @property {boolean} compress - 是否压缩JSON文件(可选)，默认true
  */
 export type InputSchema = SchemaOutput<typeof inputSchema>
 

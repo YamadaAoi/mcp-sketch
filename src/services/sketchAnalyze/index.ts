@@ -10,11 +10,18 @@ import { assembleGlobalResource } from './assembleGlobalResource'
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
  * @param filePath - json文件路径
  * @param data - 要写入的数据
+ * @param compress - 是否压缩JSON文件(可选)，默认true
  */
-async function writeJsonFile(filePath: string, data: SketchPrompt) {
+async function writeJsonFile(
+  filePath: string,
+  data: SketchPrompt,
+  compress: boolean = true
+) {
   const dir = path.dirname(filePath)
   await fs.mkdir(dir, { recursive: true })
-  const jsonString = JSON.stringify(data, null, 2)
+  const jsonString = compress
+    ? JSON.stringify(data)
+    : JSON.stringify(data, null, 2)
   await fs.writeFile(filePath, jsonString, 'utf8')
 }
 
@@ -49,7 +56,10 @@ export async function handleSketchAnalyze(args: InputSchema) {
 
     const prompt: SketchPrompt = {
       meta: {
-        description: `This is sanitized structural data from a Sketch design file.All frame properties (x, y, w, h) are relative to the parent container. `
+        description: `This is sanitized structural data from a Sketch design file.
+        All frame properties (x, y, w, h) are relative to the parent container.
+        Extract the images used to the specified location, please infer the image location reasonably.
+        If the file is too large, try to read it in sections.`
       },
       globalResources: {
         sharedStyles,
@@ -61,9 +71,9 @@ export async function handleSketchAnalyze(args: InputSchema) {
     const parsed = path.parse(args.file_path)
     const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
 
-    await writeJsonFile(targetPath, prompt)
+    await writeJsonFile(targetPath, prompt, args.compress)
 
-    response = `Please read the design structure json file as reference: ${targetPath}`
+    response = `Please use appropriate shell commands to read the complete design structure JSON file: ${targetPath}`
   } catch (error) {
     response = `Sketch analyze error: ${error instanceof Error ? error.message : 'unknown error'}`
   }

@@ -33,16 +33,17 @@
 
 使用 `sketch_analyze` 工具分析 Sketch 文件：
 
-| 参数          | 类型   | 必填 | 说明                                       |
-| ------------- | ------ | ---- | ------------------------------------------ |
-| file_path     | string | 是   | Sketch 文件路径                            |
-| page_id       | string | 否   | 页面 ID                                    |
-| page_name     | string | 否   | 页面名称                                   |
-| artboard_id   | string | 否   | 画板 ID                                    |
-| artboard_name | string | 否   | 画板名称                                   |
-| node_id       | string | 否   | 节点 ID                                    |
-| node_name     | string | 否   | 节点名称                                   |
-| assets_path   | string | 否   | 静态资源存放路径，默认 `src/assets/sketch` |
+| 参数          | 类型    | 必填 | 说明                                       |
+| ------------- | ------- | ---- | ------------------------------------------ |
+| file_path     | string  | 是   | Sketch 文件路径                            |
+| page_id       | string  | 否   | 页面 ID                                    |
+| page_name     | string  | 否   | 页面名称                                   |
+| artboard_id   | string  | 否   | 画板 ID                                    |
+| artboard_name | string  | 否   | 画板名称                                   |
+| node_id       | string  | 否   | 节点 ID                                    |
+| node_name     | string  | 否   | 节点名称                                   |
+| assets_path   | string  | 否   | 静态资源存放路径，默认 `src/assets/sketch` |
+| compress      | boolean | 否   | 是否压缩JSON文件(可选)，默认true           |
 
 ### 选择优先级
 
