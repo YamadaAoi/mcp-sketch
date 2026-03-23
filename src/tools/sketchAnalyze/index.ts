@@ -46,7 +46,7 @@ export function toolSketchAnalyze(): RegisterToolParams {
     {
       title: toolName,
       description:
-        'Analyze sketch files and return the design structure of corresponding pages ordrawing boards or nodes',
+        'Analyze sketch files and return the design structure of corresponding pages or drawing boards or nodes',
       inputSchema
     },
     sketchAnalyze

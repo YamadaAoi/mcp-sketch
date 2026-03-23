@@ -1,5 +1,5 @@
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
-import type { SketchFile } from '@/utils/zip'
+import type { SketchFile } from '@/utils/sketch'
 import type { LayerStyle, Structure } from '@/types'
 import { extractStyle } from '@/utils/extract/extractStyle'
 import { assembleNode } from '../assembleNode'

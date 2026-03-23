@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
-import { openSketchFile } from '@/utils/zip'
+import { openSketchFile } from '@/utils/sketch'
 import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
 import type { InputSchema, SketchPrompt } from '@/types'

@@ -1,7 +1,7 @@
 import { logger } from '@/utils/logger'
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import type { InputSchema, Layer } from '@/types'
-import { METAJSON, PAGEFOLDER, type SketchFile } from '@/utils/zip'
+import { METAJSON, PAGEFOLDER, type SketchFile } from '@/utils/sketch'
 
 /**
  * 锁定的节点信息
