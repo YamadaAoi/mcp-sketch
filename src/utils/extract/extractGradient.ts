@@ -1,5 +1,14 @@
-import Sketch from '@sketch-hq/sketch-file-format-ts'
+import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import { extractColor } from './extractColor'
+
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum GradientType {
+  Linear = 0,
+  Radial = 1,
+  Angular = 2
+}
 
 /**
  * 解析 Sketch 的 PointString "{x, y}" 为数字对象
@@ -56,7 +65,11 @@ function calculateAngle(
  * @param gradient - Sketch 渐变对象
  * @returns 对应的 CSS 渐变字符串
  */
-export function extractGradient(gradient: Sketch.Gradient) {
+export function extractGradient(
+  gradient: Omit<Sketch.Gradient, 'gradientType'> & {
+    gradientType: GradientType
+  }
+) {
   const fromPoint = parsePoint(gradient.from)
   const toPoint = parsePoint(gradient.to)
 
@@ -76,7 +89,7 @@ export function extractGradient(gradient: Sketch.Gradient) {
 
   // 2. 根据类型生成 CSS
   switch (gradient.gradientType) {
-    case Sketch.GradientType.Linear: {
+    case GradientType.Linear: {
       const angle = calculateAngle(fromPoint, toPoint)
       const angleStr = Number.isInteger(angle)
         ? `${angle}`
@@ -84,7 +97,7 @@ export function extractGradient(gradient: Sketch.Gradient) {
       return `linear-gradient(${angleStr}deg, ${stopsCss})`
     }
 
-    case Sketch.GradientType.Radial: {
+    case GradientType.Radial: {
       const dx = toPoint.x - fromPoint.x
       const dy = toPoint.y - fromPoint.y
       const distance = Math.sqrt(dx * dx + dy * dy)
@@ -104,7 +117,7 @@ export function extractGradient(gradient: Sketch.Gradient) {
       return `radial-gradient(${radiusStr} at ${centerX}% ${centerY}%, ${stopsCss})`
     }
 
-    case Sketch.GradientType.Angular: {
+    case GradientType.Angular: {
       const angle = calculateAngle(fromPoint, toPoint)
       const centerX = (fromPoint.x * 100).toFixed(2)
       const centerY = (fromPoint.y * 100).toFixed(2)

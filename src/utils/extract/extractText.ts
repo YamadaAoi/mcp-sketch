@@ -1,23 +1,50 @@
-import Sketch from '@sketch-hq/sketch-file-format-ts'
+import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import type { LayerOverrideTextStyle, LayerTextStyle } from '@/types'
 import { extractColor } from './extractColor'
+
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum TextHorizontalAlignment {
+  Left = 0,
+  Right = 1,
+  Centered = 2,
+  Justified = 3,
+  Natural = 4
+}
+
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum TextVerticalAlignment {
+  Top = 0,
+  Middle = 1,
+  Bottom = 2
+}
+
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum TextBehaviour {
+  Flexible = 0,
+  Fixed = 1,
+  FixedWidthAndHeight = 2
+}
 
 /**
  * 提取文本对齐属性
  * @param alignment - 文本对齐属性
  * @returns 提取后的文本对齐属性
  */
-export function extractFontAlignment(
-  alignment?: Sketch.TextHorizontalAlignment
-) {
+export function extractFontAlignment(alignment?: TextHorizontalAlignment) {
   switch (alignment) {
-    case Sketch.TextHorizontalAlignment.Right:
+    case TextHorizontalAlignment.Right:
       return 'right'
-    case Sketch.TextHorizontalAlignment.Centered:
+    case TextHorizontalAlignment.Centered:
       return 'center'
-    case Sketch.TextHorizontalAlignment.Justified:
+    case TextHorizontalAlignment.Justified:
       return 'justify'
-    case Sketch.TextHorizontalAlignment.Natural:
+    case TextHorizontalAlignment.Natural:
       return 'natural'
     default:
       return 'left'
@@ -29,13 +56,11 @@ export function extractFontAlignment(
  * @param verticalAlig - 垂直对齐属性
  * @returns 提取后的垂直对齐属性
  */
-export function extractVerticalAlignment(
-  verticalAlig?: Sketch.TextVerticalAlignment
-) {
+export function extractVerticalAlignment(verticalAlig?: TextVerticalAlignment) {
   switch (verticalAlig) {
-    case Sketch.TextVerticalAlignment.Middle:
+    case TextVerticalAlignment.Middle:
       return 'middle'
-    case Sketch.TextVerticalAlignment.Bottom:
+    case TextVerticalAlignment.Bottom:
       return 'bottom'
     default:
       return 'top'
@@ -47,11 +72,11 @@ export function extractVerticalAlignment(
  * @param textBehavior - 文本行为属性
  * @returns 提取后的文本行为属性
  */
-export function extractTextBehavior(behaviour: Sketch.TextBehaviour) {
+export function extractTextBehavior(behaviour: TextBehaviour) {
   switch (behaviour) {
-    case Sketch.TextBehaviour.Fixed:
+    case TextBehaviour.Fixed:
       return 'Fixed'
-    case Sketch.TextBehaviour.FixedWidthAndHeight:
+    case TextBehaviour.FixedWidthAndHeight:
       return 'FixedWidthAndHeight'
     default:
       return 'Flexible'
@@ -68,7 +93,7 @@ export function extractTextStyle(attr: {
   MSAttributedStringFontAttribute?: Sketch.FontDescriptor
   MSAttributedStringColorAttribute?: Sketch.Color
   kerning?: number
-  textStyleVerticalAlignmentKey?: Sketch.TextVerticalAlignment
+  textStyleVerticalAlignmentKey?: TextVerticalAlignment
 }): LayerTextStyle {
   return {
     fontFamily: attr?.MSAttributedStringFontAttribute?.attributes.name,

@@ -1,10 +1,19 @@
-import Sketch from '@sketch-hq/sketch-file-format-ts'
+import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import type { LayerFill, LayerStyle } from '@/types'
 import { extractColor } from './extractColor'
 import { extractPatternFillType } from './extractPattern'
 import { extractBorderPosition } from './extractBorder'
 import { extractTextStyle } from './extractText'
 import { extractFill } from './extractFill'
+
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum FillType {
+  Color = 0,
+  Gradient = 1,
+  Pattern = 4
+}
 
 /**
  * 组装 Sketch 样式为 LayerStyle 类型
@@ -30,7 +39,7 @@ export function extractStyle(
       const fillStyle: LayerFill = {
         fill: extractFill(fill, images, assetsPath)
       }
-      if (fill.fillType === Sketch.FillType.Pattern) {
+      if ((fill.fillType as FillType) === FillType.Pattern) {
         fillStyle.patternFillType = extractPatternFillType(fill.patternFillType)
         fillStyle.patternTileScale = fill.patternTileScale
       }

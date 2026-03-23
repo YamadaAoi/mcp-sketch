@@ -1,17 +1,24 @@
-import Sketch from '@sketch-hq/sketch-file-format-ts'
+/**
+ * 复制@sketch-hq/sketch-file-format-ts内类型
+ */
+enum BorderPosition {
+  Center = 0,
+  Inside = 1,
+  Outside = 2
+}
 
 /**
  * 提取边框位置
  * @param borderPosition - sketch边框位置
  * @returns 边框位置描述
  */
-export function extractBorderPosition(borderPosition: Sketch.BorderPosition) {
+export function extractBorderPosition(borderPosition: BorderPosition) {
   switch (borderPosition) {
-    case Sketch.BorderPosition.Inside:
+    case BorderPosition.Inside:
       return 'Inside'
-    case Sketch.BorderPosition.Outside:
+    case BorderPosition.Outside:
       return 'Outside'
-    case Sketch.BorderPosition.Center:
+    case BorderPosition.Center:
       return 'Center'
     default:
       return 'unknown'
