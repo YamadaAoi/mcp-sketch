@@ -27,12 +27,12 @@ const toolName = 'sketch_analyze'
  */
 async function sketchAnalyze(args: InputSchema): Promise<CallToolResult> {
   logger.debug(args, 'sketchAnalyze')
-  const targetPath = await handleSketchAnalyze(args)
+  const text = await handleSketchAnalyze(args)
   return {
     content: [
       {
         type: 'text',
-        text: `Please read the design structure json file as reference: ${targetPath}`
+        text
       }
     ]
   }

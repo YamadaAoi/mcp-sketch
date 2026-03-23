@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
 import { openSketchFile } from '@/utils/zip'
-import { logger } from '@/utils/logger'
 import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
 import type { InputSchema, SketchPrompt } from '@/types'
@@ -26,42 +25,48 @@ async function writeJsonFile(filePath: string, data: SketchPrompt) {
  * @returns json文件位置
  */
 export async function handleSketchAnalyze(args: InputSchema) {
-  const sketchFile = await openSketchFile(args.file_path)
+  let response = ''
 
-  const nodeInfo = resolveArtboardTarget(args, sketchFile)
+  try {
+    const sketchFile = await openSketchFile(args.file_path)
 
-  const result = assembleNode(
-    nodeInfo.layers,
-    sketchFile.images,
-    args.assets_path
-  )
+    const nodeInfo = resolveArtboardTarget(args, sketchFile)
 
-  const { sharedStyles, symbolMasters } = assembleGlobalResource(
-    {
-      sharedStyleIDs: result.sharedStyleIDs,
-      symbolMasterIDs: result.symbolMasterIDs
-    },
-    sketchFile,
-    args.assets_path
-  )
+    const result = assembleNode(
+      nodeInfo.layers,
+      sketchFile.images,
+      args.assets_path
+    )
 
-  const prompt: SketchPrompt = {
-    meta: {
-      description: `This is sanitized structural data from a Sketch design file.All frame properties (x, y, w, h) are relative to the parent container. `
-    },
-    globalResources: {
-      sharedStyles,
-      symbolMasters
-    },
-    layers: result.layers
+    const { sharedStyles, symbolMasters } = assembleGlobalResource(
+      {
+        sharedStyleIDs: result.sharedStyleIDs,
+        symbolMasterIDs: result.symbolMasterIDs
+      },
+      sketchFile,
+      args.assets_path
+    )
+
+    const prompt: SketchPrompt = {
+      meta: {
+        description: `This is sanitized structural data from a Sketch design file.All frame properties (x, y, w, h) are relative to the parent container. `
+      },
+      globalResources: {
+        sharedStyles,
+        symbolMasters
+      },
+      layers: result.layers
+    }
+
+    const parsed = path.parse(args.file_path)
+    const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
+
+    await writeJsonFile(targetPath, prompt)
+
+    response = `Please read the design structure json file as reference: ${targetPath}`
+  } catch (error) {
+    response = `Sketch analyze error: ${error instanceof Error ? error.message : 'unknown error'}`
   }
 
-  const parsed = path.parse(args.file_path)
-  const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
-
-  writeJsonFile(targetPath, prompt).catch(() => {
-    logger.error(`writeJsonFile ${targetPath} error`)
-  })
-
-  return targetPath
+  return response
 }
