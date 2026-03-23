@@ -9,16 +9,16 @@ import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js'
  * 解析skecth文件分析参数
  */
 export const inputSchema = z.object({
-  file_path: z.string().describe('sketch文件路径'),
-  page_id: z.string().describe('指定页面ID(可选)').optional(),
-  page_name: z.string().describe('指定页面名称(可选)').optional(),
-  artboard_id: z.string().describe('指定画板ID(可选)').optional(),
-  artboard_name: z.string().describe('指定画板名称(可选)').optional(),
-  node_id: z.string().describe('指定节点ID(可选)').optional(),
-  node_name: z.string().describe('指定节点名称(可选)').optional(),
+  file_path: z.string().describe('sketch file path(required)'),
+  page_id: z.string().describe('page id (optional)').optional(),
+  page_name: z.string().describe('page name (optional)').optional(),
+  artboard_id: z.string().describe('artboard id (optional)').optional(),
+  artboard_name: z.string().describe('artboard name (optional)').optional(),
+  node_id: z.string().describe('node id (optional)').optional(),
+  node_name: z.string().describe('node name (optional)').optional(),
   assets_path: z
     .string()
-    .describe('指定静态资源存放路径(可选)，默认src/assets/sketch')
+    .describe('assets path (optional), default src/assets/sketch')
     .optional()
 })
 

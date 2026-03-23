@@ -1,5 +1,6 @@
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
 import { extractColor } from './extractColor'
+import { logger } from '../logger'
 
 /**
  * 复制@sketch-hq/sketch-file-format-ts内类型
@@ -16,7 +17,7 @@ enum GradientType {
 function parsePoint(pointStr: string): { x: number; y: number } {
   const match = pointStr.match(/\{([\d.\-eE+]+),\s*([\d.\-eE+]+)\}/)
   if (!match) {
-    console.warn(`Invalid point string: ${pointStr}, defaulting to {0,0}`)
+    logger.warn(`Invalid point string: ${pointStr}, defaulting to {0,0}`)
     return { x: 0, y: 0 }
   }
   return {

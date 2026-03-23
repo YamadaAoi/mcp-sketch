@@ -3,8 +3,6 @@
  * originalNode: 原始节点
  * newNode: 已经创建好的新节点（部分填充，children 待定）
  * parentChildrenArray: 指向新节点应该被放入的父级 children 数组
- * index: 当前节点在兄弟节点中的索引
- * path: 从根到当前节点的路径（可选，用于 transform 函数）
  */
 interface StackItem<T, R> {
   originalNode: T

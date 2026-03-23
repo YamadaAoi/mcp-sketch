@@ -43,7 +43,8 @@ export function toolSketchAnalyze(): RegisterToolParams {
     toolName,
     {
       title: toolName,
-      description: '分析提供的sketch文件，返回相应设计结构',
+      description:
+        'Analyze sketch files and return the design structure of corresponding pages ordrawing boards or nodes',
       inputSchema
     },
     sketchAnalyze

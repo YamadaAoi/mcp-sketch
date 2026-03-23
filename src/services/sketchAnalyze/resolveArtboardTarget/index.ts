@@ -43,14 +43,14 @@ function getData<T extends Artboard>(
   if (id) {
     const data = list.find(item => item.id === id)
     if (!data) {
-      throw new Error(`Sketch 解析失败： ${id} 不存在！`)
+      throw new Error(`Sketch Artboard ${id} not found`)
     }
     return data
   }
   if (name) {
     const data = list.find(item => item.name === name)
     if (!data) {
-      throw new Error(`Sketch 解析失败： ${name} 不存在！`)
+      throw new Error(`Sketch Artboard ${name} not found`)
     }
     return data
   }
@@ -103,17 +103,17 @@ function getNode(
  */
 function getArtboard(metaJson: string, args: InputSchema) {
   if (!metaJson) {
-    throw new Error(`Sketch 解析失败： ${METAJSON} 不存在！`)
+    throw new Error(`Sketch ${METAJSON} not found`)
   }
   let meta: Sketch.Meta
   try {
     meta = JSON.parse(metaJson) as Sketch.Meta
   } catch (error) {
-    logger.error(error, `Sketch 解析失败： ${METAJSON} 格式错误！`)
-    throw new Error(`Sketch 解析失败： ${METAJSON} 格式错误！`)
+    logger.error(error, `Sketch ${METAJSON} format error`)
+    throw new Error(`Sketch ${METAJSON} format error`)
   }
   if (!meta?.pagesAndArtboards) {
-    throw new Error(`Sketch 解析失败： ${METAJSON} 格式错误！`)
+    throw new Error(`Sketch ${METAJSON} format error`)
   }
   const pagesAndArtboards: Page[] = Object.keys(meta.pagesAndArtboards).map(
     id => {
@@ -137,16 +137,14 @@ function getArtboard(metaJson: string, args: InputSchema) {
   if (!page) {
     page = pagesAndArtboards[0]
     if (!page) {
-      throw new Error(`Sketch 解析失败：设计内容为空！`)
+      throw new Error(`Sketch ${METAJSON} format error`)
     }
   }
   let artboard = getData(page.artboards, args.artboard_id, args.artboard_name)
   if (!artboard) {
     artboard = page.artboards[0]
     if (!artboard) {
-      throw new Error(
-        `Sketch 解析失败：${page.name || page.id}页面内画板为空！`
-      )
+      throw new Error(`Sketch Page ${page.name || page.id} not found`)
     }
   }
   return { artboard, pageId: page.id }
@@ -167,29 +165,29 @@ function getArtboardNode(
   artboardId: string
 ): NodeInfo {
   if (!pageJson) {
-    throw new Error(`Sketch 解析失败： 页面数据读取失败！`)
+    throw new Error(`Sketch Page ${pageId} is empty`)
   }
   let page: Sketch.Page
   try {
     page = JSON.parse(pageJson) as Sketch.Page
   } catch (error) {
-    logger.error(error, `Sketch 解析失败： 页面数据格式错误！`)
-    throw new Error(`Sketch 解析失败： 页面数据格式错误！`)
+    logger.error(error, `Sketch Page format error`)
+    throw new Error(`Sketch Page format error`)
   }
   if (!page?.layers) {
-    throw new Error(`Sketch 解析失败： 页面数据格式错误！`)
+    throw new Error(`Sketch Page format error`)
   }
   const artboard = page.layers.find(
     l => l._class === 'artboard' && l.do_objectID === artboardId
   ) as Sketch.Artboard | undefined
   if (!artboard) {
-    throw new Error(`Sketch 解析失败： 画板 ${artboardId} 不存在！`)
+    throw new Error(`Sketch Artboard ${artboardId} not found`)
   }
   if (args.node_id) {
     const node = getNode(artboard.layers, args.node_id, 'do_objectID')
     if (!node) {
       throw new Error(
-        `Sketch 解析失败：${artboard.name ?? artboard.do_objectID}内${args.node_id}不存在！`
+        `Sketch Artboard ${artboard.name ?? artboard.do_objectID}/${args.node_id} not found`
       )
     }
     return {
@@ -203,7 +201,7 @@ function getArtboardNode(
     const node = getNode(artboard.layers, args.node_name, 'name')
     if (!node) {
       throw new Error(
-        `Sketch 解析失败：${artboard.name ?? artboard.do_objectID}内${args.node_name}不存在！`
+        `Sketch Artboard ${artboard.name ?? artboard.do_objectID}/${args.node_name} not found`
       )
     }
     return {
@@ -241,7 +239,6 @@ export function resolveArtboardTarget(
   args: InputSchema,
   sketchFile: SketchFile
 ) {
-  logger.debug(args, 'resolveArtboardTarget')
   const artboardInfo = getArtboard(sketchFile.metaJson, args)
   const pageJson = sketchFile.pagesJson.get(
     `${PAGEFOLDER}/${artboardInfo.pageId}.json`

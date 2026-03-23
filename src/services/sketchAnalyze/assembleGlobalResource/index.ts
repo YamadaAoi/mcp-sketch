@@ -61,7 +61,7 @@ function handleSymbolMaster(
       symbolSharedStyleIDs.push(...result.sharedStyleIDs)
       masters.set(current, result.layers[0])
     } else {
-      logger.error(`symbolMaster ${current} 不存在`)
+      logger.error(`symbolMaster ${current} not found`)
     }
   }
 

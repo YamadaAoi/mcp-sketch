@@ -26,8 +26,6 @@ async function writeJsonFile(filePath: string, data: SketchPrompt) {
  * @returns json文件位置
  */
 export async function handleSketchAnalyze(args: InputSchema) {
-  logger.debug(args, 'resolveArtboardTarget')
-
   const sketchFile = await openSketchFile(args.file_path)
 
   const nodeInfo = resolveArtboardTarget(args, sketchFile)
