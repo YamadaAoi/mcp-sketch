@@ -1,29 +1,10 @@
 import path from 'path'
-import fs from 'fs/promises'
 import { openSketchFile } from '@/utils/sketch'
+import { writeJsonFile } from '@/utils/saveFile'
 import { resolveArtboardTarget } from './resolveArtboardTarget'
 import { assembleNode } from './assembleNode'
 import type { InputSchema, SketchPrompt } from '@/types'
 import { assembleGlobalResource } from './assembleGlobalResource'
-
-/**
- * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
- * @param filePath - json文件路径
- * @param data - 要写入的数据
- * @param compress - 是否压缩JSON文件(可选)，默认true
- */
-async function writeJsonFile(
-  filePath: string,
-  data: SketchPrompt,
-  compress: boolean = true
-) {
-  const dir = path.dirname(filePath)
-  await fs.mkdir(dir, { recursive: true })
-  const jsonString = compress
-    ? JSON.stringify(data)
-    : JSON.stringify(data, null, 2)
-  await fs.writeFile(filePath, jsonString, 'utf8')
-}
 
 /**
  * 分析sketch文件，提取指定节点数据，存储到指定位置json文件中，返回json文件位置
@@ -58,8 +39,7 @@ export async function handleSketchAnalyze(args: InputSchema) {
       meta: {
         description: `This is sanitized structural data from a Sketch design file.
         All frame properties (x, y, w, h) are relative to the parent container.
-        Extract the images used to the specified location, please infer the image location reasonably.
-        If the file is too large, try to read it in sections.`
+        Extract the images used to the specified location, please infer the image location reasonably.`
       },
       globalResources: {
         sharedStyles,

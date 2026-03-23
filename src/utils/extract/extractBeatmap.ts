@@ -1,8 +1,8 @@
 import type Sketch from '@sketch-hq/sketch-file-format-ts'
-import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
 import { logger } from '@/utils/logger'
+import { saveImage } from '../saveFile'
 
 const MIME_TO_EXT: Record<string, string> = {
   '/9j/': 'jpg',
@@ -19,12 +19,6 @@ function detectImageFormat(base64Data: string): string {
     }
   }
   return 'png'
-}
-
-async function saveImage(data: Buffer, dest: string, fileName: string) {
-  await fs.mkdir(dest, { recursive: true })
-  const targetPath = path.join(dest, fileName)
-  await fs.writeFile(targetPath, data)
 }
 
 export function extractBeatmap(
