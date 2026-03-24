@@ -20,7 +20,10 @@ export interface HtmlLayer {
     height?: number
   }
   styleName?: string
+  fills?: unknown[]
+  borders?: unknown[]
   css?: string[]
+  radius?: number[]
   exportable?: Array<{
     name: string
     format: string
@@ -65,7 +68,6 @@ export interface HtmlSketchArtboard {
   width: number
   height: number
   layers: HtmlSketchLayer[]
-  imagePath?: string
 }
 
 export interface SketchHtmlFile {
@@ -127,6 +129,15 @@ function getDataFromScript(script: string) {
   return output.code
 }
 
+/**
+ * 规范路径
+ * @param p - 路径
+ * @returns 规范后的路径
+ */
+export function normalize(p: string) {
+  return decodeURIComponent(p).replace(/\\/g, '/').replace(/\/+/g, '/')
+}
+
 export async function openSketchHtmlFile(filePath: string) {
   const directory = await Open.file(filePath)
 
@@ -146,13 +157,14 @@ export async function openSketchHtmlFile(filePath: string) {
   }
 
   for (const file of directory.files) {
+    const filePath = normalize(file.path)
     if (
-      file.path.includes(`${IMAGEFOLDER}/`) ||
-      file.path.includes(`${PREVIEWFOLDER}/`)
+      filePath.includes(`${IMAGEFOLDER}/`) ||
+      filePath.includes(`${PREVIEWFOLDER}/`)
     ) {
       const buffer = await file.buffer()
       sketch.images.push({
-        path: file.path,
+        path: filePath,
         data: buffer
       })
     }
