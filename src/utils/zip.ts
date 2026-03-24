@@ -1,9 +1,10 @@
 import { Open } from 'unzipper'
 import * as cheerio from 'cheerio'
 import { parse } from '@babel/parser'
-import traverse, { type Node } from '@babel/traverse'
+import { type Node } from '@babel/traverse'
 import { generate } from '@babel/generator'
 import { logger } from '@/utils/logger'
+import { getSafeTraverse } from './getTraverse'
 
 interface HtmlData {
   artboards: HtmlArtboard[]
@@ -82,6 +83,7 @@ const INDEXHTML = 'index.html'
 const DATA_VAR_NAME = 'data'
 const IMAGEFOLDER = 'assets'
 const PREVIEWFOLDER = 'preview'
+const traverse = getSafeTraverse()
 
 function getScriptFromHtml(html: string) {
   const $ = cheerio.load(html)

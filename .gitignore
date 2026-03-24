@@ -6,3 +6,4 @@ dist/
 .eslintcache
 test-results/
 *.sketch
+*.zip

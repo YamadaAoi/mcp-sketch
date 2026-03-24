@@ -83,37 +83,46 @@ describe('handleSketchAnalyze', () => {
 
     await new Promise(resolve => setTimeout(resolve, 200))
 
+    const jsonPath = result.replace(
+      'Please use appropriate shell commands to read the complete design structure JSON file: ',
+      ''
+    )
+
     const jsonExists = await fs
-      .access(result)
+      .access(jsonPath)
       .then(() => true)
       .catch(() => false)
     expect(jsonExists).toBe(true)
 
     if (jsonExists) {
-      const content = await fs.readFile(result, 'utf8')
+      const content = await fs.readFile(jsonPath, 'utf8')
       const data = JSON.parse(content)
-      expect(data.meta.description).toBe(
-        '这是一个 Sketch 文件片段，包含页面结构和全局资源定义。'
+      expect(data.meta.description).toContain(
+        'This is sanitized structural data from a Sketch design file.'
       )
       expect(data.layers.length).toBeGreaterThan(0)
     }
   })
 
-  it('should throw error for invalid page_name', async () => {
+  it('should return error for invalid page_name', async () => {
     const args: InputSchema = {
       file_path: sketchFilePath,
       page_name: 'NonExistentPage'
     }
 
-    await expect(handleSketchAnalyze(args)).rejects.toThrow(/Sketch 解析失败/)
+    const result = await handleSketchAnalyze(args)
+    expect(result).toContain('error')
+    expect(result).toContain('not found')
   })
 
-  it('should throw error for invalid artboard_name', async () => {
+  it('should return error for invalid artboard_name', async () => {
     const args: InputSchema = {
       file_path: sketchFilePath,
       artboard_name: 'NonExistentArtboard'
     }
 
-    await expect(handleSketchAnalyze(args)).rejects.toThrow(/Sketch 解析失败/)
+    const result = await handleSketchAnalyze(args)
+    expect(result).toContain('error')
+    expect(result).toContain('not found')
   })
 })
