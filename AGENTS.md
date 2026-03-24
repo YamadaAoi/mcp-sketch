@@ -41,7 +41,7 @@ pnpm test:watch     # Watch mode for tests
 
 ```bash
 # Run a specific test file
-pnpm vitest run src/tests/example.test.ts
+pnpm vitest run src/tests/unit/example.test.ts
 
 # Run tests matching a pattern
 pnpm vitest run --grep "pattern"
@@ -129,10 +129,12 @@ src/
 
 ## Testing
 
-- Test files in `src/tests/`
+- Test files in `src/tests/unit/`
+- Test fixtures in `src/tests/fixtures/`
 - Use `.test.ts` or `.spec.ts` extension
 - Vitest: Node env, 10s timeout, JSON reporter to `test-results/results.json`
 - Path aliases: `@` and `@tests`
+- Import test helpers from `vitest` (describe, it, expect, beforeAll, vi)
 
 ## Working with MCP SDK
 
