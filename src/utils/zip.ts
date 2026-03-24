@@ -46,10 +46,10 @@ export interface HtmlSketchLayer {
   type: string
   name: string
   rect: {
-    x?: number
-    y?: number
-    w?: number
-    h?: number
+    x?: number | string
+    y?: number | string
+    w?: number | string
+    h?: number | string
   }
   styleName?: string
   css?: string[]

@@ -7,6 +7,7 @@ import {
 } from '@/utils/zip'
 import { saveImage } from '@/utils/saveFile'
 import { logger } from '@/utils/logger'
+import { roundIfExceeds } from '@/utils/util'
 
 export function assembleArtboard(
   artboard: HtmlArtboard,
@@ -39,10 +40,10 @@ export function assembleArtboard(
           type: l.type,
           name: l.name,
           rect: {
-            x: l.rect?.x,
-            y: l.rect?.y,
-            w: l.rect?.width,
-            h: l.rect?.height
+            x: roundIfExceeds(l.rect?.x),
+            y: roundIfExceeds(l.rect?.y),
+            w: roundIfExceeds(l.rect?.width),
+            h: roundIfExceeds(l.rect?.height)
           }
         }
         if (l.styleName) {
