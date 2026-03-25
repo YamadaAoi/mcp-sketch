@@ -21,6 +21,7 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
     const assembledArtboard = assembleArtboard(
       targetArtboard,
       args.assets_path,
+      args.rect,
       sketchHtmlData.images
     )
 

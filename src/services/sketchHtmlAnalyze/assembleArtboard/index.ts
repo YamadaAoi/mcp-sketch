@@ -2,16 +2,47 @@ import path from 'path'
 import {
   normalize,
   type HtmlArtboard,
+  type HtmlLayer,
   type HtmlSketchArtboard,
   type HtmlSketchLayer
 } from '@/utils/zip'
 import { saveImage } from '@/utils/saveFile'
 import { logger } from '@/utils/logger'
-import { roundIfExceeds } from '@/utils/util'
+import { isNumber, roundIfExceeds } from '@/utils/util'
+
+function filterLayers(lyr: HtmlLayer) {
+  return (
+    (lyr.type === 'slice' && !!lyr.exportable?.length) ||
+    lyr.type === 'text' ||
+    (lyr.type === 'shape' &&
+      !!lyr.radius?.length &&
+      lyr.css?.some(s => s.includes('background') || s.includes('border')))
+  )
+}
+
+function filterLayersByRect(
+  lyr: HtmlLayer,
+  rect?: [number, number, number, number]
+) {
+  if (!rect) {
+    return filterLayers(lyr)
+  } else {
+    return (
+      lyr.rect?.x !== undefined &&
+      lyr.rect?.y !== undefined &&
+      lyr.rect.x >= rect[0] &&
+      lyr.rect.x < rect[0] + rect[2] &&
+      lyr.rect.y >= rect[1] &&
+      lyr.rect.y < rect[1] + rect[3] &&
+      filterLayers(lyr)
+    )
+  }
+}
 
 export function assembleArtboard(
   artboard: HtmlArtboard,
   assetsPath?: string,
+  rect?: number[],
   images?: Array<{
     path: string
     data: Buffer
@@ -19,6 +50,15 @@ export function assembleArtboard(
 ) {
   const dest = assetsPath ?? 'src/assets/sketch'
   let previewPath = ''
+  let newRect: [number, number, number, number] | undefined
+  if (rect?.length === 4 && rect.every(r => isNumber(r))) {
+    newRect = [
+      Number(rect[0]),
+      Number(rect[1]),
+      Number(rect[2]),
+      Number(rect[3])
+    ]
+  }
   const newArtboard: HtmlSketchArtboard = {
     pageName: artboard.pageName,
     pageObjectID: artboard.pageObjectID,
@@ -27,14 +67,7 @@ export function assembleArtboard(
     width: artboard.width,
     height: artboard.height,
     layers: artboard.layers
-      .filter(
-        l =>
-          (l.type === 'slice' && !!l.exportable?.length) ||
-          l.type === 'text' ||
-          (l.type === 'shape' &&
-            !!l.radius?.length &&
-            l.css?.some(s => s.includes('background') || s.includes('border')))
-      )
+      .filter(l => filterLayersByRect(l, newRect))
       .map(l => {
         const lyr: HtmlSketchLayer = {
           type: l.type,

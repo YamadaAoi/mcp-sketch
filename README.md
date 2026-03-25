@@ -66,15 +66,16 @@
 
 使用 `sketch_html_analyze` 工具分析从 Sketch 导出的 HTML 压缩包：
 
-| 参数          | 类型    | 必填 | 说明                                       |
-| ------------- | ------- | ---- | ------------------------------------------ |
-| file_path     | string  | 是   | Sketch HTML 压缩包路径                     |
-| page_id       | string  | 否   | 页面 ID                                    |
-| page_name     | string  | 否   | 页面名称                                   |
-| artboard_id   | string  | 否   | 画板 ID                                    |
-| artboard_name | string  | 否   | 画板名称                                   |
-| assets_path   | string  | 否   | 静态资源存放路径，默认 `src/assets/sketch` |
-| saveResult    | boolean | 否   | 是否保存分析结果JSON文件(可选)，默认true   |
+| 参数          | 类型     | 必填 | 说明                                                                                                  |
+| ------------- | -------- | ---- | ----------------------------------------------------------------------------------------------------- |
+| file_path     | string   | 是   | Sketch HTML 压缩包路径                                                                                |
+| page_id       | string   | 否   | 页面 ID                                                                                               |
+| page_name     | string   | 否   | 页面名称                                                                                              |
+| artboard_id   | string   | 否   | 画板 ID                                                                                               |
+| artboard_name | string   | 否   | 画板名称                                                                                              |
+| rect          | number[] | 否   | 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度) |
+| assets_path   | string   | 否   | 静态资源存放路径，默认 `src/assets/sketch`                                                            |
+| saveResult    | boolean  | 否   | 是否保存分析结果JSON文件(可选)，默认true                                                              |
 
 ### 选择优先级
 
