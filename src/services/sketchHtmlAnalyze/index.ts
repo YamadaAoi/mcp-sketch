@@ -34,11 +34,12 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
     }
 
     const parsed = path.parse(args.file_path)
-    const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}.json`
+    if (args.saveResult ?? true) {
+      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}.json`
+      await writeJsonFile(targetPath, prompt)
+    }
 
-    await writeJsonFile(targetPath, prompt, args.compress)
-
-    response = `Please use appropriate shell commands to read the complete design structure JSON file: ${targetPath}.`
+    response = `Sketch Structure JSON: ${JSON.stringify(prompt)}.`
 
     let previewPath = ''
 
@@ -49,7 +50,7 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
       if (imageData) {
         const fileName = path.basename(assembledArtboard.previewPath)
         previewPath = `${parsed.dir}/${parsed.name}/${fileName}`
-        response = `${response}\npreview image: ${previewPath}`
+        response = `${response}\nSketch Preview Image: ${previewPath}`
         saveImage(imageData, `${parsed.dir}/${parsed.name}`, fileName).catch(
           error => {
             logger.error(`Failed to save image ${previewPath}: ${error}`)

@@ -46,7 +46,7 @@
 | node_id       | string  | 否   | 节点 ID                                    |
 | node_name     | string  | 否   | 节点名称                                   |
 | assets_path   | string  | 否   | 静态资源存放路径，默认 `src/assets/sketch` |
-| compress      | boolean | 否   | 是否压缩JSON文件(可选)，默认true           |
+| saveResult    | boolean | 否   | 是否保存分析结果JSON文件(可选)，默认true   |
 
 ### 选择优先级
 
@@ -74,7 +74,7 @@
 | artboard_id   | string  | 否   | 画板 ID                                    |
 | artboard_name | string  | 否   | 画板名称                                   |
 | assets_path   | string  | 否   | 静态资源存放路径，默认 `src/assets/sketch` |
-| compress      | boolean | 否   | 是否压缩JSON文件(可选)，默认true           |
+| saveResult    | boolean | 否   | 是否保存分析结果JSON文件(可选)，默认true   |
 
 ### 选择优先级
 
@@ -135,5 +135,4 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 ## 使用建议
 
 - 建议使用 `sketch_html_analyze` 工具分析 Sketch HTML 压缩包，因为`sketch_analyze`只是简单地解析了 Sketch 文件的页面、画板、图层结构。而sketch导出的html已经进行了图形叠加渲染，所以解析的结果数据量相对较小，且相对准确。
-- 推荐使用功能强大的工具，如`claude-code`、`opencode`等，因为解析结果是大json文件，如果模型能自由调用`bash`工具读取全部json内容会非常便利。
 - 推荐使用支持多模态的模型读取预览图修正设计结构。

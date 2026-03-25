@@ -5,18 +5,11 @@ import fs from 'fs/promises'
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
  * @param filePath - json文件路径
  * @param data - 要写入的数据
- * @param compress - 是否压缩JSON文件(可选)，默认true
  */
-export async function writeJsonFile(
-  filePath: string,
-  data: object,
-  compress: boolean = true
-) {
+export async function writeJsonFile(filePath: string, data: object) {
   const dir = path.dirname(filePath)
   await fs.mkdir(dir, { recursive: true })
-  const jsonString = compress
-    ? JSON.stringify(data)
-    : JSON.stringify(data, null, 2)
+  const jsonString = JSON.stringify(data, null, 2)
   await fs.writeFile(filePath, jsonString, 'utf8')
 }
 

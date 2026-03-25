@@ -48,12 +48,13 @@ export async function handleSketchAnalyze(args: InputSchema) {
       layers: result.layers
     }
 
-    const parsed = path.parse(args.file_path)
-    const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
+    if (args.saveResult ?? true) {
+      const parsed = path.parse(args.file_path)
+      const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
+      await writeJsonFile(targetPath, prompt)
+    }
 
-    await writeJsonFile(targetPath, prompt, args.compress)
-
-    response = `Please use appropriate shell commands to read the complete design structure JSON file: ${targetPath}`
+    response = `Sketch Structure JSON: ${JSON.stringify(prompt)}.`
   } catch (error) {
     response = `Sketch analyze error: ${error instanceof Error ? error.message : 'unknown error'}`
   }

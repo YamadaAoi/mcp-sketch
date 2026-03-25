@@ -1,6 +1,6 @@
 {
   "name": "mcp-sketch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Local MCP server for parsing sketch files",
   "type": "module",
   "main": "dist/index.js",
