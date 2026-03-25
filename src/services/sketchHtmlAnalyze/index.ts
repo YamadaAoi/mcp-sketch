@@ -36,7 +36,7 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
 
     const parsed = path.parse(args.file_path)
     if (args.saveResult ?? true) {
-      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}.json`
+      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${args.rect?.length === 4 ? `[${args.rect.join(',')}]` : ''}.json`
       await writeJsonFile(targetPath, prompt)
     }
 

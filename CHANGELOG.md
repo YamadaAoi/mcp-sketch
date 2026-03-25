@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.3
+
+### Patch Changes
+
+- 结果文件命名扩展
+
 ## 1.0.2
 
 ### Patch Changes
