@@ -27,9 +27,8 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
 
     const prompt = {
       meta: {
-        description: `This is sanitized structural data from a Sketch design file.
-              All frame properties (x, y, w, h) are relative to the parent container.
-              Extract the images used to the specified location, please infer the image location reasonably.`
+        description:
+          'Design data extracted from Sketch exported HTML. All coordinates are relative to the artboard. Layers are flattened. Refer to the preview image to verify and refine the design structure.'
       },
       artboard: assembledArtboard.artboard
     }

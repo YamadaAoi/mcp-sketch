@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.4
+
+### Patch Changes
+
+- 移除sketch_analyze工具（待优化）；优化提示语，优化readme
+
 ## 1.0.3
 
 ### Patch Changes
