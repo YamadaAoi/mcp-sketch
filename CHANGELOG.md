@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.5
+
+### Patch Changes
+
+- 搜索引擎优化
+
 ## 1.0.4
 
 ### Patch Changes

@@ -2,6 +2,10 @@
 
 [中文](./README.md) | English
 
+<a href="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch/badge" />
+</a>
+
 Local MCP server for parsing Sketch exported HTML zip archives and extracting design structure information.
 
 ## Features

@@ -1,6 +1,6 @@
 {
   "name": "mcp-sketch",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Local MCP server for parsing sketch files",
   "type": "module",
   "main": "dist/index.js",
@@ -36,8 +36,11 @@
   "keywords": [
     "mcp",
     "modelcontextprotocol",
-    "ai",
+    "mcp-server",
+    "local-first",
+    "npx",
     "sketch",
+    "ai",
     "ts"
   ],
   "engines": {
