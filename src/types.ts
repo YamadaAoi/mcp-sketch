@@ -20,7 +20,7 @@ export const inputSchema = z.object({
     .string()
     .describe('assets path (optional), default src/assets/sketch')
     .optional(),
-  saveResult: z
+  save_result: z
     .boolean()
     .describe('save analysis result (optional), default true')
     .optional()
@@ -43,7 +43,7 @@ export const sketchHtmlInputSchema = z.object({
     .string()
     .describe('assets path (optional), default src/assets/sketch')
     .optional(),
-  saveResult: z
+  save_result: z
     .boolean()
     .describe('save analysis result (optional), default true')
     .optional()
@@ -59,7 +59,7 @@ export const sketchHtmlInputSchema = z.object({
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
- * @property {boolean} saveResult - 是否保存分析结果JSON文件(可选)，默认true
+ * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认true
  */
 export type InputSchema = SchemaOutput<typeof inputSchema>
 
@@ -72,7 +72,7 @@ export type InputSchema = SchemaOutput<typeof inputSchema>
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
- * @property {boolean} saveResult - 是否保存分析结果JSON文件(可选)，默认true
+ * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认true
  */
 export type SketchHtmlInputSchema = SchemaOutput<typeof sketchHtmlInputSchema>
 

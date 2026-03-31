@@ -6,7 +6,7 @@
   <img width="380" height="200" src="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch/badge" />
 </a>
 
-Local MCP server for parsing Sketch exported HTML zip archives and extracting design structure information.
+A local tool providing both MCP service and CLI for parsing Sketch exported HTML zip archives and extracting design structure information.
 
 ## Features
 
@@ -14,12 +14,52 @@ Local MCP server for parsing Sketch exported HTML zip archives and extracting de
   - Filter by page and artboard
   - Specify rectangular region for parsing
   - Output design structure JSON and preview images for AI reference
+- Available as both MCP service and CLI
 
 ## Usage
 
-### 1. Configure MCP Client
+### Method 1: CLI
 
-Configure as a local MCP service, refer to the MCP configuration documentation for each tool.
+Use the `sketch-cli` command via npx:
+
+```bash
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
+```
+
+#### Command Options
+
+| Option                  | Short | Description                                                       |
+| ----------------------- | ----- | ----------------------------------------------------------------- |
+| `-p, --path <PATH>`     | `-p`  | Sketch HTML zip archive path (**required**)                       |
+| `--pid, --page-id`      |       | Page ID                                                           |
+| `--pn, --page-name`     |       | Page name                                                         |
+| `--aid, --artboard-id`  |       | Artboard ID                                                       |
+| `--an, --artboard-name` |       | Artboard name                                                     |
+| `-r, --rect`            | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
+| `--ap, --assets-path`   |       | Assets output path, default: `src/assets/sketch`                  |
+| `--sr, --save-result`   |       | Whether to save analysis result to local file, default: `true`    |
+
+#### CLI Examples
+
+**If the parameter contains spaces, wrap it in quotes**
+
+```bash
+# Analyze the first artboard of the first page
+npx -y mcp-sketch sketch-cli analyze -p "/path/to/export .zip"
+
+# Analyze a specific page
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home
+
+# Analyze a specific artboard on a specific page
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home --an "User Management"
+
+# Analyze a specific region
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"
+```
+
+### Method 2: MCP Service
+
+Configure as a local MCP service for AI tools to call directly.
 
 - `opencode`:
 
@@ -51,7 +91,7 @@ Configure as a local MCP service, refer to the MCP configuration documentation f
 }
 ```
 
-### 2. Call the Tool
+### MCP Tool Parameters
 
 Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 
@@ -64,15 +104,15 @@ Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 | artboard_name | string   | No       | Artboard name                                                                                  |
 | rect          | number[] | No       | Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner) |
 | assets_path   | string   | No       | Assets output path, default: `src/assets/sketch`                                               |
-| saveResult    | boolean  | No       | Whether to save analysis result to local file, default: `true`                                 |
+| save_result   | boolean  | No       | Whether to save analysis result to local file, default: `true`                                 |
 
-### Selection Priority
+#### Selection Priority
 
 - **page**: `page_id` > `page_name` > first page
 - **artboard**: `artboard_id` > `artboard_name` > first artboard
 - **rect**: Specify a rectangular region to parse. Elements whose `x, y` coordinates fall within the rectangle will be parsed.
 
-### Return Result
+#### Return Result
 
 The tool returns text: `Sketch Structure JSON: {analysis result}\nSketch Preview Image: {preview image path}`
 
@@ -80,7 +120,7 @@ The tool returns text: `Sketch Structure JSON: {analysis result}\nSketch Preview
   - **meta**: Description information
   - **artboard**: Artboard data, including layers, styles, images, etc.
 
-### Examples
+#### MCP Examples
 
 - Analyze the first artboard of the first page in a Sketch HTML zip archive:
 

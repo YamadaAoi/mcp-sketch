@@ -24,7 +24,7 @@ const toolName = 'sketch_analyze'
  * @property {string} node_id - 指定节点ID(可选)
  * @property {string} node_name - 指定节点名称(可选)
  * @property {string} assets_path - 资产文件路径(可选)
- * @property {boolean} saveResult - 是否保存分析结果JSON文件(可选)，默认true
+ * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认true
  * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的设计结构json文件作为参考
  */
 async function sketchAnalyze(args: InputSchema): Promise<CallToolResult> {

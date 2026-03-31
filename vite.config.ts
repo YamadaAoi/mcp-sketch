@@ -17,11 +17,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       target: 'node18',
-      lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
-        fileName: 'index',
-        formats: ['es']
-      },
       outDir: 'dist',
       emptyOutDir: true,
       minify: isProduction,
@@ -41,9 +36,15 @@ export default defineConfig(({ mode }) => {
           'https',
           'zlib'
         ],
+        input: {
+          mcp: resolve(__dirname, 'src/mcp.ts'),
+          cli: resolve(__dirname, 'src/cli.ts')
+        },
         output: {
+          format: 'es',
+          entryFileNames: '[name].js',
           preserveModules: false,
-          inlineDynamicImports: true,
+          sourcemap: false,
           interop: 'auto'
         }
       }

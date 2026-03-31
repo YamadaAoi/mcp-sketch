@@ -6,7 +6,7 @@
   <img width="380" height="200" src="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch/badge" />
 </a>
 
-本地 MCP 服务，用于解析 Sketch 导出的 HTML zip 压缩包并提取设计结构信息。
+本地工具，提供 MCP 服务和 CLI 两种方式，用于解析 Sketch 导出的 HTML zip 压缩包并提取设计结构信息。
 
 ## 功能
 
@@ -14,12 +14,52 @@
   - 支持按 page、artboard 筛选
   - 支持指定矩形区域解析
   - 输出设计结构 JSON 和预览图供 AI 参考
+- 提供 MCP 服务和 CLI 两种使用方式
 
 ## 使用方法
 
-### 1. 配置 MCP 客户端
+### 方式一：CLI 直接使用
 
-配置为本地 MCP 服务，具体配置方式参考各工具配置 MCP 的文档。
+结合`npx`使用：
+
+```bash
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
+```
+
+#### 命令选项
+
+| 选项                    | 缩写 | 说明                                         |
+| ----------------------- | ---- | -------------------------------------------- |
+| `-p, --path <PATH>`     | `-p` | Sketch HTML zip 压缩包路径（**必填**）       |
+| `--pid, --page-id`      |      | 页面 ID                                      |
+| `--pn, --page-name`     |      | 页面名称                                     |
+| `--aid, --artboard-id`  |      | 画板 ID                                      |
+| `--an, --artboard-name` |      | 画板名称                                     |
+| `-r, --rect`            | `-r` | 指定解析矩形区域，格式：`[x,y,width,height]` |
+| `--ap, --assets-path`   |      | 切图存放路径，默认 `src/assets/sketch`       |
+| `--sr, --save-result`   |      | 是否保存分析结果到本地文件，默认 `true`      |
+
+#### CLI 示例
+
+**若参数带空格，需使用引号括起来**
+
+```bash
+# 分析 zip 中第一个页面第一个画板
+npx -y mcp-sketch sketch-cli analyze -p "/path/to/export .zip"
+
+# 分析指定页面
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页
+
+# 分析指定页面指定画板
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用户管理
+
+# 分析指定区域
+npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"
+```
+
+### 方式二：MCP 服务
+
+配置为本地 MCP 服务，让 AI 工具直接调用。
 
 - `opencode`：
 
@@ -51,7 +91,7 @@
 }
 ```
 
-### 2. 调用工具
+### MCP 工具参数
 
 使用 `sketch_html_analyze` 工具分析从 Sketch 导出的 HTML zip 压缩包：
 
@@ -64,15 +104,15 @@
 | artboard_name | string   | 否   | 画板名称                                                                                              |
 | rect          | number[] | 否   | 指定解析矩形区域，格式为 `[x, y, width, height]`（x, y 为左上角坐标，width, height 为矩形宽度和高度） |
 | assets_path   | string   | 否   | 切图存放路径，默认 `src/assets/sketch`                                                                |
-| saveResult    | boolean  | 否   | 是否保存分析结果到本地文件，默认 `true`                                                               |
+| save_result   | boolean  | 否   | 是否保存分析结果到本地文件，默认 `true`                                                               |
 
-### 选择优先级
+#### 选择优先级
 
 - **page**: `page_id` > `page_name` > 第一个 page
 - **artboard**: `artboard_id` > `artboard_name` > 第一个 artboard
 - **rect**: 指定解析矩形区域，过滤规则是只要元素的`x,y`在矩形内，就会被解析。
 
-### 返回结果
+#### 返回结果
 
 工具会返回文本：`Sketch Structure JSON: {解析结果}\nSketch Preview Image: {预览图路径}`
 
@@ -80,7 +120,7 @@
   - **meta**: 描述信息
   - **artboard**: 画板数据，包含图层、样式、图片等信息
 
-### 示例
+#### MCP 调用示例
 
 - 分析 Sketch HTML zip 压缩包中第一个页面第一个画板：
 

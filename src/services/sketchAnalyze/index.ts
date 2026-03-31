@@ -48,7 +48,7 @@ export async function handleSketchAnalyze(args: InputSchema) {
       layers: result.layers
     }
 
-    if (args.saveResult ?? true) {
+    if (args.save_result ?? true) {
       const parsed = path.parse(args.file_path)
       const targetPath = `${parsed.dir}/${parsed.name}/${nodeInfo.pageId}_${nodeInfo.artboardId}_${nodeInfo.nodeId ? nodeInfo.nodeId : 'all'}.json`
       await writeJsonFile(targetPath, prompt)

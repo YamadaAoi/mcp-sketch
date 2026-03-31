@@ -5,10 +5,11 @@ Guidelines for AI agents working in this repository.
 ## Project Overview
 
 - **Name**: mcp-sketch
-- **Type**: Local MCP server for parsing Sketch exported HTML zip archives
-- **Language**: TypeScript (ESM, Node.js 18+)
+- **Type**: MCP server + CLI for analyzing Sketch exported HTML zip archives
+- **Language**: TypeScript (ESM, Node.js 18+, target ES2022)
 - **Package Manager**: pnpm
-- **Bundler**: Vite
+- **Bundler**: Vite (SSR mode, two entry points: `mcp.ts` → `mcp.js`, `cli.ts` → `cli.js`)
+- **Bins**: `sketch-cli` (CLI via commander), `mcp-sketch` (MCP server via stdio)
 
 ## Commands
 
@@ -21,8 +22,9 @@ pnpm lint           # ESLint
 pnpm lint:fix       # ESLint with auto-fix
 pnpm format         # Prettier write
 pnpm format:check   # Prettier check
-pnpm test           # Run tests (vitest)
+pnpm test           # Run tests (vitest, interactive by default)
 pnpm test:watch     # Tests in watch mode
+pnpm vitest run     # Run tests once (non-interactive, CI-friendly)
 ```
 
 ### Running a Single Test
@@ -61,10 +63,12 @@ pnpm vitest run --grep "pattern"
 - Path alias: `@/*` → `./src/*`, `@tests` → `./src/tests`
 - Group: external → internal → types
 - Add `.js` extension for external package imports
+- Zod v4: import from `'zod/v4'` (not `'zod'`)
 
 ```typescript
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js'
+import { z } from 'zod/v4'
 import { logger } from '@/utils/logger'
 import type { RegisterToolParams } from '@/types'
 ```
@@ -121,6 +125,7 @@ src/
 - Files: `src/tests/unit/*.test.ts`
 - Fixtures: `src/tests/fixtures/`
 - Config: node env, 10s timeout, threads pool
+- Globals enabled (`describe`, `it`, `expect` available without import)
 - JSON reporter → `test-results/results.json`
 - Import from `vitest`: `describe`, `it`, `expect`, `beforeAll`, `vi`
 
@@ -145,3 +150,5 @@ src/
 - Code comments are in Chinese - this is intentional
 - Use `@sketch-hq/sketch-file-format-ts` types for Sketch file format
 - `cheerio` for HTML parsing, `unzipper` for ZIP handling
+- Vite defines `__VERSION__` from `package.json` version field
+- Vite build uses SSR mode, externals all `node:` and built-in modules
