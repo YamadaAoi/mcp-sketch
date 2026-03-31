@@ -20,24 +20,24 @@ A local tool providing both MCP service and CLI for parsing Sketch exported HTML
 
 ### Method 1: CLI
 
-Use the `sketch-cli` command via npx:
+Use via npx:
 
 ```bash
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
+npx -y mcp-sketch analyze -p /path/to/export.zip
 ```
 
 #### Command Options
 
-| Option                  | Short | Description                                                       |
-| ----------------------- | ----- | ----------------------------------------------------------------- |
-| `-p, --path <PATH>`     | `-p`  | Sketch HTML zip archive path (**required**)                       |
-| `--pid, --page-id`      |       | Page ID                                                           |
-| `--pn, --page-name`     |       | Page name                                                         |
-| `--aid, --artboard-id`  |       | Artboard ID                                                       |
-| `--an, --artboard-name` |       | Artboard name                                                     |
-| `-r, --rect`            | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
-| `--ap, --assets-path`   |       | Assets output path, default: `src/assets/sketch`                  |
-| `--sr, --save-result`   |       | Whether to save analysis result to local file, default: `true`    |
+| Option                   | Short | Description                                                       |
+| ------------------------ | ----- | ----------------------------------------------------------------- |
+| `-p, --file_path <PATH>` | `-p`  | Sketch HTML zip archive path (**required**)                       |
+| `--pid, --page_id`       |       | Page ID                                                           |
+| `--pn, --page_name`      |       | Page name                                                         |
+| `--aid, --artboard_id`   |       | Artboard ID                                                       |
+| `--an, --artboard_name`  |       | Artboard name                                                     |
+| `-r, --rect`             | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
+| `--ap, --assets_path`    |       | Assets output path, default: `src/assets/sketch`                  |
+| `--sr, --save_result`    |       | Whether to save analysis result to local file, default: `true`    |
 
 #### CLI Examples
 
@@ -45,21 +45,21 @@ npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
 
 ```bash
 # Analyze the first artboard of the first page
-npx -y mcp-sketch sketch-cli analyze -p "/path/to/export .zip"
+npx -y mcp-sketch analyze -p "/path/to/export .zip"
 
 # Analyze a specific page
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home
 
 # Analyze a specific artboard on a specific page
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home --an "User Management"
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management"
 
 # Analyze a specific region
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"
 ```
 
 ### Method 2: MCP Service
 
-Configure as a local MCP service for AI tools to call directly.
+**You must set the environment variable `MCP_MODE=1` to enable MCP service**, configure as a local MCP service for AI tools to call directly.
 
 - `opencode`:
 
@@ -71,6 +71,7 @@ Configure as a local MCP service for AI tools to call directly.
       "command": ["npx", "-y", "mcp-sketch"],
       "enabled": true,
       "environment": {
+        "MCP_MODE": "1",
         "LOG_LEVEL": "debug"
       }
     }
@@ -85,7 +86,10 @@ Configure as a local MCP service for AI tools to call directly.
   "mcpServers": {
     "mcp-sketch": {
       "command": "npx",
-      "args": ["-y", "mcp-sketch"]
+      "args": ["-y", "mcp-sketch"],
+      "env": {
+        "MCP_MODE": "1"
+      }
     }
   }
 }

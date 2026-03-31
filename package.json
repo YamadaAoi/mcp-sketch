@@ -1,12 +1,9 @@
 {
   "name": "mcp-sketch",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Analyze Sketch HTML zip files via CLI or MCP. The bridge between your design archives and AI agents.",
   "type": "module",
-  "bin": {
-    "sketch-cli": "dist/cli.js",
-    "mcp-sketch": "dist/mcp.js"
-  },
+  "bin": "dist/index.js",
   "files": [
     "dist"
   ],

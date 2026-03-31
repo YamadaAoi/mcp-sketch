@@ -1,11 +1,9 @@
-#!/usr/bin/env node
-import 'dotenv/config'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { tools } from '@/tools'
 import { logger } from '@/utils/logger'
 
-function main() {
+export function startMcp() {
   const server = new McpServer({
     name: 'sketch-mcp-server',
     version: __VERSION__
@@ -21,5 +19,3 @@ function main() {
     logger.error(error)
   })
 }
-
-main()

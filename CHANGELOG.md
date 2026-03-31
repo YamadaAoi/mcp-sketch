@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.7
+
+### Patch Changes
+
+- 修改cli使用方式
+
 ## 1.0.6
 
 ### Patch Changes

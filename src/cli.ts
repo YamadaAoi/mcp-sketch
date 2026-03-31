@@ -1,14 +1,9 @@
-#!/usr/bin/env node
-import 'dotenv/config'
 import { Command } from 'commander'
 import { analyze } from '@/commands/analyze'
 
-process.on('SIGINT', () => process.exit(0))
-process.on('SIGTERM', () => process.exit(0))
-
-function main() {
+export function startCli() {
   const program = new Command()
-    .name('sketch-cli')
+    .name('mcp-sketch')
     .description('A CLI tool for analyzing Sketch Html zip files')
     .version(__VERSION__, '-v, --version', 'Show version number')
 
@@ -16,5 +11,3 @@ function main() {
 
   program.parse()
 }
-
-main()

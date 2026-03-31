@@ -23,21 +23,21 @@
 结合`npx`使用：
 
 ```bash
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
+npx -y mcp-sketch analyze -p /path/to/export.zip
 ```
 
 #### 命令选项
 
-| 选项                    | 缩写 | 说明                                         |
-| ----------------------- | ---- | -------------------------------------------- |
-| `-p, --path <PATH>`     | `-p` | Sketch HTML zip 压缩包路径（**必填**）       |
-| `--pid, --page-id`      |      | 页面 ID                                      |
-| `--pn, --page-name`     |      | 页面名称                                     |
-| `--aid, --artboard-id`  |      | 画板 ID                                      |
-| `--an, --artboard-name` |      | 画板名称                                     |
-| `-r, --rect`            | `-r` | 指定解析矩形区域，格式：`[x,y,width,height]` |
-| `--ap, --assets-path`   |      | 切图存放路径，默认 `src/assets/sketch`       |
-| `--sr, --save-result`   |      | 是否保存分析结果到本地文件，默认 `true`      |
+| 选项                     | 缩写 | 说明                                         |
+| ------------------------ | ---- | -------------------------------------------- |
+| `-p, --file_path <PATH>` | `-p` | Sketch HTML zip 压缩包路径（**必填**）       |
+| `--pid, --page_id`       |      | 页面 ID                                      |
+| `--pn, --page_name`      |      | 页面名称                                     |
+| `--aid, --artboard_id`   |      | 画板 ID                                      |
+| `--an, --artboard_name`  |      | 画板名称                                     |
+| `-r, --rect`             | `-r` | 指定解析矩形区域，格式：`[x,y,width,height]` |
+| `--ap, --assets_path`    |      | 切图存放路径，默认 `src/assets/sketch`       |
+| `--sr, --save_result`    |      | 是否保存分析结果到本地文件，默认 `true`      |
 
 #### CLI 示例
 
@@ -45,21 +45,21 @@ npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip
 
 ```bash
 # 分析 zip 中第一个页面第一个画板
-npx -y mcp-sketch sketch-cli analyze -p "/path/to/export .zip"
+npx -y mcp-sketch analyze -p "/path/to/export .zip"
 
 # 分析指定页面
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页
 
 # 分析指定页面指定画板
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用户管理
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理
 
 # 分析指定区域
-npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"
+npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"
 ```
 
 ### 方式二：MCP 服务
 
-配置为本地 MCP 服务，让 AI 工具直接调用。
+**必须设置环境变量 `MCP_MODE=1` 才能启用 MCP 服务**，配置为本地 MCP 服务，让 AI 工具直接调用。
 
 - `opencode`：
 
@@ -71,6 +71,7 @@ npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用
       "command": ["npx", "-y", "mcp-sketch"],
       "enabled": true,
       "environment": {
+        "MCP_MODE": "1",
         "LOG_LEVEL": "debug"
       }
     }
@@ -85,7 +86,10 @@ npx -y mcp-sketch sketch-cli analyze -p /path/to/export.zip --pn 首页 --an 用
   "mcpServers": {
     "mcp-sketch": {
       "command": "npx",
-      "args": ["-y", "mcp-sketch"]
+      "args": ["-y", "mcp-sketch"],
+      "env": {
+        "MCP_MODE": "1"
+      }
     }
   }
 }
