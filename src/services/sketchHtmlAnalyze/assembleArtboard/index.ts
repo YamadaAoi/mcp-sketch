@@ -8,7 +8,7 @@ import {
 } from '@/utils/zip'
 import { saveImage } from '@/utils/saveFile'
 import { logger } from '@/utils/logger'
-import { isNumber, roundIfExceeds } from '@/utils/util'
+import { getRect, roundIfExceeds } from '@/utils/util'
 
 function filterLayers(lyr: HtmlLayer) {
   return (
@@ -30,10 +30,16 @@ function filterLayersByRect(
     return (
       lyr.rect?.x !== undefined &&
       lyr.rect?.y !== undefined &&
+      lyr.rect?.width !== undefined &&
+      lyr.rect?.height !== undefined &&
       lyr.rect.x >= rect[0] &&
       lyr.rect.x < rect[0] + rect[2] &&
       lyr.rect.y >= rect[1] &&
       lyr.rect.y < rect[1] + rect[3] &&
+      lyr.rect.x + lyr.rect.width > rect[0] &&
+      lyr.rect.x + lyr.rect.width <= rect[0] + rect[2] &&
+      lyr.rect.y + lyr.rect.height > rect[1] &&
+      lyr.rect.y + lyr.rect.height <= rect[1] + rect[3] &&
       filterLayers(lyr)
     )
   }
@@ -50,15 +56,7 @@ export function assembleArtboard(
 ) {
   const dest = assetsPath ?? 'src/assets/sketch'
   let previewPath = ''
-  let newRect: [number, number, number, number] | undefined
-  if (rect?.length === 4 && rect.every(r => isNumber(r))) {
-    newRect = [
-      Number(rect[0]),
-      Number(rect[1]),
-      Number(rect[2]),
-      Number(rect[3])
-    ]
-  }
+  const newRect = getRect(rect)
   const newArtboard: HtmlSketchArtboard = {
     pageName: artboard.pageName,
     pageObjectID: artboard.pageObjectID,
@@ -95,7 +93,7 @@ export function assembleArtboard(
             if (imageData) {
               const fileName = path.basename(normalizedPath)
               imagePath = path.join(dest, fileName)
-              saveImage(imageData, dest, fileName).catch(error => {
+              saveImage(imageData, imagePath).catch(error => {
                 logger.error(`Failed to save image ${normalizedPath}: ${error}`)
               })
             }

@@ -95,7 +95,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management
 }
 ```
 
-### MCP Tool Parameters
+#### MCP Tool Parameters
 
 Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 
@@ -110,21 +110,7 @@ Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 | assets_path   | string   | No       | Assets output path, default: `src/assets/sketch`                                               |
 | save_result   | boolean  | No       | Whether to save analysis result to local file, default: `true`                                 |
 
-#### Selection Priority
-
-- **page**: `page_id` > `page_name` > first page
-- **artboard**: `artboard_id` > `artboard_name` > first artboard
-- **rect**: Specify a rectangular region to parse. Elements whose `x, y` coordinates fall within the rectangle will be parsed.
-
-#### Return Result
-
-The tool returns text: `Sketch Structure JSON: {analysis result}\nSketch Preview Image: {preview image path}`
-
-- Analysis result
-  - **meta**: Description information
-  - **artboard**: Artboard data, including layers, styles, images, etc.
-
-#### MCP Examples
+#### MCP Call Examples
 
 - Analyze the first artboard of the first page in a Sketch HTML zip archive:
 
@@ -149,6 +135,25 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artbo
 ```
 sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artboard_name: "User Management", rect: [0, 0, 1920, 64] })
 ```
+
+## Selection Priority
+
+- **page**: `page_id` > `page_name` > first page
+- **artboard**: `artboard_id` > `artboard_name` > first artboard
+- **rect**: Specify a rectangular region to parse. The filter rule is: elements will be parsed if their `x, y, x+width, y+height` bounds fall within the rectangle.
+
+## Return Result
+
+The tool returns text: `Sketch Structure JSON: {analysis result} \n Sketch Preview Image: {preview image path}`
+
+- Analysis result
+  - **meta**: Description information
+  - **artboard**: Artboard data, including layers, styles, images, etc.
+- Preview image
+  - Uses `sharp` as an `optionalDependencies` for image processing
+  - If installation fails (extreme cases, as `sharp` depends on `libvips`), the original full artboard image will be returned
+  - If installation succeeds, the image will be resized, cropped to the `rect` region (if specified), and compressed to `webp` format
+  - Only processes the preview image; does not handle Sketch exported assets
 
 ## Output File Location
 

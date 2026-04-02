@@ -39,7 +39,8 @@ export default defineConfig(({ mode }) => {
           'util',
           'http',
           'https',
-          'zlib'
+          'zlib',
+          'sharp'
         ],
         output: {
           preserveModules: false,

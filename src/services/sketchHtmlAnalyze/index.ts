@@ -1,7 +1,7 @@
 import path from 'path'
 import { openSketchHtmlFile } from '@/utils/zip'
-import { saveImage, writeJsonFile } from '@/utils/saveFile'
-import { logger } from '@/utils/logger'
+import { processImage, writeJsonFile } from '@/utils/saveFile'
+import { getRect } from '@/utils/util'
 import type { SketchHtmlInputSchema } from '@/types'
 import { filterArtboards } from './filterArtboards'
 import { assembleArtboard } from './assembleArtboard'
@@ -33,29 +33,35 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
       artboard: assembledArtboard.artboard
     }
 
+    const newRect = getRect(args.rect)
     const parsed = path.parse(args.file_path)
     if (args.save_result ?? true) {
-      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${args.rect?.length === 4 ? `[${args.rect.join(',')}]` : ''}.json`
+      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
       await writeJsonFile(targetPath, prompt)
     }
 
     response = `Sketch Structure JSON: ${JSON.stringify(prompt)}.`
-
-    let previewPath = ''
 
     if (assembledArtboard.previewPath) {
       const imageData = sketchHtmlData.images?.find(item =>
         item.path.endsWith(assembledArtboard.previewPath)
       )?.data
       if (imageData) {
-        const fileName = path.basename(assembledArtboard.previewPath)
-        previewPath = `${parsed.dir}/${parsed.name}/${fileName}`
-        response = `${response}\nSketch Preview Image: ${previewPath}`
-        saveImage(imageData, `${parsed.dir}/${parsed.name}`, fileName).catch(
-          error => {
-            logger.error(`Failed to save image ${previewPath}: ${error}`)
-          }
+        const extname = path.extname(assembledArtboard.previewPath)
+        const fileName = path.basename(assembledArtboard.previewPath, extname)
+        const dest = path.join(
+          parsed.dir,
+          parsed.name,
+          `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${extname}`
         )
+        const imagePath = await processImage(
+          imageData,
+          dest,
+          assembledArtboard.artboard.width,
+          newRect
+        )
+        response = `${response}
+        Sketch Preview Image: ${imagePath}`
       }
     }
   } catch (error) {

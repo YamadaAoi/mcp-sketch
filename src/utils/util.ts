@@ -34,3 +34,18 @@ export function roundIfExceeds(num?: string | number, n = 2) {
     return num
   }
 }
+
+/**
+ * 获取矩形坐标
+ * @param rect - 输入矩形坐标
+ * @returns 处理后的矩形坐标
+ */
+export function getRect(
+  rect?: number[]
+): [number, number, number, number] | undefined {
+  if (rect?.length === 4 && rect.every(r => isNumber(r))) {
+    return [Number(rect[0]), Number(rect[1]), Number(rect[2]), Number(rect[3])]
+  } else {
+    return undefined
+  }
+}

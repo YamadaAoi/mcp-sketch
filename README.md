@@ -95,7 +95,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -
 }
 ```
 
-### MCP 工具参数
+#### MCP 参数
 
 使用 `sketch_html_analyze` 工具分析从 Sketch 导出的 HTML zip 压缩包：
 
@@ -109,20 +109,6 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -
 | rect          | number[] | 否   | 指定解析矩形区域，格式为 `[x, y, width, height]`（x, y 为左上角坐标，width, height 为矩形宽度和高度） |
 | assets_path   | string   | 否   | 切图存放路径，默认 `src/assets/sketch`                                                                |
 | save_result   | boolean  | 否   | 是否保存分析结果到本地文件，默认 `true`                                                               |
-
-#### 选择优先级
-
-- **page**: `page_id` > `page_name` > 第一个 page
-- **artboard**: `artboard_id` > `artboard_name` > 第一个 artboard
-- **rect**: 指定解析矩形区域，过滤规则是只要元素的`x,y`在矩形内，就会被解析。
-
-#### 返回结果
-
-工具会返回文本：`Sketch Structure JSON: {解析结果}\nSketch Preview Image: {预览图路径}`
-
-- 解析结果
-  - **meta**: 描述信息
-  - **artboard**: 画板数据，包含图层、样式、图片等信息
 
 #### MCP 调用示例
 
@@ -149,6 +135,25 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 ```
 sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", artboard_name: "用户管理", rect: [0, 0, 1920, 64] })
 ```
+
+## 参数优先级
+
+- **page**: `page_id` > `page_name` > 第一个 page
+- **artboard**: `artboard_id` > `artboard_name` > 第一个 artboard
+- **rect**: 指定解析矩形区域，过滤规则是只要元素的`x,y,x+width,y+height`在矩形内，就会被解析。
+
+## 返回结果
+
+工具会返回文本：`Sketch Structure JSON: {解析结果} \n Sketch Preview Image: {预览图路径}`
+
+- 解析结果
+  - **meta**: 描述信息
+  - **artboard**: 画板数据，包含图层、样式、图片等信息
+- 预览图路径
+  - 采用`sharp`作为处理图片的`optionalDependencies`
+  - 若安装失败（极端情况，因为`sharp`依赖`libvips`），则会返回原始完整画板图片。
+  - 若安装成功，则会调整尺寸，截取`rect`区域（若指定），压缩为`webp`格式返回。
+  - 仅处理预览图，不会越俎代庖处理`sketch`切图
 
 ## 输出文件位置
 

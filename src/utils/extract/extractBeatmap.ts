@@ -33,7 +33,7 @@ export function extractBeatmap(
     const imageData = images.get(image._ref)
     if (imageData) {
       imagePath = path.join(dest, path.basename(image._ref))
-      saveImage(imageData, dest, path.basename(image._ref)).catch(error => {
+      saveImage(imageData, imagePath).catch(error => {
         logger.error(`Failed to save image ${image._ref}: ${error}`)
       })
     }
@@ -65,7 +65,7 @@ export function extractBeatmap(
       }
 
       imagePath = path.join(dest, fileName)
-      saveImage(imageBuffer, dest, fileName).catch(error => {
+      saveImage(imageBuffer, imagePath).catch(error => {
         logger.error(`Failed to save DataRef image: ${error}`)
       })
     }

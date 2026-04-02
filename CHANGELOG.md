@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.8
+
+### Patch Changes
+
+- 采用sharp处理预览图片，减少tokens消耗量
+
 ## 1.0.7
 
 ### Patch Changes
