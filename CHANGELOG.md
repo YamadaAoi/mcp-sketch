@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.9
+
+### Patch Changes
+
+- 更新文档
+
 ## 1.0.8
 
 ### Patch Changes

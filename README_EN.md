@@ -6,7 +6,7 @@
   <img width="380" height="200" src="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch/badge" />
 </a>
 
-A local tool providing both MCP service and CLI for parsing Sketch exported HTML zip archives and extracting design structure information.
+A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`** exported HTML zip archives and extracting design structure information.
 
 ## Features
 
@@ -165,3 +165,27 @@ The tool returns text: `Sketch Structure JSON: {analysis result} \n Sketch Previ
 - Use multimodal models to read preview images and refine design structure
 - Keep data passed to AI under `50KB` for better analysis accuracy (local JSON files are formatted, data passed to AI is compact)
 - **Use the `rect` parameter to parse specific regions of an artboard for modular development and improved granularity**
+
+### Example
+
+- You can create a markdown description file at the same level as the component to store component description information.
+- Then have the AI read the corresponding markdown file and generate component code based on its content.
+
+```markdown
+# Home Header
+
+## Entry
+
+- `src\components\header\CommonHeader.vue`
+
+## Design
+
+- Use `npx mcp-sketch analyze -h` to view tool parameters and analyze the design, with the following parameters:
+  - file_path: `src\sketch\xxxhtml.zip`
+  - page_name: `Home`
+  - artboard_name: `User Management`
+  - rect: `[0, 0, 1920, 64]`
+  - assets_path: `src\assets\components\header`
+- Combine the JSON and preview image returned by `mcp-sketch analyze`, flexibly use percentage and flex layout (avoid absolute positioning), output high-quality responsive components, ensuring 90% component fidelity
+- List all assets used, prefer CSS background images
+```
