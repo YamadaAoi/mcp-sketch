@@ -25,7 +25,7 @@ npx -y mcp-sketch analyze -h
   - 推断【--an】参数为：`用户管理`
   - 推断【-r】参数为：`[0,0,1920,64]`
   - 推断【--ap】参数为：`src/assets/images`，尝试分析目录绝对路径`/path/to/assets/images`
-  - 调用工具分析文件：`npx -y mcp-sketch analyze -p /path/to/sketch/export.zip --pn 首页 --an 用户管理 --r "[0,0,1920,64]" --ap /path/to/assets/images`
+  - 调用工具分析文件：`npx -y mcp-sketch analyze -p /path/to/sketch/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]" --ap /path/to/assets/images`
 
 ### 3、读取工具返回结果
 

@@ -25,7 +25,7 @@ npx -y mcp-sketch analyze -h
   - Infer 【--an】 parameter as: `User Management`
   - Infer 【-r】 parameter as: `[0,0,1920,64]`
   - Infer 【--ap】 parameter as: `src/assets/images`, try to resolve to absolute path `/path/to/assets/images`
-  - Call tool to analyze file: `npx -y mcp-sketch analyze -p /path/to/sketch/export.zip --pn Home --an "User Management" --r "[0,0,1920,64]" --ap /path/to/assets/images`
+  - Call tool to analyze file: `npx -y mcp-sketch analyze -p /path/to/sketch/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]" --ap /path/to/assets/images`
 
 ### 3. Read tool return results
 
