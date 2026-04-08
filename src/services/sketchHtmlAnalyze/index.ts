@@ -25,22 +25,12 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
       sketchHtmlData.images
     )
 
-    const prompt = {
-      meta: {
-        description:
-          'Design data extracted from Sketch exported HTML. All coordinates are relative to the artboard. Layers are flattened. Refer to the preview image to verify and refine the design structure.'
-      },
-      artboard: assembledArtboard.artboard
-    }
-
     const newRect = getRect(args.rect)
     const parsed = path.parse(args.file_path)
     if (args.save_result ?? true) {
       const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
-      await writeJsonFile(targetPath, prompt)
+      await writeJsonFile(targetPath, assembledArtboard.artboard)
     }
-
-    response = `Sketch Structure JSON: ${JSON.stringify(prompt)}.`
 
     if (assembledArtboard.previewPath) {
       const imageData = sketchHtmlData.images?.find(item =>
@@ -54,16 +44,16 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
           parsed.name,
           `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${extname}`
         )
-        const imagePath = await processImage(
+        assembledArtboard.previewPath = await processImage(
           imageData,
           dest,
           assembledArtboard.artboard.width,
           newRect
         )
-        response = `${response}
-        Sketch Preview Image: ${imagePath}`
       }
     }
+
+    response = JSON.stringify(assembledArtboard)
   } catch (error) {
     response = `Sketch analyze error: ${error instanceof Error ? error.message : 'unknown error'}`
   }

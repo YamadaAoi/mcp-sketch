@@ -144,12 +144,11 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artbo
 
 ## Return Result
 
-The tool returns text: `Sketch Structure JSON: {analysis result} \n Sketch Preview Image: {preview image path}`
+The tool returns text: `{artboard: {parsing result}, previewPath: "preview image path"}`
 
-- Analysis result
-  - **meta**: Description information
-  - **artboard**: Artboard data, including layers, styles, images, etc.
-- Preview image
+- `artboard`
+  - Artboard data, including layers, styles, images, etc.
+- `previewPath`
   - Uses `sharp` as an `optionalDependencies` for image processing
   - If installation fails (extreme cases, as `sharp` depends on `libvips`), the original full artboard image will be returned
   - If installation succeeds, the image will be resized, cropped to the `rect` region (if specified), and compressed to `webp` format
@@ -166,26 +165,6 @@ The tool returns text: `Sketch Structure JSON: {analysis result} \n Sketch Previ
 - Keep data passed to AI under `50KB` for better analysis accuracy (local JSON files are formatted, data passed to AI is compact)
 - **Use the `rect` parameter to parse specific regions of an artboard for modular development and improved granularity**
 
-### Example
+### SKILL
 
-- You can create a markdown description file at the same level as the component to store component description information.
-- Then have the AI read the corresponding markdown file and generate component code based on its content.
-
-```markdown
-# Home Header
-
-## Entry
-
-- `src\components\header\CommonHeader.vue`
-
-## Design
-
-- Use `npx mcp-sketch analyze -h` to view tool parameters and analyze the design, with the following parameters:
-  - file_path: `src\sketch\xxxhtml.zip`
-  - page_name: `Home`
-  - artboard_name: `User Management`
-  - rect: `[0, 0, 1920, 64]`
-  - assets_path: `src\assets\components\header`
-- Combine the JSON and preview image returned by `mcp-sketch analyze`, flexibly use percentage and flex layout (avoid absolute positioning), output high-quality responsive components, ensuring 90% component fidelity
-- List all assets used, prefer CSS background images
-```
+You can use the companion [sketch-html](./skills/sketch-html/SKILL.md) skill to analyze zip files exported from Sketch Meaxure

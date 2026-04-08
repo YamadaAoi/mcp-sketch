@@ -5,15 +5,5 @@
   },
   "permission": {
     "webfetch": "allow"
-  },
-  "mcp": {
-    "mcp-sketch": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-sketch"],
-      "enabled": true,
-      "environment": {
-        "LOG_LEVEL": "debug"
-      }
-    }
   }
 }

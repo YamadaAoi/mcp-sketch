@@ -144,12 +144,11 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 
 ## 返回结果
 
-工具会返回文本：`Sketch Structure JSON: {解析结果} \n Sketch Preview Image: {预览图路径}`
+工具会返回文本：`{artboard: {解析结果}, previewPath: "预览图路径"}`
 
-- 解析结果
-  - **meta**: 描述信息
-  - **artboard**: 画板数据，包含图层、样式、图片等信息
-- 预览图路径
+- `artboard`
+  - 画板数据，包含图层、样式、图片等信息
+- `previewPath`
   - 采用`sharp`作为处理图片的`optionalDependencies`
   - 若安装失败（极端情况，因为`sharp`依赖`libvips`），则会返回原始完整画板图片。
   - 若安装成功，则会调整尺寸，截取`rect`区域（若指定），压缩为`webp`格式返回。
@@ -166,26 +165,6 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 - 解析给 AI的数据量不超过`50KB`以提高 AI 分析准确率（本地存储的 JSON 文件是格式化后的，传递给 AI 的是紧凑格式）
 - **推荐使用 `rect` 参数解析画板中的特定区域，模块化开发，提升颗粒度。**
 
-### 示例
+### SKILL
 
-- 可在相应组件同级位置新建描述markdown文件，用于存储组件的描述信息。
-- 随后让ai读取相应的markdown文件，根据文件内容生成组件的代码。
-
-```markdown
-# 主页header
-
-## 入口
-
-- `src\components\header\CommonHeader.vue`
-
-## 设计图
-
-- 使用`npx mcp-sketch analyze -h`查看工具参数，并调用工具分析设计稿，参数如下：
-  - file_path: `src\sketch\xxxhtml.zip`
-  - page_name: `主页`
-  - artboard_name: `用户管理`
-  - rect: `[0, 0, 1920, 64]`
-  - assets_path: `src\assets\components\header`
-- 结合`mcp-sketch analyze`返回的json和预览图片，灵活运用百分比和flex布局（慎用绝对定位），输出高质量自适应组件，保证90%组件还原度
-- 罗列出所有用到的切图，优先使用css背景图片
-```
+可使用配套的[sketch-html](./skills/sketch-html/SKILL.md)技能分析sketch meaxure导出的zip文件

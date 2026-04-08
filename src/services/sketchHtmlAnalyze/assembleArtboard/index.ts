@@ -111,5 +111,5 @@ export function assembleArtboard(
     previewPath = normalize(artboard.imagePath)
   }
 
-  return { artboard: newArtboard, previewPath }
+  return { previewPath, artboard: newArtboard }
 }

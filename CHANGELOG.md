@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.10
+
+### Patch Changes
+
+- 修改返回值结构，添加适配skills
+
 ## 1.0.9
 
 ### Patch Changes
