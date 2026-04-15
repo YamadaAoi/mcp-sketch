@@ -7,7 +7,9 @@ export function isNumber(val: unknown) {
   if (typeof val === 'number') {
     return !Number.isNaN(val)
   }
-  return typeof val === 'string' && val && !Number.isNaN(Number(val.trim()))
+  return (
+    typeof val === 'string' && !!val.trim() && !Number.isNaN(Number(val.trim()))
+  )
 }
 
 /**
