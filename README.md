@@ -8,6 +8,15 @@
 
 本地工具，提供 MCP 服务和 CLI 两种方式，用于解析 **`Sketch-Meaxure`** 导出的 HTML zip 压缩包并提取设计结构信息。
 
+## SKILL
+
+推荐基于 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，定制自己的版本，分析sketch meaxure导出的zip文件
+
+## 声明
+
+- 为了不迷惑`AI`，本工具过滤了一部分无意义图层，但是不排除过滤掉了一些有效图层的情况
+- 建议和`UI`设计师沟通，复杂的效果尽量切图；简单的效果，设置圆角（`radius`）用于强调，哪怕是`1`
+
 ## 功能
 
 - 解析 Sketch 导出的 HTML zip 压缩包并提取设计结构
@@ -164,7 +173,3 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 - 使用支持多模态的模型，可读取预览图修正设计结构
 - 解析给 AI的数据量不超过`50KB`以提高 AI 分析准确率（本地存储的 JSON 文件是格式化后的，传递给 AI 的是紧凑格式）
 - **推荐使用 `rect` 参数解析画板中的特定区域，模块化开发，提升颗粒度。**
-
-### SKILL
-
-可使用配套的[sketch-html](./skills/sketch-html/SKILL.md)技能分析sketch meaxure导出的zip文件

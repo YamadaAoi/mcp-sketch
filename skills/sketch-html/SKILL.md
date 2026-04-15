@@ -4,7 +4,7 @@ description: When analyzing Sketch Meaxure exported zip files, this skill parses
 metadata:
   author: zhouyinkui
   version: '2026.04.08'
-  source: scripts located at https://github.com/YamadaAoi/mcp-sketch/blob/main/skills/sketch-html
+  source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
 This skill analyzes `zip` files exported from `sketch meaxure` using tools to extract valid layers, slices, and preview images as references for AI to draw the front-end pages.
@@ -31,13 +31,13 @@ npx -y mcp-sketch analyze -h
 
 The tool returns text: `{artboard: {parse result}, previewPath: "preview image path"}`
 
-- `artboard` contains information about artboards and valid layers
+- `artboard` contains artboard and valid layer information
   - Artboards have fixed dimensions; when drawing pages, consider adapting to different screen sizes
   - Each layer's coordinates are relative to the artboard, with 0,0 at the top-left corner, x-axis to the right, y-axis downward
   - List all images in the layers, prefer using CSS background for display
   - Important: Avoid using absolute positioning for page layout; use percentages, flex/grid, etc. to build more robust pages
 - `previewPath`
-  - Recommended to read the preview image to correct design structure
+  - Recommended to read the preview image to correct design structure, verify invalid layers or unmentioned layers in `artboard`
 
 ## Goal
 

@@ -8,6 +8,15 @@
 
 A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`** exported HTML zip archives and extracting design structure information.
 
+## SKILL
+
+You can use the companion [sketch-html](./skills/sketch-html/SKILL.md) skill to analyze zip files exported from Sketch Meaxure
+
+## Disclaimer
+
+- To avoid confusing `AI`, this tool filters out some meaningless layers, but it's possible some valid layers were also filtered out
+- It is recommended to communicate with `UI` designers: complex effects should be exported as images; simple effects should have a `radius` set for emphasis, even if it's just `1`
+
 ## Features
 
 - Parse Sketch exported HTML zip archives and extract design structure
@@ -164,7 +173,3 @@ The tool returns text: `{artboard: {parsing result}, previewPath: "preview image
 - Use multimodal models to read preview images and refine design structure
 - Keep data passed to AI under `50KB` for better analysis accuracy (local JSON files are formatted, data passed to AI is compact)
 - **Use the `rect` parameter to parse specific regions of an artboard for modular development and improved granularity**
-
-### SKILL
-
-You can use the companion [sketch-html](./skills/sketch-html/SKILL.md) skill to analyze zip files exported from Sketch Meaxure

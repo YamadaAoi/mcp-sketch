@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.11
+
+### Patch Changes
+
+- 更新skill和文档
+
 ## 1.0.10
 
 ### Patch Changes
