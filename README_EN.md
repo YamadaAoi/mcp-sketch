@@ -37,7 +37,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip
 | `--an, --artboard_name`  |       | Artboard name                                                     |
 | `-r, --rect`             | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
 | `--ap, --assets_path`    |       | Assets output path, default: `src/assets/sketch`                  |
-| `--sr, --save_result`    |       | Whether to save analysis result to local file, default: `true`    |
+| `--sr, --save_result`    |       | Whether to save analysis result to local file, default: `false`   |
 
 #### CLI Examples
 
@@ -108,7 +108,7 @@ Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 | artboard_name | string   | No       | Artboard name                                                                                  |
 | rect          | number[] | No       | Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner) |
 | assets_path   | string   | No       | Assets output path, default: `src/assets/sketch`                                               |
-| save_result   | boolean  | No       | Whether to save analysis result to local file, default: `true`                                 |
+| save_result   | boolean  | No       | Whether to save analysis result to local file, default: `false`                                |
 
 #### MCP Call Examples
 

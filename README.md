@@ -37,7 +37,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip
 | `--an, --artboard_name`  |      | 画板名称                                     |
 | `-r, --rect`             | `-r` | 指定解析矩形区域，格式：`[x,y,width,height]` |
 | `--ap, --assets_path`    |      | 切图存放路径，默认 `src/assets/sketch`       |
-| `--sr, --save_result`    |      | 是否保存分析结果到本地文件，默认 `true`      |
+| `--sr, --save_result`    |      | 是否保存分析结果到本地文件，默认 `false`     |
 
 #### CLI 示例
 
@@ -108,7 +108,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -
 | artboard_name | string   | 否   | 画板名称                                                                                              |
 | rect          | number[] | 否   | 指定解析矩形区域，格式为 `[x, y, width, height]`（x, y 为左上角坐标，width, height 为矩形宽度和高度） |
 | assets_path   | string   | 否   | 切图存放路径，默认 `src/assets/sketch`                                                                |
-| save_result   | boolean  | 否   | 是否保存分析结果到本地文件，默认 `true`                                                               |
+| save_result   | boolean  | 否   | 是否保存分析结果到本地文件，默认 `false`                                                              |
 
 #### MCP 调用示例
 

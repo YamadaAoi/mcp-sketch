@@ -35,8 +35,8 @@ export const analyze = new Command()
   )
   .option(
     '--sr, --save_result [SAVERESULT]',
-    'Whether to save analysis result to local file, default: `true`',
-    true
+    'Whether to save analysis result to local file, default: `false`',
+    false
   )
   .action((opts: Record<string, unknown>) => {
     handleAnalyze(opts).catch(err => {

@@ -27,7 +27,7 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
 
     const newRect = getRect(args.rect)
     const parsed = path.parse(args.file_path)
-    if (args.save_result ?? true) {
+    if (args.save_result) {
       const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
       await writeJsonFile(targetPath, assembledArtboard.artboard)
     }

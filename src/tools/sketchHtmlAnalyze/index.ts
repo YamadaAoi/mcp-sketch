@@ -21,7 +21,7 @@ const toolName = 'sketch_html_analyze'
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {string} assets_path - 资产文件路径(可选)
- * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认true
+ * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认false
  * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的设计结构json文件作为参考
  */
 async function sketchHtmlAnalyze(
