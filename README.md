@@ -10,7 +10,12 @@
 
 ## SKILL
 
-推荐基于 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，定制自己的版本，分析sketch meaxure导出的zip文件
+- 推荐下载 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，并定制自己的版本，分析**`Sketch-Meaxure`**导出的zip文件
+- 也可以使用`skills`工具下载
+
+```bash
+npx skills@latest add YamadaAoi/mcp-sketch -s sketch-html
+```
 
 ## 声明
 
@@ -175,4 +180,5 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 - **推荐使用 `rect` 参数解析画板中的特定区域，模块化开发，提升颗粒度。**
 
 ## 引导
+
 <img width="359" height="438" alt="example" src="https://github.com/user-attachments/assets/ab7ba022-0cde-4c95-a060-c8f3adae035e" />

@@ -10,7 +10,12 @@ A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`**
 
 ## SKILL
 
-You can use the companion [sketch-html](./skills/sketch-html/SKILL.md) skill to analyze zip files exported from Sketch Meaxure
+- Recommended to download [sketch-html](./skills/sketch-html/SKILL.md) `skill` and customize your own version to analyze zip files exported from **`Sketch-Meaxure`**
+- You can also use the `skills` tool to download
+
+```bash
+npx skills@latest add YamadaAoi/mcp-sketch -s sketch-html
+```
 
 ## Disclaimer
 
@@ -173,3 +178,7 @@ The tool returns text: `{artboard: {parsing result}, previewPath: "preview image
 - Use multimodal models to read preview images and refine design structure
 - Keep data passed to AI under `50KB` for better analysis accuracy (local JSON files are formatted, data passed to AI is compact)
 - **Use the `rect` parameter to parse specific regions of an artboard for modular development and improved granularity**
+
+## Demo
+
+<img width="359" height="438" alt="example" src="https://github.com/user-attachments/assets/ab7ba022-0cde-4c95-a060-c8f3adae035e" />

@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.0.12
+
+### Patch Changes
+
+- readme更新引导
+
 ## 1.0.11
 
 ### Patch Changes
