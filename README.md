@@ -173,3 +173,6 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 - 使用支持多模态的模型，可读取预览图修正设计结构
 - 解析给 AI的数据量不超过`50KB`以提高 AI 分析准确率（本地存储的 JSON 文件是格式化后的，传递给 AI 的是紧凑格式）
 - **推荐使用 `rect` 参数解析画板中的特定区域，模块化开发，提升颗粒度。**
+
+## 引导
+<img width="359" height="438" alt="example" src="https://github.com/user-attachments/assets/ab7ba022-0cde-4c95-a060-c8f3adae035e" />
