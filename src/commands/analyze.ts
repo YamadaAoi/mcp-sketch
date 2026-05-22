@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import {
   handleSketchHtmlAnalyze,
-  sketchHtmlInputSchema
+  sketchAnalyzeInputSchema
 } from '@/services/sketchHtmlAnalyze'
 import { logger } from '@/utils/logger'
 
@@ -12,7 +12,7 @@ async function handleAnalyze(opts: Record<string, unknown>) {
   if (typeof opts.save_result === 'string') {
     opts.save_result = opts.save_result === 'true'
   }
-  const args = sketchHtmlInputSchema.parse(opts)
+  const args = sketchAnalyzeInputSchema.parse(opts)
   const text = await handleSketchHtmlAnalyze(args)
   console.log(text)
 }
@@ -20,7 +20,7 @@ async function handleAnalyze(opts: Record<string, unknown>) {
 export const analyze = new Command()
   .name('analyze')
   .description(
-    'parsing Sketch exported HTML zip archives and extracting design structure information'
+    'parsing Sketch Meaxure exported HTML zip archives and extracting design structure information'
   )
   .option('-p, --file_path <PATH>', 'Sketch HTML zip archive path')
   .option('--pn, --page_name [PAGENAME]', 'Page name')

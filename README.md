@@ -10,11 +10,11 @@
 
 ## SKILL
 
-- 推荐下载 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，并定制自己的版本，分析 **`Sketch-Meaxure`** 导出的zip文件
+- 推荐下载 [sketch-analyze](./skills/sketch-analyze/SKILL.md) `skill`，并定制自己的版本，分析 **`Sketch-Meaxure`** 导出的zip文件
 - 也可以使用`skills`工具下载
 
 ```bash
-npx skills@latest add YamadaAoi/mcp-sketch -s sketch-html
+npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze
 ```
 
 ## 声明

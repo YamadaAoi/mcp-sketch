@@ -10,11 +10,11 @@ A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`**
 
 ## SKILL
 
-- Recommended to download [sketch-html](./skills/sketch-html/SKILL.md) `skill` and customize your own version to analyze zip files exported from **`Sketch-Meaxure`**
+- Recommended to download [sketch-analyze](./skills/sketch-analyze/SKILL.md) `skill` and customize your own version to analyze zip files exported from **`Sketch-Meaxure`**
 - You can also use the `skills` tool to download
 
 ```bash
-npx skills@latest add YamadaAoi/mcp-sketch -s sketch-html
+npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze
 ```
 
 ## Disclaimer

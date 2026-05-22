@@ -1,5 +1,5 @@
-import type { SketchHtmlInputSchema } from '@/types'
 import type { HtmlArtboard } from '@/utils/zip'
+import type { SketchAnalyzeInputSchema } from '..'
 
 /**
  * 筛选出指定的artboard，若未指定节点信息，则返回第一个artboard
@@ -8,7 +8,7 @@ import type { HtmlArtboard } from '@/utils/zip'
  * @returns 指定的artboard
  */
 export function filterArtboards(
-  args: SketchHtmlInputSchema,
+  args: SketchAnalyzeInputSchema,
   artboards?: HtmlArtboard[]
 ) {
   if (!artboards?.length) {

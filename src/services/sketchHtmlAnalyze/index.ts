@@ -10,7 +10,7 @@ import { assembleArtboard } from './assembleArtboard'
 /**
  * 解析sketch html zip文件分析参数
  */
-export const sketchHtmlInputSchema = z.object({
+export const sketchAnalyzeInputSchema = z.object({
   file_path: z.string().describe('sketch html zip file path(required)'),
   page_name: z.string().describe('page name (optional)').optional(),
   artboard_name: z.string().describe('artboard name (optional)').optional(),
@@ -37,7 +37,9 @@ export const sketchHtmlInputSchema = z.object({
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
  * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认false
  */
-export type SketchHtmlInputSchema = SchemaOutput<typeof sketchHtmlInputSchema>
+export type SketchAnalyzeInputSchema = SchemaOutput<
+  typeof sketchAnalyzeInputSchema
+>
 
 /**
  * 分析sketch html zip文件，提取指定节点数据，存储到指定位置json文件中，返回json文件位置
@@ -45,7 +47,7 @@ export type SketchHtmlInputSchema = SchemaOutput<typeof sketchHtmlInputSchema>
  * @param args 分析参数
  * @returns json文件位置
  */
-export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
+export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
   let response = ''
 
   try {
@@ -88,7 +90,7 @@ export async function handleSketchHtmlAnalyze(args: SketchHtmlInputSchema) {
 
     response = JSON.stringify(assembledArtboard)
   } catch (error) {
-    response = `Sketch analyze error: ${error instanceof Error ? error.message : 'unknown error'}`
+    response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
   }
 
   return response

@@ -1,5 +1,5 @@
 ---
-name: sketch-html
+name: sketch-analyze
 description: 当需要分析sketch meaxure导出的zip文件，该技能会解析并提取出有效图层，切图和预览图。
 metadata:
   author: zhouyinkui
@@ -9,15 +9,27 @@ metadata:
 
 此技能旨在使用工具分析`sketch meaxure`导出的`zip`文件，提取出有效图层，切图和预览图，作为`ai`绘制前端页面的参考。
 
-## 步骤
+## 工具介绍
 
-### 1、调用帮助命令查看工具使用方法
+```shell
+$ npx -y mcp-sketch analyze -h
 
-```bash
-npx -y mcp-sketch analyze -h
+Usage: mcp-sketch analyze [options]
+
+parsing Sketch Meaxure exported HTML zip archives and extracting design structure information
+
+Options:
+  -p, --file_path <PATH>                Sketch HTML zip archive path
+  --pn, --page_name [PAGENAME]          Page name
+  --an, --artboard_name [ARTBOARDNAME]  Artboard name
+  -r, --rect [RECT]                     Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner)
+  --ap, --assets_path [ASSETSPATH]      Assets output path, default: `src/assets/sketch`
+  --sr, --save_result [SAVERESULT]      Whether to save analysis result to local file, default: `false` (default: false)
 ```
 
-### 2、根据用户输入，推断并组装用户提及的参数，调用工具分析文件
+## 步骤
+
+### 1、根据用户输入，推断并组装用户提及的参数，调用工具分析文件
 
 - 例：`分析sketch meaxure导出的设计稿src/sketch/export.zip里的首页-用户管理画板头部[0,0,1920,64]，切图存到src/assets/images`
   - 推断【-p】参数为：`src/sketch/export.zip`，尝试分析文件绝对路径`/path/to/sketch/export.zip`
@@ -27,7 +39,7 @@ npx -y mcp-sketch analyze -h
   - 推断【--ap】参数为：`src/assets/images`，尝试分析目录绝对路径`/path/to/assets/images`
   - 调用工具分析文件：`npx -y mcp-sketch analyze -p /path/to/sketch/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]" --ap /path/to/assets/images`
 
-### 3、读取工具返回结果
+### 2、读取工具返回结果
 
 工具会返回文本：`{artboard: {解析结果}, previewPath: "预览图路径"}`
 

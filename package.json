@@ -8,7 +8,6 @@
     "dist",
     "LICENSE",
     "README.md",
-    "README_EN.md",
     "package.json"
   ],
   "scripts": {

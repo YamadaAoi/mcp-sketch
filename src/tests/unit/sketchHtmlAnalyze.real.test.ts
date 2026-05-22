@@ -2,8 +2,10 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import { handleSketchHtmlAnalyze } from '@/services/sketchHtmlAnalyze/index'
-import type { SketchHtmlInputSchema } from '@/types'
+import {
+  handleSketchHtmlAnalyze,
+  type SketchAnalyzeInputSchema
+} from '@/services/sketchHtmlAnalyze/index'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,7 +27,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should parse sketch html file and generate json', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath
     }
 
@@ -38,7 +40,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should filter by page_name and generate correct json', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       page_name: '页面 1'
     }
@@ -51,7 +53,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should filter by artboard_name', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       artboard_name: '00 _登录页'
     }
@@ -64,7 +66,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should return error for invalid page_name', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       page_name: 'NonExistentPage'
     }
@@ -75,7 +77,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should return error for invalid artboard_name', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       artboard_name: 'NonExistentArtboard'
     }
@@ -86,7 +88,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should include preview image when available', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       artboard_name: '00 _登录页'
     }
@@ -99,7 +101,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should generate correct json content', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       artboard_name: '00 _登录页'
     }
@@ -126,7 +128,7 @@ describe('handleSketchHtmlAnalyze real file test', () => {
   })
 
   it('should extract layer assets correctly', async () => {
-    const args: SketchHtmlInputSchema = {
+    const args: SketchAnalyzeInputSchema = {
       file_path: sketchHtmlFilePath,
       artboard_name: '00 _登录页'
     }
