@@ -1,6 +1,8 @@
 import { Command } from 'commander'
-import { sketchHtmlInputSchema } from '@/types'
-import { handleSketchHtmlAnalyze } from '@/services/sketchHtmlAnalyze'
+import {
+  handleSketchHtmlAnalyze,
+  sketchHtmlInputSchema
+} from '@/services/sketchHtmlAnalyze'
 import { logger } from '@/utils/logger'
 
 async function handleAnalyze(opts: Record<string, unknown>) {
