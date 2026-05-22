@@ -21,9 +21,7 @@ export const analyze = new Command()
     'parsing Sketch exported HTML zip archives and extracting design structure information'
   )
   .option('-p, --file_path <PATH>', 'Sketch HTML zip archive path')
-  .option('--pid, --page_id [PAGEID]', 'Page ID')
   .option('--pn, --page_name [PAGENAME]', 'Page name')
-  .option('--aid, --artboard_id [ARTBOARDID]', 'Artboard ID')
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .option(
     '-r, --rect [RECT]',

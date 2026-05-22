@@ -45,9 +45,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip
 | Option                   | Short | Description                                                       |
 | ------------------------ | ----- | ----------------------------------------------------------------- |
 | `-p, --file_path <PATH>` | `-p`  | Sketch HTML zip archive path (**required**)                       |
-| `--pid, --page_id`       |       | Page ID                                                           |
 | `--pn, --page_name`      |       | Page name                                                         |
-| `--aid, --artboard_id`   |       | Artboard ID                                                       |
 | `--an, --artboard_name`  |       | Artboard name                                                     |
 | `-r, --rect`             | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
 | `--ap, --assets_path`    |       | Assets output path, default: `src/assets/sketch`                  |
@@ -116,9 +114,7 @@ Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
 | Parameter     | Type     | Required | Description                                                                                    |
 | ------------- | -------- | -------- | ---------------------------------------------------------------------------------------------- |
 | file_path     | string   | Yes      | Sketch HTML zip archive path                                                                   |
-| page_id       | string   | No       | Page ID                                                                                        |
 | page_name     | string   | No       | Page name                                                                                      |
-| artboard_id   | string   | No       | Artboard ID                                                                                    |
 | artboard_name | string   | No       | Artboard name                                                                                  |
 | rect          | number[] | No       | Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner) |
 | assets_path   | string   | No       | Assets output path, default: `src/assets/sketch`                                               |
@@ -152,8 +148,8 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artbo
 
 ## Selection Priority
 
-- **page**: `page_id` > `page_name` > first page
-- **artboard**: `artboard_id` > `artboard_name` > first artboard
+- **page**: `page_name` > first page
+- **artboard**: `artboard_name` > first artboard
 - **rect**: Specify a rectangular region to parse. The filter rule is: elements will be parsed if their `x, y, x+width, y+height` bounds fall within the rectangle.
 
 ## Return Result

@@ -10,7 +10,7 @@
 
 ## SKILL
 
-- 推荐下载 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，并定制自己的版本，分析**`Sketch-Meaxure`**导出的zip文件
+- 推荐下载 [sketch-html](./skills/sketch-html/SKILL.md) `skill`，并定制自己的版本，分析 **`Sketch-Meaxure`** 导出的zip文件
 - 也可以使用`skills`工具下载
 
 ```bash
@@ -45,9 +45,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip
 | 选项                     | 缩写 | 说明                                         |
 | ------------------------ | ---- | -------------------------------------------- |
 | `-p, --file_path <PATH>` | `-p` | Sketch HTML zip 压缩包路径（**必填**）       |
-| `--pid, --page_id`       |      | 页面 ID                                      |
 | `--pn, --page_name`      |      | 页面名称                                     |
-| `--aid, --artboard_id`   |      | 画板 ID                                      |
 | `--an, --artboard_name`  |      | 画板名称                                     |
 | `-r, --rect`             | `-r` | 指定解析矩形区域，格式：`[x,y,width,height]` |
 | `--ap, --assets_path`    |      | 切图存放路径，默认 `src/assets/sketch`       |
@@ -116,9 +114,7 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -
 | 参数          | 类型     | 必填 | 说明                                                                                                  |
 | ------------- | -------- | ---- | ----------------------------------------------------------------------------------------------------- |
 | file_path     | string   | 是   | Sketch HTML zip 压缩包路径                                                                            |
-| page_id       | string   | 否   | 页面 ID                                                                                               |
 | page_name     | string   | 否   | 页面名称                                                                                              |
-| artboard_id   | string   | 否   | 画板 ID                                                                                               |
 | artboard_name | string   | 否   | 画板名称                                                                                              |
 | rect          | number[] | 否   | 指定解析矩形区域，格式为 `[x, y, width, height]`（x, y 为左上角坐标，width, height 为矩形宽度和高度） |
 | assets_path   | string   | 否   | 切图存放路径，默认 `src/assets/sketch`                                                                |
@@ -152,8 +148,8 @@ sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "首页", art
 
 ## 参数优先级
 
-- **page**: `page_id` > `page_name` > 第一个 page
-- **artboard**: `artboard_id` > `artboard_name` > 第一个 artboard
+- **page**: `page_name` > 第一个 page
+- **artboard**: `artboard_name` > 第一个 artboard
 - **rect**: 指定解析矩形区域，过滤规则是只要元素的`x,y,x+width,y+height`在矩形内，就会被解析。
 
 ## 返回结果

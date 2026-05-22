@@ -15,27 +15,19 @@ export function filterArtboards(
     throw new Error(`Sketch Html Artboard format error`)
   }
   let filteredArtboards = [...artboards]
-  if (args.page_id) {
-    filteredArtboards = filteredArtboards.filter(
-      item => item.pageObjectID === args.page_id
-    )
-  } else if (args.page_name) {
+  if (args.page_name) {
     filteredArtboards = filteredArtboards.filter(
       item => item.pageName === args.page_name
     )
   }
-  if (args.artboard_id) {
-    filteredArtboards = filteredArtboards.filter(
-      item => item.objectID === args.artboard_id
-    )
-  } else if (args.artboard_name) {
+  if (args.artboard_name) {
     filteredArtboards = filteredArtboards.filter(
       item => item.name === args.artboard_name
     )
   }
 
   if (!filteredArtboards.length) {
-    throw new Error(`Sketch Html Artboard ${args.artboard_id} not found`)
+    throw new Error(`Sketch Html Artboard ${args.artboard_name} not found`)
   }
 
   return filteredArtboards[0]
