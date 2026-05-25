@@ -32,7 +32,7 @@ Options:
 ### 1、根据用户输入，推断并组装用户提及的参数，调用工具分析文件
 
 - 例：`分析sketch meaxure导出的设计稿src/sketch/export.zip里的首页-用户管理画板头部[0,0,1920,64]，切图存到src/assets/images`
-  - 推断【-p】参数为：`src/sketch/export.zip`，尝试分析文件绝对路径`/path/to/sketch/export.zip`
+  - 推断【-p】参数为：`src/sketch/export.zip`，尝试获取文件绝对路径`/path/to/sketch/export.zip`
   - 推断【--pn】参数为：`首页`
   - 推断【--an】参数为：`用户管理`
   - 推断【-r】参数为：`[0,0,1920,64]`

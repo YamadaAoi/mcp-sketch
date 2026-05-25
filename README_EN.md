@@ -2,10 +2,6 @@
 
 [中文](./README.md) | English
 
-<a href="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/YamadaAoi/mcp-sketch/badge" />
-</a>
-
 A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`** exported HTML zip archives and extracting design structure information.
 
 ## SKILL
