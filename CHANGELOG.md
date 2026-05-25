@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.1.1
+
+### Patch Changes
+
+- 修改skill
+
 ## 1.1.0
 
 ### Minor Changes
