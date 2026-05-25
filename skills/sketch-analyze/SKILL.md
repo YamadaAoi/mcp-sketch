@@ -1,13 +1,13 @@
 ---
 name: sketch-analyze
-description: 当需要分析sketch meaxure导出的zip文件，该技能会解析并提取出有效图层，切图和预览图。
+description: 当需要根据sketch设计稿zip里的画板绘制页面时，该技能会解析并提取出有效图层，切图和预览图供AI参考
 metadata:
   author: zhouyinkui
   version: '2026.04.08'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
-此技能旨在使用工具分析`sketch meaxure`导出的`zip`文件，提取出有效图层，切图和预览图，作为`ai`绘制前端页面的参考。
+此技能旨在使用工具分析`sketch meaxure`导出的`zip`文件，提取出有效图层，切图和预览图，作为`ai`绘制前端页面的参考
 
 ## 工具介绍
 
@@ -31,7 +31,7 @@ Options:
 
 ### 1、根据用户输入，推断并组装用户提及的参数，调用工具分析文件
 
-- 例：`分析sketch meaxure导出的设计稿src/sketch/export.zip里的首页-用户管理画板头部[0,0,1920,64]，切图存到src/assets/images`
+- 例：`绘制sketch设计稿src/sketch/export.zip里的 首页 - 用户管理 画板头部[0,0,1920,64]，切图存到src/assets/images`
   - 推断【-p】参数为：`src/sketch/export.zip`，尝试获取文件绝对路径`/path/to/sketch/export.zip`
   - 推断【--pn】参数为：`首页`
   - 推断【--an】参数为：`用户管理`
