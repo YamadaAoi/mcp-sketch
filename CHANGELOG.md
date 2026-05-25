@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.1.0
+
+### Minor Changes
+
+- 添加plan工具；移除参数里的page_id和artboard_id
+
 ## 1.0.12
 
 ### Patch Changes
