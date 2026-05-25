@@ -2,74 +2,59 @@
 
 [中文](./README.md) | English
 
-A local tool providing both MCP service and CLI for parsing **`Sketch-Meaxure`** exported HTML zip archives and extracting design structure information.
-
-## SKILL
-
-- Recommended to download [sketch-analyze](./skills/sketch-analyze/SKILL.md) `skill` and customize your own version to analyze zip files exported from **`Sketch-Meaxure`**
-- You can also use the `skills` tool to download
-
-```bash
-npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze
-```
-
 ## Disclaimer
 
-- To avoid confusing `AI`, this tool filters out some meaningless layers, but it's possible some valid layers were also filtered out
-- It is recommended to communicate with `UI` designers: complex effects should be exported as images; simple effects should have a `radius` set for emphasis, even if it's just `1`
+- Some meaningless layers are filtered out to avoid confusing AI, but valid layers may also be filtered
+- Recommend communicating with designers: export complex effects as images, set `radius` (even 1) for simple effects
 
-## Features
+## Tools
 
-- Parse Sketch exported HTML zip archives and extract design structure
-  - Filter by page and artboard
-  - Specify rectangular region for parsing
-  - Output design structure JSON and preview images for AI reference
-- Available as both MCP service and CLI
+### plan
 
-## Usage
+Lightweight plan: return preview image path and basic artboard info (width, height, name), no layer details.
 
-### Method 1: CLI
+CLI: `npx -y mcp-sketch plan [options]`
+MCP: `sketch_html_plan`
 
-Use via npx:
+| Parameter     | CLI Flag                 | MCP Parameter | Required | Description |
+| ------------- | ------------------------ | ------------- | -------- | ----------- |
+| zip path      | `-p, --file_path <PATH>` | file_path     | yes      |             |
+| page name     | `--pn, --page_name`      | page_name     | no       |             |
+| artboard name | `--an, --artboard_name`  | artboard_name | no       |             |
 
-```bash
-npx -y mcp-sketch analyze -p /path/to/export.zip
-```
+Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
 
-#### Command Options
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-plan`
 
-| Option                   | Short | Description                                                       |
-| ------------------------ | ----- | ----------------------------------------------------------------- |
-| `-p, --file_path <PATH>` | `-p`  | Sketch HTML zip archive path (**required**)                       |
-| `--pn, --page_name`      |       | Page name                                                         |
-| `--an, --artboard_name`  |       | Artboard name                                                     |
-| `-r, --rect`             | `-r`  | Specify rectangular region to parse, format: `[x,y,width,height]` |
-| `--ap, --assets_path`    |       | Assets output path, default: `src/assets/sketch`                  |
-| `--sr, --save_result`    |       | Whether to save analysis result to local file, default: `false`   |
+- With skill: AI decomposes the artboard into components, plans directory structure, creates component docs.
 
-#### CLI Examples
+### analyze
 
-**If the parameter contains spaces, wrap it in quotes**
+Full parse: extract layer structure, styles, assets, output design JSON + preview image.
 
-```bash
-# Analyze the first artboard of the first page
-npx -y mcp-sketch analyze -p "/path/to/export .zip"
+CLI: `npx -y mcp-sketch analyze [options]`
+MCP: `sketch_html_analyze`
 
-# Analyze a specific page
-npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home
+| Parameter     | CLI Flag                 | MCP Parameter | Required | Description                              |
+| ------------- | ------------------------ | ------------- | -------- | ---------------------------------------- |
+| zip path      | `-p, --file_path <PATH>` | file_path     | yes      |                                          |
+| page name     | `--pn, --page_name`      | page_name     | no       |                                          |
+| artboard name | `--an, --artboard_name`  | artboard_name | no       |                                          |
+| rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                  |
+| assets path   | `--ap, --assets_path`    | assets_path   | no       | default `src/assets/sketch`              |
+| save result   | `--sr, --save_result`    | save_result   | no       | save JSON alongside zip, default `false` |
 
-# Analyze a specific artboard on a specific page
-npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management"
+Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
-# Analyze a specific region
-npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"
-```
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze`
 
-### Method 2: MCP Service
+- With skill: AI auto-infers parameters, calls the tool, reads preview to refine structure, outputs high-fidelity pages.
 
-**You must set the environment variable `MCP_MODE=1` to enable MCP service**, configure as a local MCP service for AI tools to call directly.
+## MCP Configuration
 
-- `opencode`:
+Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local MCP service:
+
+- **opencode**
 
 ```json
 {
@@ -78,16 +63,13 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management
       "type": "local",
       "command": ["npx", "-y", "mcp-sketch"],
       "enabled": true,
-      "environment": {
-        "MCP_MODE": "1",
-        "LOG_LEVEL": "debug"
-      }
+      "environment": { "MCP_MODE": "1", "LOG_LEVEL": "debug" }
     }
   }
 }
 ```
 
-- `Trae`:
+- **Trae / other compatible tools**
 
 ```json
 {
@@ -95,81 +77,40 @@ npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management
     "mcp-sketch": {
       "command": "npx",
       "args": ["-y", "mcp-sketch"],
-      "env": {
-        "MCP_MODE": "1"
-      }
+      "env": { "MCP_MODE": "1" }
     }
   }
 }
-```
-
-#### MCP Tool Parameters
-
-Use the `sketch_html_analyze` tool to analyze Sketch exported HTML zip archives:
-
-| Parameter     | Type     | Required | Description                                                                                    |
-| ------------- | -------- | -------- | ---------------------------------------------------------------------------------------------- |
-| file_path     | string   | Yes      | Sketch HTML zip archive path                                                                   |
-| page_name     | string   | No       | Page name                                                                                      |
-| artboard_name | string   | No       | Artboard name                                                                                  |
-| rect          | number[] | No       | Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner) |
-| assets_path   | string   | No       | Assets output path, default: `src/assets/sketch`                                               |
-| save_result   | boolean  | No       | Whether to save analysis result to local file, default: `false`                                |
-
-#### MCP Call Examples
-
-- Analyze the first artboard of the first page in a Sketch HTML zip archive:
-
-```
-sketch_html_analyze({ file_path: "/path/to/export.zip" })
-```
-
-- Analyze the first artboard of a specific page:
-
-```
-sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home" })
-```
-
-- Analyze a specific artboard of a specific page:
-
-```
-sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artboard_name: "User Management" })
-```
-
-- Analyze a specific region of a specific artboard, e.g., the top navigation bar:
-
-```
-sketch_html_analyze({ file_path: "/path/to/export.zip", page_name: "Home", artboard_name: "User Management", rect: [0, 0, 1920, 64] })
 ```
 
 ## Selection Priority
 
 - **page**: `page_name` > first page
 - **artboard**: `artboard_name` > first artboard
-- **rect**: Specify a rectangular region to parse. The filter rule is: elements will be parsed if their `x, y, x+width, y+height` bounds fall within the rectangle.
+- **rect** (analyze only): filter rule — element is parsed only if its `x, y, x+width, y+height` bounds are fully inside the rect
 
 ## Return Result
 
-The tool returns text: `{artboard: {parsing result}, previewPath: "preview image path"}`
+### analyze
 
-- `artboard`
-  - Artboard data, including layers, styles, images, etc.
-- `previewPath`
-  - Uses `sharp` as an `optionalDependencies` for image processing
-  - If installation fails (extreme cases, as `sharp` depends on `libvips`), the original full artboard image will be returned
-  - If installation succeeds, the image will be resized, cropped to the `rect` region (if specified), and compressed to `webp` format
-  - Only processes the preview image; does not handle Sketch exported assets
+`{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
+
+Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips issue), the original full artboard image is returned. If installed, the image is resized, cropped to `rect` (if specified), and compressed to webp. Only processes preview image, not assets.
+
+### plan
+
+`{ previewPath, filePath, pageName, artboardName, width, height }`
 
 ## Output File Location
 
-- Extracted assets are saved to `src/assets/sketch/` by default (customizable via `assets_path`)
-- Parsed design content is saved to a local JSON file (for manual review), stored in a folder with the same name as the zip file
+- Assets: default `src/assets/sketch/` (customizable via `assets_path`)
+- JSON result: saved in a directory named after the zip file
 
 ## Recommendations
 
 - Use multimodal models to read preview images and refine design structure
-- Keep data passed to AI under `50KB` for better analysis accuracy (local JSON files are formatted, data passed to AI is compact)
-- **Use the `rect` parameter to parse specific regions of an artboard for modular development and improved granularity**
+- Keep data passed to AI under 50KB for better accuracy (local JSON is formatted, data sent to AI is compact)
+- **Use `rect` parameter for modular parsing of specific artboard regions**
 
 ## Demo
 

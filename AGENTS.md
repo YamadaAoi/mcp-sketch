@@ -4,44 +4,50 @@ Quick reference for AI agents in this repo. See `opencode.json` for OpenCode-spe
 
 ## Project
 
-- **Type**: MCP server + CLI for analyzing Sketch exported HTML zip archives
-- **Lang**: TypeScript (ESM, Node.js 18+, target ES2022)
-- **Pkg**: pnpm | **Build**: Vite (SSR mode, single output `dist/index.js`)
-- **Bins**: `sketch-cli` (CLI), `mcp-sketch` (MCP via stdio)
+- **Type**: MCP server + CLI for analyzing Sketch-Meaxure exported HTML zip archives
+- **Lang**: TypeScript (ESM, ES2022, Node.js 18+)
+- **Pkg**: pnpm | **Build**: Vite SSR → single ESM output `dist/index.js`
+- **Bins**: `mcp-sketch` (npm package), `sketch-cli` (package.json bin)
 
 ## Commands
 
-| Command                                      | Note                                 |
-| -------------------------------------------- | ------------------------------------ |
-| `pnpm build`                                 | vite build + tsc --noEmit            |
-| `pnpm dev`                                   | Build + start CLI server             |
-| `pnpm typecheck && pnpm lint`                | Pre-commit checks                    |
-| `pnpm vitest run`                            | Run tests once (non-interactive, CI) |
-| `pnpm test`                                  | Interactive watch mode (default)     |
-| `pnpm vitest run src/tests/unit/foo.test.ts` | Single test file                     |
+| Command                                                         | Note                                      |
+| --------------------------------------------------------------- | ----------------------------------------- |
+| `pnpm build`                                                    | Vite build + `tsc --noEmit`               |
+| `pnpm dev`                                                      | Build + start CLI                         |
+| `pnpm typecheck`                                                | `tsc --noEmit`                            |
+| `pnpm lint`                                                     | ESLint (excludes `src/tests/**`, `*.js`)  |
+| `pnpm format` / `format:check`                                  | Prettier write/check on `src/**/*.ts`     |
+| `pnpm test`                                                     | Vitest single run (watch:false in config) |
+| `pnpm test:watch`                                               | Vitest watch mode                         |
+| `pnpm vitest run src/tests/unit/sketchHtmlAnalyze.real.test.ts` | Single test file                          |
+| `pnpm csadd` → `pnpm csver` → `pnpm release`                    | Changesets release flow                   |
 
 ## Architecture
 
 - **Entry**: `src/index.ts` → detects `MCP_MODE` env var to switch between CLI (`src/cli.ts`) and MCP (`src/mcp.ts`)
-- **Tools**: `src/tools/index.ts` exports `RegisterToolParams[]` array
-- **Services**: `src/services/sketchHtmlAnalyze/` contains business logic
-- **Tests**: `src/tests/unit/*.test.ts`, fixtures in `src/tests/fixtures/`
+- **CLI subcommands** (commander): `analyze` (full parse) and `plan` (preview + metadata)
+- **MCP tools** (both in `src/tools/index.ts`): `sketch_html_analyze` and `sketch_html_plan`
+- **Services**: `src/services/sketchHtmlAnalyze/` (full analysis) and `src/services/sketchHtmlPlan/` (lightweight plan). `filterArtboards` is shared from `sketchHtmlAnalyze`.
+- **Utils**: `src/utils/` — zip handling, image processing (sharp, optional), pino logger, file saving
 
 ## Key Conventions
 
-- Path alias: `@/*` → `./src/*`
+- Path alias: `@/*` → `./src/*` (also `@tests/*` for vitest)
 - Zod v4: import from `'zod/v4'` (not `'zod'`)
-- Logs to stderr (stdout reserved for MCP protocol)
+- Logs to stderr via pino (stdout reserved for MCP JSON-RPC)
 - Code comments in Chinese (intentional)
+- Prettier: no semi, single quotes, trailingComma none, arrowParens avoid, printWidth 80
+- Pre-commit: `lint-staged` (prettier all, eslint --fix on `*.ts`)
 
-## Build & Release
+## Testing Quirks
 
-- Pre-commit: `simple-git-hooks` + `lint-staged` (prettier all, eslint fix \*.ts)
-- Release: `pnpm csadd` → `pnpm csver` → `pnpm release` (Changesets)
+- Single test file: `src/tests/unit/sketchHtmlAnalyze.real.test.ts` — the `.real` suffix signals it requires a real Sketch-Meaxure zip fixture
+- Fixture expected at `src/tests/fixtures/登录 2html.zip` — **not included in the repo**; tests will fail without it
+- `tsconfig.json` excludes `src/tests/**` from typecheck; `eslint.config.js` also excludes test files
 
-## Dependencies
+## Gotchas
 
-- MCP SDK: `@modelcontextprotocol/sdk`
-- HTML parsing: `cheerio`
-- ZIP handling: `unzipper`
-- Sketch types: `@sketch-hq/sketch-file-format-ts`
+- `sharp` is an optional dependency — if it fails to install (libvips), image processing falls back to the original full image
+- `pnpm build` runs both vite build and `tsc --noEmit`; type errors block the build
+- `.env` file sets `LOG_LEVEL=debug` by default

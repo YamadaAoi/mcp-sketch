@@ -47,8 +47,8 @@ export async function handleSketchHtmlPlan(args: SketchPlanInputSchema) {
         response = JSON.stringify({
           previewPath,
           filePath: args.file_path,
-          page_name: targetArtboard.pageName,
-          artboard_name: targetArtboard.name,
+          pageName: targetArtboard.pageName,
+          artboardName: targetArtboard.name,
           width: targetArtboard.width,
           height: targetArtboard.height
         })
