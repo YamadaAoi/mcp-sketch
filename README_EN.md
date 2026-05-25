@@ -24,7 +24,7 @@ MCP: `sketch_html_plan`
 
 Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-plan`
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-split`
 
 - With skill: AI decomposes the artboard into components, plans directory structure, creates component docs.
 
@@ -46,7 +46,7 @@ MCP: `sketch_html_analyze`
 
 Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze`
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-draw`
 
 - With skill: AI auto-infers parameters, calls the tool, reads preview to refine structure, outputs high-fidelity pages.
 

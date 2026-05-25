@@ -1,5 +1,5 @@
 ---
-name: sketch-analyze
+name: sketch-draw
 description: 当需要根据sketch设计稿zip里的画板绘制页面时，该技能会解析并提取出有效图层，切图和预览图供AI参考
 metadata:
   author: zhouyinkui

@@ -1,5 +1,5 @@
 ---
-name: sketch-plan
+name: sketch-split
 description: 当需要根据sketch设计稿zip里的画板合理拆分出待开发组件时，该技能会提取画板基础信息和预览图供AI参考
 metadata:
   author: zhouyinkui

@@ -24,7 +24,7 @@ MCP: `sketch_html_plan`
 
 例：`npx -y mcp-sketch plan -p /path/to/export.zip --pn 首页`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-plan`
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-split`
 
 - 结合 skill：AI 基于设计图拆解组件、规划目录结构、创建组件描述文档。
 
@@ -46,7 +46,7 @@ MCP: `sketch_html_analyze`
 
 例：`npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-analyze`
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-draw`
 
 - 结合 skill：AI 自动推断参数、调用工具、读预览图修正结构，输出高还原度页面。
 
