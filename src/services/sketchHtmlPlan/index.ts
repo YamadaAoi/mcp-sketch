@@ -5,9 +5,6 @@ import { normalize, openSketchHtmlFile } from '@/utils/zip'
 import { processImage } from '@/utils/saveFile'
 import { filterArtboards } from '../sketchHtmlAnalyze/filterArtboards'
 
-/**
- * 解析sketch html zip文件分析参数
- */
 export const sketchPlanInputSchema = z.object({
   file_path: z.string().describe('sketch html zip file path(required)'),
   page_name: z.string().describe('page name (optional)').optional(),
@@ -15,7 +12,7 @@ export const sketchPlanInputSchema = z.object({
 })
 
 /**
- * 解析sketch html zip文件分析参数类型
+ *
  * @property {string} file_path - sketch html zip文件文件路径(必填)
  * @property {string} page_name - 指定页面名称(可选)
  * @property {string} artboard_name - 指定画板名称(可选)

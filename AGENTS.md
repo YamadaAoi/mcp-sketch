@@ -11,24 +11,24 @@ Quick reference for AI agents in this repo. See `opencode.json` for OpenCode-spe
 
 ## Commands
 
-| Command                                                         | Note                                      |
-| --------------------------------------------------------------- | ----------------------------------------- |
-| `pnpm build`                                                    | Vite build + `tsc --noEmit`               |
-| `pnpm dev`                                                      | Build + start CLI                         |
-| `pnpm typecheck`                                                | `tsc --noEmit`                            |
-| `pnpm lint`                                                     | ESLint (excludes `src/tests/**`, `*.js`)  |
-| `pnpm format` / `format:check`                                  | Prettier write/check on `src/**/*.ts`     |
-| `pnpm test`                                                     | Vitest single run (watch:false in config) |
-| `pnpm test:watch`                                               | Vitest watch mode                         |
-| `pnpm vitest run src/tests/unit/sketchHtmlAnalyze.real.test.ts` | Single test file                          |
-| `pnpm csadd` → `pnpm csver` → `pnpm release`                    | Changesets release flow                   |
+| Command                                                         | Note                                                    |
+| --------------------------------------------------------------- | ------------------------------------------------------- |
+| `pnpm build`                                                    | Vite build + `tsc --noEmit`                             |
+| `pnpm dev`                                                      | Build + start CLI                                       |
+| `pnpm typecheck`                                                | `tsc --noEmit`                                          |
+| `pnpm lint`                                                     | ESLint (excludes `src/tests/**`, `*.js`)                |
+| `pnpm format` / `format:check`                                  | Prettier write/check on `src/**/*.ts`                   |
+| `pnpm test`                                                     | Vitest single run (watch:false in config)               |
+| `pnpm test:watch`                                               | Vitest watch mode                                       |
+| `pnpm vitest run src/tests/unit/sketchHtmlAnalyze.real.test.ts` | Single test file                                        |
+| `pnpm csadd` → `pnpm csver` → `pnpm release`                    | Changesets release flow (add → version → build+publish) |
 
 ## Architecture
 
 - **Entry**: `src/index.ts` → detects `MCP_MODE` env var to switch between CLI (`src/cli.ts`) and MCP (`src/mcp.ts`)
-- **CLI subcommands** (commander): `analyze` (full parse) and `plan` (preview + metadata)
-- **MCP tools** (both in `src/tools/index.ts`): `sketch_html_analyze` and `sketch_html_plan`
-- **Services**: `src/services/sketchHtmlAnalyze/` (full analysis) and `src/services/sketchHtmlPlan/` (lightweight plan). `filterArtboards` is shared from `sketchHtmlAnalyze`.
+- **CLI subcommands** (commander): `list` (list pages/artboards), `plan` (preview + metadata), `analyze` (full parse)
+- **MCP tools** (`src/tools/index.ts`): `sketch_html_list`, `sketch_html_plan`, `sketch_html_analyze`
+- **Services** (`src/services/`): `sketchHtmlList/`, `sketchHtmlPlan/`, `sketchHtmlAnalyze/`. `filterArtboards` is shared from `sketchHtmlAnalyze`.
 - **Utils**: `src/utils/` — zip handling, image processing (sharp, optional), pino logger, file saving
 
 ## Key Conventions

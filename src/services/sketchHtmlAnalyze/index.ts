@@ -48,7 +48,7 @@ export type SketchAnalyzeInputSchema = SchemaOutput<
  * @returns json文件位置
  */
 export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
-  let response = ''
+  let response = 'Sketch Exception'
 
   try {
     const sketchHtmlData = await openSketchHtmlFile(args.file_path)
