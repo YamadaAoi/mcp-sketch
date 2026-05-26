@@ -1,7 +1,12 @@
 import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
-import { normalize, openSketchHtmlFile } from '@/utils/zip'
+import {
+  normalize,
+  openSketchHtmlFile,
+  type HtmlArtboard,
+  type SketchImage
+} from '@/utils/zip'
 import { processImage } from '@/utils/saveFile'
 import { filterArtboards } from '../sketchHtmlAnalyze/filterArtboards'
 
@@ -19,38 +24,48 @@ export const sketchPlanInputSchema = z.object({
  */
 export type SketchPlanInputSchema = SchemaOutput<typeof sketchPlanInputSchema>
 
+export async function previewImage(
+  filePath: string,
+  artboard: HtmlArtboard,
+  images: SketchImage[]
+) {
+  let previewPath = ''
+
+  if (artboard.imagePath) {
+    const parsed = path.parse(filePath)
+    const imgPath = normalize(artboard.imagePath)
+    const imageData = images?.find(item => item.path.endsWith(imgPath))?.data
+    if (imageData) {
+      const extname = path.extname(imgPath)
+      const fileName = path.basename(imgPath, extname)
+      const dest = path.join(parsed.dir, parsed.name, `${fileName}${extname}`)
+      previewPath = await processImage(imageData, dest, artboard.width)
+    }
+  }
+
+  return previewPath
+}
+
 export async function handleSketchHtmlPlan(args: SketchPlanInputSchema) {
   let response = 'Sketch Exception'
 
   try {
-    const parsed = path.parse(args.file_path)
     const sketchHtmlData = await openSketchHtmlFile(args.file_path)
     const targetArtboard = filterArtboards(args, sketchHtmlData.data.artboards)
+    const previewPath = await previewImage(
+      args.file_path,
+      targetArtboard,
+      sketchHtmlData.images
+    )
 
-    if (targetArtboard.imagePath) {
-      const imagePath = normalize(targetArtboard.imagePath)
-      const imageData = sketchHtmlData.images?.find(item =>
-        item.path.endsWith(imagePath)
-      )?.data
-      if (imageData) {
-        const extname = path.extname(imagePath)
-        const fileName = path.basename(imagePath, extname)
-        const dest = path.join(parsed.dir, parsed.name, `${fileName}${extname}`)
-        const previewPath = await processImage(
-          imageData,
-          dest,
-          targetArtboard.width
-        )
-        response = JSON.stringify({
-          previewPath,
-          filePath: args.file_path,
-          pageName: targetArtboard.pageName,
-          artboardName: targetArtboard.name,
-          width: targetArtboard.width,
-          height: targetArtboard.height
-        })
-      }
-    }
+    response = JSON.stringify({
+      previewPath,
+      filePath: args.file_path,
+      pageName: targetArtboard.pageName,
+      artboardName: targetArtboard.name,
+      width: targetArtboard.width,
+      height: targetArtboard.height
+    })
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
   }

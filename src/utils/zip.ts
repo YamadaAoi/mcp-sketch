@@ -70,15 +70,17 @@ export interface HtmlSketchArtboard {
   layers: HtmlSketchLayer[]
 }
 
+export interface SketchImage {
+  path: string
+  data: Buffer
+}
+
 export interface SketchHtmlFile {
   data: HtmlData
   /**
    * images文件内容
    */
-  images: Array<{
-    path: string
-    data: Buffer
-  }>
+  images: SketchImage[]
 }
 
 const INDEXHTML = 'index.html'
@@ -138,7 +140,7 @@ export function normalize(p: string) {
   return decodeURIComponent(p).replace(/\\/g, '/').replace(/\/+/g, '/')
 }
 
-export async function getSketchData(filePath: string) {
+export async function openSketchHtmlFile(filePath: string) {
   const directory = await Open.file(filePath)
 
   const indexHtmlEntry = directory.files.find(f => f.path.endsWith(INDEXHTML))
@@ -150,15 +152,6 @@ export async function getSketchData(filePath: string) {
   const sketchData = getDataFromScript(script)
 
   const data = JSON.parse(sketchData) as HtmlData
-
-  return {
-    data,
-    directory
-  }
-}
-
-export async function openSketchHtmlFile(filePath: string) {
-  const { data, directory } = await getSketchData(filePath)
 
   const sketch: SketchHtmlFile = {
     data,
