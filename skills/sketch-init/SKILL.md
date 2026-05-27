@@ -95,7 +95,7 @@ Options:
   file_path: src/sketch/export.zip
   page_name: somePage
   artboard_name: someArtboard
-  preview_path: /path/to/previewImage
+  preview_path: path/to/previewImage
   ---
 
   ### 组件描述
