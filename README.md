@@ -9,6 +9,23 @@
 
 ## 工具
 
+### list
+
+返回所有画板的基础信息（页面名称、画板名称、预览图路径）。
+
+CLI: `npx -y mcp-sketch list [options]`
+MCP: `sketch_html_list`
+
+| 参数     | CLI 选项                 | MCP 参数  | 必填 | 说明 |
+| -------- | ------------------------ | --------- | ---- | ---- |
+| zip 路径 | `-p, --file_path <PATH>` | file_path | 是   |      |
+
+例：`npx -y mcp-sketch list -p /path/to/export.zip`
+
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-init`
+
+- 结合 skill：AI 基于所有画板概览项目全貌、规划路由、创建空白组件和描述文档。
+
 ### plan
 
 轻量规划，返回画板预览图路径及基本信息（宽高、名称），不提取图层细节。
@@ -50,6 +67,12 @@ MCP: `sketch_html_analyze`
 
 - 结合 skill：AI 自动推断参数、调用工具、读预览图修正结构，输出高还原度页面。
 
+### 工作流：一键生成
+
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-workflow`
+
+- 结合 skill：AI 自动编排 init（规划）、split（拆解）、draw（绘制）三个技能，串联成完整流水线，实现"一键生成项目"的终极体验。
+
 ## MCP 配置
 
 MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本地 MCP 服务：
@@ -90,6 +113,10 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
 - **rect**（仅 analyze）: 过滤规则为元素 `x, y, x+width, y+height` 全部在矩形内才保留
 
 ## 返回结果
+
+### list
+
+`[{ pageName, artboardName, previewPath }]`（所有画板的数组）
 
 ### analyze
 

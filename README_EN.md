@@ -9,6 +9,23 @@
 
 ## Tools
 
+### list
+
+Returns basic info for all artboards (page name, artboard name, preview path).
+
+CLI: `npx -y mcp-sketch list [options]`
+MCP: `sketch_html_list`
+
+| Parameter | CLI Flag                 | MCP Parameter | Required | Description |
+| --------- | ------------------------ | ------------- | -------- | ----------- |
+| zip path  | `-p, --file_path <PATH>` | file_path     | yes      |             |
+
+Example: `npx -y mcp-sketch list -p /path/to/export.zip`
+
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-init`
+
+- With skill: AI surveys all artboards, plans routes, creates blank components and description docs.
+
 ### plan
 
 Lightweight plan: return preview image path and basic artboard info (width, height, name), no layer details.
@@ -50,6 +67,12 @@ Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User 
 
 - With skill: AI auto-infers parameters, calls the tool, reads preview to refine structure, outputs high-fidelity pages.
 
+### Workflow: one-click generation
+
+#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-workflow`
+
+- With skill: AI orchestrates init (planning), split (decomposition), and draw (rendering) into a seamless pipeline for one-click project generation.
+
 ## MCP Configuration
 
 Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local MCP service:
@@ -90,6 +113,10 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
 - **rect** (analyze only): filter rule — element is parsed only if its `x, y, x+width, y+height` bounds are fully inside the rect
 
 ## Return Result
+
+### list
+
+`[{ pageName, artboardName, previewPath }]` (array of all artboards)
 
 ### analyze
 

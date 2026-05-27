@@ -7,7 +7,7 @@ Quick reference for AI agents in this repo. See `opencode.json` for OpenCode-spe
 - **Type**: MCP server + CLI for analyzing Sketch-Meaxure exported HTML zip archives
 - **Lang**: TypeScript (ESM, ES2022, Node.js 18+)
 - **Pkg**: pnpm | **Build**: Vite SSR → single ESM output `dist/index.js`
-- **Bins**: `mcp-sketch` (npm package), `sketch-cli` (package.json bin)
+- **Bins**: `mcp-sketch` (npm package + bin, from `"bin": "dist/index.js"`)
 
 ## Commands
 
@@ -39,6 +39,8 @@ Quick reference for AI agents in this repo. See `opencode.json` for OpenCode-spe
 - Code comments in Chinese (intentional)
 - Prettier: no semi, single quotes, trailingComma none, arrowParens avoid, printWidth 80
 - Pre-commit: `lint-staged` (prettier all, eslint --fix on `*.ts`)
+- `tsconfig.json` has `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — use `import type` for type-only imports, prefix unused params with `_`
+- ESLint `@typescript-eslint/no-unused-vars` requires `_` prefix for args (`argsIgnorePattern: '^_'`)
 
 ## Testing Quirks
 
@@ -50,4 +52,5 @@ Quick reference for AI agents in this repo. See `opencode.json` for OpenCode-spe
 
 - `sharp` is an optional dependency — if it fails to install (libvips), image processing falls back to the original full image
 - `pnpm build` runs both vite build and `tsc --noEmit`; type errors block the build
+- `__VERSION__` global is a Vite `define` (from `package.json` version), declared in `src/global.d.ts`
 - `.env` file sets `LOG_LEVEL=debug` by default
