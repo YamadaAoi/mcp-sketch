@@ -104,11 +104,11 @@ Options:
     ```markdown
     ---
     type: page
-    component_path: src/views/kebab-case-name/PageName
-    file_path: src/sketch/export.zip
+    component_path: src/views/kebab-case-name/PageName(relative path)
+    file_path: src/sketch/export.zip(relative path)
     page_name: somePage
     artboard_name: someArtboard
-    preview_path: path/to/previewImage
+    preview_path: src/path/to/previewImage(relative path)
     ---
 
     ### 组件描述
