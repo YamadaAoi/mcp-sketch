@@ -56,6 +56,7 @@ file_path: src/sketch/export.zip
 page_name: somePage
 artboard_name: someArtboard
 rect: [0, 0, 300, 400]
+preview_path: /path/to/preview.webp
 ---
 
 ### 组件描述
