@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.1.3
+
+### Patch Changes
+
+- analyze参数优化；skill效果优化
+
 ## 1.1.2
 
 ### Patch Changes
