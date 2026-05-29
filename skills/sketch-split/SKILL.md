@@ -26,6 +26,7 @@ metadata:
 ### 铁律 3：必须输出组件规划表
 
 - 规划表**必须包含**每个组件的 `rect` 坐标 `[x, y, width, height]`。
+- 对包含子组件的父组件，**必须同时包含** `exclude_rects`（直接子组件的 rects 列表）。
 - 没有规划表 = 任务失败，不得进入下一阶段。
 
 ### 铁律 4：工作流模式下禁止询问
@@ -76,6 +77,10 @@ Options:
   - 识别页面中的独立功能区块。
   - 判断哪些部分适合拆分为独立组件。
   - 结合项目已有组件，避免重复创建。
+- **确定父子层级关系**（关键：避免父组件重复渲染子组件区域）：
+  - 遍历所有组件，若组件 A 的 `rect` 完全包含组件 B 的 `rect`，则 B 是 A 的直接子组件。
+  - 若 B 同时被 A 和 C 包含，取层级最近的（最内层容器）作为直接父组件。
+  - 例如：`Header [0,0,1920,64]` 包含 `Logo [20,10,100,44]`，则 Logo 是 Header 的直接子组件，Header 的 `exclude_rects` 为 `[[20,10,100,44]]`。
 
 ### 步骤 4：输出组件规划表
 
@@ -84,15 +89,16 @@ Options:
 
 **规划表格式（必须包含以下字段）**：
 
-| 组件名称  | 组件路径                                           | 组件描述       | 组件类型  | rect 坐标             | 归属画板 |
-| --------- | -------------------------------------------------- | -------------- | --------- | --------------------- | -------- |
-| Header    | views/layout/modules/Header                        | 页面头部导航栏 | component | [0, 0, 1920, 64]      | 用户管理 |
-| UserTable | views/user-management/modules/user-table/UserTable | 用户列表表格   | component | [200, 120, 1720, 600] | 用户管理 |
+| 组件名称  | 组件路径                                           | 组件描述       | 组件类型  | rect 坐标             | exclude_rects (直接子组件) | 归属画板 |
+| --------- | -------------------------------------------------- | -------------- | --------- | --------------------- | -------------------------- | -------- |
+| Header    | views/layout/modules/Header                        | 页面头部导航栏 | component | [0, 0, 1920, 64]      | [[20, 10, 100, 44]]        | 用户管理 |
+| UserTable | views/user-management/modules/user-table/UserTable | 用户列表表格   | component | [200, 120, 1720, 600] | []                         | 用户管理 |
 
 **字段说明**：
 
 - **组件路径**：必须包含独立文件夹，如 `modules/component-name/ComponentName`。
 - **rect 坐标**：`[x, y, width, height]` 格式，单位 px。
+- **exclude_rects**：该组件之下直接子组件的 rect 坐标列表。无子组件则为 `[]`。当 `sketch-draw` 绘制此组件时，会将这些区域排除，避免父组件重复渲染子组件内容。
 
 ### 步骤 5：创建空白组件和描述文档
 
@@ -135,6 +141,7 @@ Options:
   page_name: somePage
   artboard_name: someArtboard
   rect: [x, y, width, height]
+  exclude_rects: [[x1, y1, w1, h1], [x2, y2, w2, h2]] # 直接子组件的rect列表，无子组件则为 []
   preview_path: src/path/to/previewImage(relative path)
   ---
 
@@ -148,6 +155,7 @@ Options:
 创建完成后，必须验证：
 
 - [ ] 组件规划表已输出（包含所有组件的 rect 坐标）。
+- [ ] 含子组件的父组件规划表中包含 `exclude_rects` 字段。
 - [ ] 目录结构符合"每个组件独立文件夹"规范。
 - [ ] 所有空白组件文件已创建。
 - [ ] 所有 `.md` 描述文档已创建，且位于对应组件文件夹内。
@@ -167,5 +175,6 @@ Options:
 - [ ] 在空白组件中编写了具体业务代码。
 - [ ] 没有输出组件规划表。
 - [ ] 规划表中缺少 rect 坐标。
+- [ ] 规划表中缺少 `exclude_rects`（对含子组件的父组件）。
 - [ ] 没有创建 `.md` 描述文档。
 - [ ] 直接开始调用 `sketch-draw`（应由 workflow 调用）。

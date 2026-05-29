@@ -50,6 +50,7 @@ Options:
   --pn, --page_name [PAGENAME]          Page name
   --an, --artboard_name [ARTBOARDNAME]  Artboard name
   -r, --rect [RECT]                     Specify rectangular region to parse, format: [x, y, width, height] (x, y is top-left corner)
+  -e, --exclude_rects [EXCLUDE_RECTS]   Specify rectangular regions to exclude, format: "[[x, y, width, height]]" (x, y is top-left corner)
   --ap, --assets_path [ASSETSPATH]      Assets output path, default: src/assets/sketch
   --sr, --save_result [SAVERESULT]      Whether to save analysis result to local file, default: false
 ```
@@ -64,14 +65,22 @@ Options:
 - [ ] `page_name`：页面名称（必填）
 - [ ] `artboard_name`：画板名称（必填）
 - [ ] `rect`：矩形区域坐标 `[x, y, width, height]`（必填）
+- [ ] `exclude_rects`：排除矩形区域坐标列表 `[[x, y, width, height]]`（可选，默认 `[]` ）
 - [ ] `assets_path`：切图存放路径（可选，默认 `src/assets/sketch`）
 
 **如果 rect 参数缺失，输出错误并拒绝执行。**
 
 ### 步骤 2：调用 analyze 工具
 
+**为什么需要 exclude_rects？**
+当绘制父组件时，若其子组件区域也在父组件的 `rect` 内，`analyze` 会返回子组件区域内的所有图层。由于子组件后续由 `sketch-draw` 独立绘制，父组件不应包含这些内容 — 它只需要"背景层"。将子组件的 rects 作为 `exclude_rects` 传入，即可从分析结果中排除它们，避免重复渲染。
+
 ```shell
+# 无子组件时
 npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" --ap /path/to/assets
+
+# 有子组件时（exclude_rects 从 .md 描述文档中读取）
+npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" -e "[[x1,y1,w1,h1],[x2,y2,w2,h2]]" --ap /path/to/assets
 ```
 
 ### 步骤 3：读取工具返回结果
@@ -176,6 +185,7 @@ DRAW_SUCCESS
 
 - [ ] 没有调用 `mcp-sketch analyze` 就直接写代码
 - [ ] 没有使用 rect 参数，绘制了整个画板而非指定区域
+- [ ] 父组件有子组件但未使用 `exclude_rects`，导致子组件区域内容重复渲染
 - [ ] 使用了绝对定位（`position: absolute`）作为主要布局方式
 - [ ] 工作流模式下询问用户是否满意
 - [ ] 工作流模式下输出总结性文字
