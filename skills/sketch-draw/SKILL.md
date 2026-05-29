@@ -148,7 +148,23 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 - [ ] 响应式适配合理
 - [ ] 最低保证 90% 还原度
 
-### 步骤 6：输出结果
+### 步骤 6：代码质量自检 (强制)
+
+根据项目实际配置运行检查，确保代码无语法错误且风格一致。**不要假设**项目一定有 prettier / eslint / tsc，先通过 `package.json` 的 `scripts` 和配置文件判断可用工具。
+
+```shell
+# 如果项目配置了 prettier（有 .prettierrc* 或 prettier 脚本）
+npx prettier --write <组件文件路径>
+
+# 如果项目配置了 eslint（有 eslint.config.* 或 lint 脚本）
+npx eslint <组件文件路径> --fix --no-ignore
+```
+
+- 若 eslint 报错（未修复的），**必须逐条修正**代码后重新运行，直到无报错。
+- 若项目没有对应的检查工具，跳过即可。
+- 此步骤的目标：保证生成的组件通过项目现有的基础门槛，避免将问题留到后续环节。
+
+### 步骤 7：输出结果
 
 #### 工作流模式下
 
@@ -191,3 +207,5 @@ DRAW_SUCCESS
 - [ ] 工作流模式下输出总结性文字
 - [ ] 没有输出 `DRAW_SUCCESS` 状态码
 - [ ] 代码还原度明显低于 90%
+- [ ] 未运行 `prettier` 格式化生成的组件代码
+- [ ] 未运行 `eslint` 检查，或明知 ESLint 报错仍跳过修复
