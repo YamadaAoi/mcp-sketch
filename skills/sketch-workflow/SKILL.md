@@ -1,9 +1,9 @@
----
+﻿---
 name: sketch-workflow
 description: 支持按需选择画板的全自动 Sketch 代码生成工作流。
 metadata:
   author: zhouyinkui
-  version: '2026.05.27'
+  version: '2026.05.29'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
@@ -25,8 +25,16 @@ metadata:
 ### 铁律 3：你是编排者，不是编码者
 
 - **绝对禁止**自行编写组件代码。
-- 所有代码生成**必须**通过 `sketch-draw` 完成。
+- 所有代码生成**必须**通过技能`sketch-draw` 完成。
 - 你只负责调度子技能、管理选择列表、检查现状。
+
+#### 调度协议
+
+| 子技能         | 何时调用 | 负责什么                                                           |
+| -------------- | -------- | ------------------------------------------------------------------ |
+| `sketch-init`  | 阶段 2   | 解析预览图 → 规划路由 → 创建空白组件 + `.md`                       |
+| `sketch-split` | 阶段 3.3 | 分析画板结构 → 输出组件规划表(rect/exclude_rects) → 创建空白子组件 |
+| `sketch-draw`  | 阶段 3.4 | 读取 `.md` + rect → 调用 `mcp-sketch analyze` → 生成完整组件代码   |
 
 ## 智能编排步骤
 
@@ -52,7 +60,7 @@ metadata:
 ### 阶段 2：按需初始化 (Call sketch-init)
 
 1. **参数准备**：将 `selected_artboards` 列表作为上下文传递给 `sketch-init`。
-2. **动作**：调用 `sketch-init`，传入 `file_path` 和 `target_artboards`。
+2. **动作**：调用技能`sketch-init`，传入 `file_path` 和 `target_artboards`。
 3. **现状检查 (由 sketch-init 执行)**：
    - `sketch-init` 需检查：如果路由已存在，则跳过路由创建。
    - `sketch-init` 需检查：如果空白组件文件已存在，则跳过文件创建。
@@ -73,7 +81,7 @@ metadata:
    - **如果仅存在骨架**：继续执行拆分。
    - **如果不存在**：继续执行拆分。
 3. **组件拆解 (Call sketch-split)**：
-   - 调用 `sketch-split`，传入 `file_path`, `page_name`, `artboard_name`。
+   - 调用技能`sketch-split`，传入 `file_path`, `page_name`, `artboard_name`。
    - 获取组件规划表与 `rect` 坐标数组。
    - **产物检查**：确认规划表与 `.md` 已生成。
 4. **组件绘制循环 (For each Component)**：
@@ -83,7 +91,7 @@ metadata:
      - **公共组件**（`type: common`）：检查 `src/components/ComponentName/` 下是否存在同名文件。
      - **页面特有组件**（`type: page-specific`）：检查 `src/views/page-name/modules/component-name/` 下是否存在同名文件。
      - 若存在：跳过绘制，记录日志 `"组件 [Name] 已存在，跳过"`。
-     - 若不存在：调用 `sketch-draw`，并传入以下参数：
+     - 若不存在：调用技能`sketch-draw`，并传入以下参数：
        - 从 `.md` 中读取 `component_path`、`rect`、`exclude_rects`。
        - `exclude_rects` 为该组件的直接子组件 rects 列表。
        - 例如：绘制的组件是 Header（`type: common`），其 Logo 子组件 coords 为 `[20,10,100,44]`，则传入 `exclude_rects: [[20,10,100,44]]`。

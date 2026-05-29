@@ -3,7 +3,7 @@ name: sketch-split
 description: 当需要根据 sketch 设计稿 zip 里的画板合理拆分出待开发组件时，该技能会提取画板基础信息和预览图供 AI 参考
 metadata:
   author: zhouyinkui
-  version: '2026.05.27'
+  version: '2026.05.29'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 

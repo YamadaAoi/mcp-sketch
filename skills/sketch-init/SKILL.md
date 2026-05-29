@@ -3,7 +3,7 @@ name: sketch-init
 description: 当需要概览 sketch 设计稿 zip 里所有画板时，该技能会提取所有画板并规划路由
 metadata:
   author: zhouyinkui
-  version: '2026.05.27'
+  version: '2026.05.29'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
