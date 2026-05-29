@@ -78,12 +78,15 @@ metadata:
    - **产物检查**：确认规划表与 `.md` 已生成。
 4. **组件绘制循环 (For each Component)**：
    - 遍历规划表中的每个组件。
-   - **复用检查**：检查目标组件文件是否存在。
+   - **读取组件类型**：从 `.md` 描述文档的 `type` 字段确定是 `common` 还是 `page-specific`。
+   - **复用检查**：根据组件类型检查目标路径是否存在：
+     - **公共组件**（`type: common`）：检查 `src/components/ComponentName/` 下是否存在同名文件。
+     - **页面特有组件**（`type: page-specific`）：检查 `src/views/page-name/modules/component-name/` 下是否存在同名文件。
      - 若存在：跳过绘制，记录日志 `"组件 [Name] 已存在，跳过"`。
      - 若不存在：调用 `sketch-draw`，并传入以下参数：
-       - 从组件 `.md` 描述文档中读取 `rect` 和 `exclude_rects`。
-       - `exclude_rects` 为该组件的直接子组件 rects 列表，确保父组件绘制时排除子组件区域，避免重复渲染。
-       - 例如：绘制的组件是 Header，其 Logo 子组件 coords 为 `[20,10,100,44]`，则传入 `exclude_rects: [[20,10,100,44]]`。
+       - 从 `.md` 中读取 `component_path`、`rect`、`exclude_rects`。
+       - `exclude_rects` 为该组件的直接子组件 rects 列表。
+       - 例如：绘制的组件是 Header（`type: common`），其 Logo 子组件 coords 为 `[20,10,100,44]`，则传入 `exclude_rects: [[20,10,100,44]]`。
    - 等待 `DRAW_SUCCESS`。
 5. **页面级检查**：
    - 页面内所有组件绘制完毕后，检查 `package.json` scripts 中是否有可用的校验命令。

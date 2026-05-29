@@ -13,9 +13,10 @@ metadata:
 
 ### 铁律 1：目录结构规范 (每个组件独立文件夹)
 
-- **子组件/子页面**：必须拥有**独立文件夹**，严禁平铺。
-- 路径：`src/views/parent-name/modules/component-name/ComponentName` + `ComponentName.md`
-- 目录名使用 kebab-case，文件名使用 PascalCase。
+- **每个组件**：必须拥有**独立文件夹**，严禁平铺。
+- **公共组件**：`src/components/ComponentName/`（PascalCase 目录名）
+- **页面特有组件**：`src/views/page-name/modules/component-name/`（kebab-case 目录名）
+- 文件命名：遵循项目现有规范。
 
 ### 铁律 2：只拆解，不绘制
 
@@ -83,6 +84,9 @@ Options:
   - 识别页面中的独立功能区块。
   - 判断哪些部分适合拆分为独立组件。
   - 结合项目已有组件，避免重复创建。
+- **分类组件归属**：判断每个组件是"页面特有"还是"公共可复用"：
+  - **公共/布局组件**：侧边栏菜单、顶部导航栏、面包屑、用户头像/名称/退出按钮、页脚等跨页面出现的元素。应先检查 `src/components/`、`src/layouts/` 是否已有现成实现，有则直接复用**不创建**，无则作为公共组件创建。
+  - **页面特有组件**：当前页面内容区域内独有的功能区块（表格、表单、卡片列表等），放在页面 `modules/` 下。
 - **确定父子层级关系**（关键：避免父组件重复渲染子组件区域）：
   - 遍历所有组件，若组件 A 的 `rect` 完全包含组件 B 的 `rect`，则 B 是 A 的直接子组件。
   - 若 B 同时被 A 和 C 包含，取层级最近的（最内层容器）作为直接父组件。
@@ -95,14 +99,16 @@ Options:
 
 **规划表格式（必须包含以下字段）**：
 
-| 组件名称  | 组件路径                                           | 组件描述       | 组件类型  | rect 坐标             | exclude_rects (直接子组件) | 归属画板 |
-| --------- | -------------------------------------------------- | -------------- | --------- | --------------------- | -------------------------- | -------- |
-| Header    | views/layout/modules/Header                        | 页面头部导航栏 | component | [0, 0, 1920, 64]      | [[20, 10, 100, 44]]        | 用户管理 |
-| UserTable | views/user-management/modules/user-table/UserTable | 用户列表表格   | component | [200, 120, 1720, 600] | []                         | 用户管理 |
+| 组件名称  | 组件路径                                               | 组件描述     | 类型          | rect 坐标             | exclude_rects (直接子组件) | 归属画板 |
+| --------- | ------------------------------------------------------ | ------------ | ------------- | --------------------- | -------------------------- | -------- |
+| Sidebar   | src/components/Sidebar                                 | 左侧菜单栏   | common        | [0, 0, 200, 900]      | []                         | 用户管理 |
+| Header    | src/components/Header                                  | 顶部导航栏   | common        | [0, 0, 1920, 64]      | [[20, 10, 100, 44]]        | 用户管理 |
+| UserTable | src/views/user-management/modules/user-table/UserTable | 用户列表表格 | page-specific | [200, 120, 1720, 600] | []                         | 用户管理 |
 
 **字段说明**：
 
-- **组件路径**：必须包含独立文件夹，如 `modules/component-name/ComponentName`。
+- **组件路径**：必须包含独立文件夹。公共组件在 `src/components/` 下，页面特有组件在 `src/views/page-name/modules/` 下。
+- **类型**：`common` = 跨页面复用的布局/公共组件（侧边栏、导航栏、面包屑、用户头像等），`page-specific` = 仅当前页面独有的功能区块。
 - **rect 坐标**：`[x, y, width, height]` 格式，单位 px。
 - **exclude_rects**：该组件之下直接子组件的 rect 坐标列表。无子组件则为 `[]`。当 `sketch-draw` 绘制此组件时，会将这些区域排除，避免父组件重复渲染子组件内容。
 
@@ -112,9 +118,16 @@ Options:
 
 #### 5.1 目录结构 (强制)
 
-- 主页面目录：`src/views/page-name/`
-- 子组件目录：`src/views/page-name/modules/component-name/` (kebab-case 目录名)
-- **严禁**将所有子组件文件平铺在 `modules/` 下。
+按组件类型决定存放位置：
+
+- **公共/布局组件**（类型 `common`）：
+  - 目录：`src/components/ComponentName/`（PascalCase 目录名）
+  - 文件：`ComponentName.ext` + `ComponentName.md`
+  - **优先检查** `src/components/` 下是否已有实现，有则跳过，无则创建。
+- **页面特有组件**（类型 `page-specific`）：
+  - 主页面目录：`src/views/page-name/`
+  - 子组件目录：`src/views/page-name/modules/component-name/` (kebab-case 目录名)
+- **严禁**将所有子组件文件平铺在同一个目录下。
 
 #### 5.2 空白组件
 
@@ -142,27 +155,34 @@ Options:
 
   ```markdown
   ---
-  type: component | modal
-  component_path: src/views/parent-name/modules/component-name/ComponentName(relative path)
+  type: common | page-specific
+  component_path: src/components/ComponentName(relative path)  # 公共组件 或
+                    src/views/page-name/modules/component-name/ComponentName(relative path) # 页面特有
   file_path: src/sketch/export.zip(relative path)
   page_name: somePage
   artboard_name: someArtboard
   rect: [x, y, width, height]
-  exclude_rects: [[x1, y1, w1, h1], [x2, y2, w2, h2]] # 直接子组件的rect列表，无子组件则为 []
+  exclude_rects: [[x1, y1, w1, h1], [x2, y2, w2, h2]] # 直接子组件的rect列表
   preview_path: src/path/to/previewImage(relative path)
   ---
 
   ### 组件描述
 
   组件功能描述
+
+  ### 使用说明
+
+  如果是公共组件，描述其在哪些页面中被复用。
   ```
 
 ### 步骤 6：产物验证 (强制)
 
 创建完成后，必须验证：
 
-- [ ] 组件规划表已输出（包含所有组件的 rect 坐标）。
+- [ ] 组件规划表已输出（包含所有组件的 rect 坐标和类型）。
 - [ ] 含子组件的父组件规划表中包含 `exclude_rects` 字段。
+- [ ] 公共组件（如侧边栏、导航栏）被标记为 `common` 类型，放在 `src/components/` 下而非页面 `modules/` 下。
+- [ ] `src/components/` 下已有的公共组件未被重复创建。
 - [ ] 目录结构符合"每个组件独立文件夹"规范。
 - [ ] 所有空白组件文件已创建。
 - [ ] 所有 `.md` 描述文档已创建，且位于对应组件文件夹内。
@@ -183,5 +203,6 @@ Options:
 - [ ] 没有输出组件规划表。
 - [ ] 规划表中缺少 rect 坐标。
 - [ ] 规划表中缺少 `exclude_rects`（对含子组件的父组件）。
+- [ ] 公共布局组件（侧边栏、导航栏等）未标记为 `common`，错误地放入页面 `modules/` 下。
 - [ ] 没有创建 `.md` 描述文档。
 - [ ] 直接开始调用 `sketch-draw`（应由 workflow 调用）。
