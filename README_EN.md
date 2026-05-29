@@ -58,6 +58,7 @@ MCP: `sketch_html_analyze`
 | page name     | `--pn, --page_name`      | page_name     | no       |                                          |
 | artboard name | `--an, --artboard_name`  | artboard_name | no       |                                          |
 | rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                  |
+| exclude rects | `-e, --exclude_rects`    | exclude_rects | no       | `[[x, y, width, height], ...]`           |
 | assets path   | `--ap, --assets_path`    | assets_path   | no       | default `src/assets/sketch`              |
 | save result   | `--sr, --save_result`    | save_result   | no       | save JSON alongside zip, default `false` |
 
@@ -111,6 +112,7 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
 - **page**: `page_name` > first page
 - **artboard**: `artboard_name` > first artboard
 - **rect** (analyze only): filter rule — element is parsed only if its `x, y, x+width, y+height` bounds are fully inside the rect
+- **exclude_rects** (analyze only): exclusion rule — element is discarded if its `x, y, x+width, y+height` bounds are fully inside any exclusion rect. Takes effect first when used with `rect`.
 
 ## Return Result
 

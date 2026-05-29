@@ -22,33 +22,49 @@ function filterLayers(lyr: HtmlLayer) {
 
 function filterLayersByRect(
   lyr: HtmlLayer,
-  rect?: [number, number, number, number]
+  rect?: [number, number, number, number],
+  excludeRects?: [number, number, number, number][]
 ) {
-  if (!rect) {
-    return filterLayers(lyr)
-  } else {
-    return (
-      lyr.rect?.x !== undefined &&
-      lyr.rect?.y !== undefined &&
-      lyr.rect?.width !== undefined &&
-      lyr.rect?.height !== undefined &&
-      lyr.rect.x >= rect[0] &&
-      lyr.rect.x < rect[0] + rect[2] &&
-      lyr.rect.y >= rect[1] &&
-      lyr.rect.y < rect[1] + rect[3] &&
-      lyr.rect.x + lyr.rect.width > rect[0] &&
-      lyr.rect.x + lyr.rect.width <= rect[0] + rect[2] &&
-      lyr.rect.y + lyr.rect.height > rect[1] &&
-      lyr.rect.y + lyr.rect.height <= rect[1] + rect[3] &&
-      filterLayers(lyr)
-    )
+  const r = lyr.rect
+  if (!r?.x || !r?.y || !r?.width || !r?.height) {
+    return false
   }
+
+  // 判断图层是否在 rect 内
+  if (rect) {
+    const isInRect =
+      r.x >= rect[0] &&
+      r.x < rect[0] + rect[2] &&
+      r.y >= rect[1] &&
+      r.y < rect[1] + rect[3] &&
+      r.x + r.width > rect[0] &&
+      r.x + r.width <= rect[0] + rect[2] &&
+      r.y + r.height > rect[1] &&
+      r.y + r.height <= rect[1] + rect[3]
+    if (!isInRect) return false
+  }
+
+  // 判断图层是否与任意 excludeRect 相交
+  if (excludeRects?.length) {
+    const rRight = r.x + r.width
+    const rBottom = r.y + r.height
+    for (const e of excludeRects) {
+      const eRight = e[0] + e[2]
+      const eBottom = e[1] + e[3]
+      if (r.x < eRight && rRight > e[0] && r.y < eBottom && rBottom > e[1]) {
+        return false
+      }
+    }
+  }
+
+  return filterLayers(lyr)
 }
 
 export function assembleArtboard(
   artboard: HtmlArtboard,
   assetsPath?: string,
   rect?: number[],
+  excludeRects?: number[][],
   images?: Array<{
     path: string
     data: Buffer
@@ -57,6 +73,13 @@ export function assembleArtboard(
   const dest = assetsPath ?? 'src/assets/sketch'
   let previewPath = ''
   const newRect = getRect(rect)
+  const newExcludeRects = excludeRects?.reduce<
+    [number, number, number, number][]
+  >((acc, r) => {
+    const rect = getRect(r)
+    if (rect) acc.push(rect)
+    return acc
+  }, [])
   const newArtboard: HtmlSketchArtboard = {
     pageName: artboard.pageName,
     pageObjectID: artboard.pageObjectID,
@@ -65,7 +88,7 @@ export function assembleArtboard(
     width: artboard.width,
     height: artboard.height,
     layers: artboard.layers
-      .filter(l => filterLayersByRect(l, newRect))
+      .filter(l => filterLayersByRect(l, newRect, newExcludeRects))
       .map(l => {
         const lyr: HtmlSketchLayer = {
           type: l.type,

@@ -18,6 +18,10 @@ export const sketchAnalyzeInputSchema = z.object({
     .array(z.number())
     .describe('rect [x, y, width, height] (optional)')
     .optional(),
+  exclude_rects: z
+    .array(z.array(z.number()))
+    .describe('exclude rects [x, y, width, height] (optional)')
+    .optional(),
   assets_path: z
     .string()
     .describe('assets path (optional), default src/assets/sketch')
@@ -34,6 +38,7 @@ export const sketchAnalyzeInputSchema = z.object({
  * @property {string} page_name - 指定页面名称(可选)
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
+ * @property {number[][]} exclude_rects - 指定排除解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
  * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认false
  */
@@ -57,10 +62,19 @@ export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
       targetArtboard,
       args.assets_path,
       args.rect,
+      args.exclude_rects,
       sketchHtmlData.images
     )
 
     const newRect = getRect(args.rect)
+    const newExcludeRects = args.exclude_rects?.reduce<
+      [number, number, number, number][]
+    >((acc, r) => {
+      const rect = getRect(r)
+      if (rect) acc.push(rect)
+      return acc
+    }, [])
+
     const parsed = path.parse(args.file_path)
     if (args.save_result) {
       const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
@@ -77,7 +91,7 @@ export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
         const dest = path.join(
           parsed.dir,
           parsed.name,
-          `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${extname}`
+          `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${newExcludeRects?.length ? `_exclude_${newExcludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
         )
         assembledArtboard.previewPath = await processImage(
           imageData,

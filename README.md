@@ -58,6 +58,7 @@ MCP: `sketch_html_analyze`
 | 页面名称       | `--pn, --page_name`      | page_name     | 否   |                                         |
 | 画板名称       | `--an, --artboard_name`  | artboard_name | 否   |                                         |
 | 矩形区域       | `-r, --rect`             | rect          | 否   | `[x, y, width, height]`                 |
+| 排除矩形区域   | `-e, --exclude_rects`    | exclude_rects | 否   | `[[x, y, width, height], ...]`          |
 | 切图存放路径   | `--ap, --assets_path`    | assets_path   | 否   | 默认 `src/assets/sketch`                |
 | 保存结果到文件 | `--sr, --save_result`    | save_result   | 否   | 保存 JSON 到 zip 同级目录，默认 `false` |
 
@@ -111,6 +112,7 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
 - **page**: `page_name` > 第一个 page
 - **artboard**: `artboard_name` > 第一个 artboard
 - **rect**（仅 analyze）: 过滤规则为元素 `x, y, x+width, y+height` 全部在矩形内才保留
+- **exclude_rects**（仅 analyze）: 排除规则为元素 `x, y, x+width, y+height` 全部在任一排除矩形内则丢弃，与 `rect` 同时使用时先生效
 
 ## 返回结果
 

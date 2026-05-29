@@ -9,6 +9,9 @@ async function handleAnalyze(opts: Record<string, unknown>) {
   if (typeof opts.rect === 'string') {
     opts.rect = JSON.parse(opts.rect)
   }
+  if (typeof opts.exclude_rects === 'string') {
+    opts.exclude_rects = JSON.parse(opts.exclude_rects)
+  }
   if (typeof opts.save_result === 'string') {
     opts.save_result = opts.save_result === 'true'
   }
@@ -28,6 +31,10 @@ export const analyze = new Command()
   .option(
     '-r, --rect [RECT]',
     'Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner)'
+  )
+  .option(
+    '-e, --exclude_rects [EXCLUDE_RECTS]',
+    'Specify rectangular regions to exclude, format: `[x, y, width, height]` (x, y is top-left corner)'
   )
   .option(
     '--ap, --assets_path [ASSETSPATH]',
