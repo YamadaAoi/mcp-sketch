@@ -36,6 +36,19 @@ metadata:
   - 画板的 `.md` 描述文档（含 rect 坐标）
   - 对应的空白组件文件
 
+## 硬性要求：适配项目技术栈
+
+**永远不要假设项目使用 Vue / React 或其他框架。** 在生成代码前必须：
+
+1. 读取 `package.json` 的 `dependencies`/`devDependencies`，确定项目技术栈（React、Vue、Solid 等）。
+2. 查看项目中已有的组件文件（`.tsx`、`.vue`、`.jsx` 等），确定文件后缀、写法风格、CSS 方案。
+3. 查看已有路由文件，确定路由写法。
+4. 生成代码时必须与项目现有代码风格保持一致。例如：
+   - Vue 项目 → `.vue` SFC + `script setup`
+   - React 项目 → `.tsx` + hooks
+   - 其他框架 → 按项目规范输出
+5. 不要引入项目未使用的依赖。
+
 ## 工具介绍
 
 ```shell
@@ -105,7 +118,7 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 
 ### 步骤 4：代码生成
 
-根据工具返回的图层信息生成 Vue 组件代码。
+根据工具返回的图层信息生成组件代码，**技术栈由项目决定，参见"适配项目技术栈"规则**。
 
 #### 4.1 绘制原则
 
@@ -113,28 +126,25 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 - **相对单位优先**：使用 `%`、`rem`、`vw/vh`，仅图标/固定尺寸元素使用 `px`
 - **CSS 背景优先**：图片优先用 `background-image` 而非 `<img>`
 - **语义化标签**：合理使用 `header`、`main`、`section`、`nav` 等
-- **遵循项目规范**：
-  - `<script setup lang="ts">`
-  - `<style scoped lang="scss">`
-  - 顺序：script → template → style
-  - 无分号、单引号、无尾逗号、2 空格缩进
+- **与项目现有代码风格一致**：文件后缀、导入方式、CSS 方案、命名规范均参考已有组件
 
-#### 4.2 组件结构
+#### 4.2 组件结构（示意）
 
-```vue
-<template>
-  <!-- 根据图层结构生成模板 -->
-</template>
+生成的结构取决于项目技术栈，以下为概念示意，**非固定模板**：
 
-<script setup lang="ts">
-// 根据需要定义响应式数据、方法
-// 遵循项目 TypeScript 规范
-</script>
+```
+[模板部分]
+<div class="component-name">
+  <!-- 根据图层结构生成 -->
+</div>
 
-<style scoped lang="scss">
-// 根据设计稿生成样式
-// 遵循项目 SCSS 规范
-</style>
+[逻辑/脚本部分]
+// 状态、事件、生命周期
+
+[样式部分]
+.component-name {
+  // 根据设计稿生成样式
+}
 ```
 
 ### 步骤 5：还原度自检
@@ -190,10 +200,8 @@ DRAW_SUCCESS
 
 ### 代码质量约束
 
-- 遵循项目 `.editorconfig` 和 `.prettierrc` 规范
-- 遵循项目 AGENTS.md 中的编码规范
-- 使用项目已有的组件库（Element Plus）
-- 遵循项目命名规范（PascalCase 组件、camelCase 文件）
+- 遵循项目已有的 lint、format、命名规范（从现有代码推断）
+- 使用项目已有的组件库和工具链，**不要引入项目未安装的依赖**
 
 ## 违规检测
 
@@ -207,5 +215,6 @@ DRAW_SUCCESS
 - [ ] 工作流模式下输出总结性文字
 - [ ] 没有输出 `DRAW_SUCCESS` 状态码
 - [ ] 代码还原度明显低于 90%
+- [ ] 生成的代码使用了项目未安装的框架或依赖
 - [ ] 未运行 `prettier` 格式化生成的组件代码
 - [ ] 未运行 `eslint` 检查，或明知 ESLint 报错仍跳过修复

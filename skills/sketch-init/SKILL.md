@@ -35,6 +35,12 @@ metadata:
 
 - 当检测到 `execution_mode: "automated"` 时，直接执行。
 
+### 铁律 5：适配项目技术栈
+
+- **永远不要假设项目使用 Vue / React 或其他框架**。
+- 生成文件前，读取 `package.json` 的 `dependencies` 确定技术栈，查看已有组件文件确定写法。
+- 路由配置、组件文件后缀、导入方式都必须与项目现有代码一致。
+
 ## 工具介绍
 
 ```shell
@@ -87,16 +93,11 @@ Options:
 - **主页面处理**：
   - 目录：`src/views/kebab-case-name/`
   - 文件：`PageName` + `PageName.md`
-  - 组件内容**只能是基本骨架**：
+  - 组件内容**只能是基本骨架**（技术栈由项目决定，参见下方"适配项目技术栈"规则）：
 
-    ```vue
-    <template>
-      <div class="page-name"></div>
-    </template>
-
-    <script setup lang="ts"></script>
-
-    <style scoped lang="scss"></style>
+    ```text
+    # 空组件骨架，不含任何业务代码
+    # 具体写法、后缀、文件结构根据项目技术栈确定
     ```
 
   - **描述文档 (`PageName.md`)**：
@@ -124,17 +125,16 @@ Options:
 
 ### 步骤 5：路由配置更新 (现状检查)
 
-- **读取现状**：读取现有路由文件（如 `src/router/index.ts`）。
+- **读取现状**：找到项目中的路由配置文件（根据项目技术栈，可能是 `src/router/index.ts`、`src/App.tsx`、`src/routes.ts` 等）。
 - **检查复用**：
   - 遍历规划的路由，检查是否已存在于配置中。
   - **如果路由已存在**：直接跳过，**禁止重复写入**。
-  - **如果路由不存在**：按项目规范插入新路由。
+  - **如果路由不存在**：按项目规范插入新路由，与现有路由写法保持一致。
 - **路径规范**：
-  - 主页面：`@/views/page-name/PageName`
-  - 子页面：`@/views/page-name/modules/component-name/ComponentName`
+  - 主页面：`src/views/page-name/PageName`
+  - 子页面：`src/views/page-name/modules/component-name/ComponentName`
 - **规范遵循**：
-  - 遵循 lazy-load 规范：`component: () => import('@/views/...')`。
-  - 保持与现有代码风格一致。
+  - 保持与现有代码风格一致（lazy-load / eager import / 其他模式）
 
 ### 步骤 6：产物验证 (强制)
 

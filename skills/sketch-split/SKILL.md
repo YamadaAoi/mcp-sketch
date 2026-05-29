@@ -34,6 +34,12 @@ metadata:
 - 检测到 `execution_mode: "automated"` 时，直接输出规划表并创建文件。
 - **严禁**询问如"您看这样拆分行吗？"
 
+### 铁律 5：适配项目技术栈
+
+- **永远不要假设项目使用 Vue / React 或其他框架**。
+- 创建空白组件文件前，先读取 `package.json` 和已有组件文件，确定后缀、写法、CSS 方案。
+- 组件骨架写法与项目现有代码保持一致。
+
 ## 前置条件
 
 - 此技能通常作为 `sketch-init` 的后续步骤。
@@ -112,20 +118,21 @@ Options:
 
 #### 5.2 空白组件
 
-```vue
-<template>
-  <div class="component-name"></div>
-</template>
+创建符合项目技术栈的空白组件骨架。**不要假设框架**，先检查 `package.json` 和已有文件确定后缀和写法。
 
-<script setup lang="ts"></script>
+```text
+# 概念示意：一个空白组件仅包含最基本的文件结构
+# 实际内容按项目技术栈生成：
+# - Vue 项目 → .vue SFC（空 template + script + style）
+# - React 项目 → .tsx（空函数组件 + 空 CSS module）
+# - 其他 → 按项目规范
 
-<style scoped lang="scss">
-.component-name {
-}
-</style>
+[文件] ComponentName.ext
+- 仅框架/语言自带的空壳
+- 不含任何业务代码、样式、逻辑
 ```
 
-**注意**：组件内容**只能是空骨架**。
+**注意**：组件内容**只能是空骨架**，不含任何业务代码或样式声明。
 
 #### 5.3 描述文档
 
