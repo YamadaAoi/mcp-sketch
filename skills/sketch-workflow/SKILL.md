@@ -3,26 +3,21 @@ name: sketch-workflow
 description: 支持按需选择画板的全自动 Sketch 代码生成工作流。
 metadata:
   author: zhouyinkui
-  version: '2026.05.29'
+  version: '2026.06.01'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
-此技能是 Sketch 自动化体系的"总指挥"。支持画板筛选、现状检测与按需生成。
+此技能是 `Sketch` 代码生成自动化体系的"总指挥"。支持画板筛选、现状检测与按需生成。
 
 ## 核心铁律
 
-### 铁律 1：按需选择，不贪多
-
-- 必须提供列表供用户选择，禁止私自一次性处理所有画板。
-- 仅处理用户明确选中的画板，忽略未选中的。
-
-### 铁律 2：基于现状，能复用不重复
+### 铁律 1：基于现状，能复用不重复
 
 - **路由复用**：创建路由前，必须先检查路由配置。如果路由已存在，直接使用，**禁止重复写入**。
 - **文件复用**：创建组件前，检查文件是否已存在。如果存在且非空，**禁止覆盖**，应提示用户或跳过。
 - **智能增量**：只生成缺失的骨架和代码，已存在的资源直接利用。
 
-### 铁律 3：你是编排者，不是编码者
+### 铁律 2：你是编排者，不是编码者
 
 - **绝对禁止**自行编写组件代码。
 - 所有代码生成**必须**通过`skill: sketch-draw` 完成。
@@ -38,7 +33,7 @@ metadata:
 
 ## 执行清单
 
-> 以下阶段**按序号严格顺序执行**，阶段内条目按从上到下顺序执行。未完成当前步骤不得跳至下一步。
+以下阶段**按序号严格顺序执行**，阶段内条目按从上到下顺序执行。未完成当前步骤不得跳至下一步。
 
 ### 阶段 0：环境预检
 
@@ -46,60 +41,47 @@ metadata:
 
 ---
 
-### 阶段 1：画板枚举与用户选择
+### 阶段 1：按需初始化
 
-1. [ ] **全量解析**：调用 `npx -y mcp-sketch list -p <file_path>` 获取所有画板
-2. [ ] **展示选择列表**：向用户展示画板列表，根据当前工具环境选择最友好的交互方式（如文本列表、多选组件、勾选框等），供用户多选
-3. [ ] **等待用户选择**：等待用户输入选中的画板
-4. [ ] **过滤列表**：解析用户输入，生成 `selected_artboards` 列表
-5. [ ] **确认**：输出 `"已选中 X 个页面，开始初始化"`
-
----
-
-### 阶段 2：按需初始化 (Call sketch-init)
-
-1. [ ] **参数准备**：将 `selected_artboards` 列表作为上下文传递给`skill: sketch-init`
-2. [ ] **执行**：调用`skill: sketch-init`，传入 `file_path` 和 `target_artboards`
+1. [ ] **执行**：调用`skill: sketch-init`，传入 `file_path`，由技能内部完成枚举、选择、规划、创建
+2. [ ] **解析输出**：从 `skill: sketch-init` 返回结果中提取选中画板列表 `selected_artboards`
 3. [ ] **产物验证**：
    - 验证选中画板对应的**空白组件文件**和**路由**是否存在
    - **若缺失且未报错，输出错误并终止**
 
 ---
 
-### 阶段 3：页面级循环 (For each Page in selected_artboards)
+### 阶段 2：页面级循环
 
-对每个 `page_name` 按以下顺序执行：
+对每个 `artboard_name` 按以下顺序执行：
 
 1. [ ] **进度同步**：输出日志 `"开始处理页面：[页面名]"`
 2. [ ] **现状检查**：
    - 检查该页面下的子组件目录或文件是否已有内容
    - **已存在完整实现** → 提示用户跳过或确认覆盖
    - **仅存在骨架 / 不存在** → 继续执行
-3. [ ] **组件拆解 (Call sketch-split)**：调用`skill: sketch-split`，传入 `file_path`, `page_name`, `artboard_name`；确认规划表与 `.md` 已生成
-4. [ ] **组件绘制循环 (For each Component)**：遍历规划表中的每个组件，按顺序执行：
+3. [ ] **组件拆解**：调用`skill: sketch-split`，传入 `file_path`, `page_name`, `artboard_name`；确认规划表与 `.md` 已生成
+4. [ ] **组件绘制循环**：遍历规划表中的每个组件，按顺序执行：
    - 读取 `.md` 中 `type` 字段确定组件归属（`common` / `page-specific`）
-   - **复用检查**：公共组件检查 `src/components/`，页面组件检查 `src/views/page-name/modules/`；存在则跳过，不存在则调用`skill: sketch-draw` 并传入 `component_path`、`rect`、`exclude_rects`
+   - **复用检查**：公共组件检查 `src/components/`，页面组件检查 `src/views/pageName/`；存在则跳过，不存在则调用`skill: sketch-draw` 并传入 `component_path`、`rect`、`exclude_rects`
    - 等待 `DRAW_SUCCESS`
 5. [ ] **页面级检查**：
-   - (prettier + eslint 已在 sketch-draw 中对每个组件自动执行)
+   - (prettier + eslint 已在 `skill: sketch-draw` 中对每个组件自动执行)
    - 若有 `typecheck` 脚本 → 执行检查 → 报错则重新调用`skill: sketch-draw` 修复，循环直到通过
    - 若有 `lint` 脚本且此前未运行 → 执行检查 → 报错则修复，循环直到通过
 
 ---
 
-### 阶段 4：收尾与交付
+### 阶段 3：收尾与交付
 
 1. [ ] **统计**：汇总生成的页面数、组件数、**跳过的组件数**
 2. [ ] **最终提示**：`"流程结束！已按需生成代码，请预览效果。"`
 
 ## 违规检测清单
 
-- [ ] 启动时未提供画板列表供用户选择
-- [ ] 一次性处理了用户未选中的画板
 - [ ] 覆盖了已存在的文件（路由或组件）
 - [ ] 没有检查路由配置是否已存在
-- [ ] 自行编写了组件代码
-- [ ] 跳过了 `skill: sketch-split` 直接写代码
+- [ ] 跳过了 `skill: sketch-split`、`skill: sketch-draw` 直接写代码
 - [ ] 页面组件绘制完成后，项目有 typecheck/lint 脚本但未执行
 - [ ] 校验报错时未修复直接进入下一页面
 
@@ -109,30 +91,44 @@ metadata:
 启动
   |
   v
-[阶段 0] 注入自动化上下文
+
+  阶段 0  注入自动化上下文
+    向所有子技能注入 execution_mode
+
   |
   v
-[阶段 1] 调用 list 获取画板 -> 展示列表 -> 用户选择 -> 确定 selected_artboards
+
+  阶段 1  skill: sketch-init (初始化)
+    调用 list 获取全量画板
+    → 用户选择 (含"全部"选项)
+    → 规划路由 + 创建空白组件
+    → 产物验证 (文件/路由)
+
   |
   v
-[阶段 2] 调用 `skill: sketch-init` (传入选中列表)
-  |-- 检查现状 (路由/文件)
-  |-- 仅创建缺失的空白组件和路由
+
+  阶段 2  页面级循环
+    对每个 artboard：
+      - 进度同步
+      - 现状检查 (已有内容？)
+         完整实现 → 跳过确认
+         骨架/无 → 继续
+      - skill: sketch-split (拆解)
+         输出规划表 + .md
+      - 组件绘制循环
+         遍历规划表:
+           读取 type / 复用检查
+           存在 → 跳过
+           缺失 → skill: sketch-draw → DRAW_SUCCESS
+      - 页面级检查
+         typecheck → 修复循环
+         lint → 修复循环
+
   |
   v
-[阶段 3] 遍历 selected_artboards
-  |-- 检查页面现状 (是否有内容)
-  |-- 调用 `skill: sketch-split`
-  |-- 遍历组件
-  |   |-- 检查组件现状
-  |   |-- 仅调用 `skill: sketch-draw` (缺失的组件)
-  |   |-- prettier + eslint (draw内自动执行)
-  |
-  |-- 页面组件全部绘制完毕
-  |   |-- pnpm typecheck
-  |   |-- 通过 → 下一页面
-  |   |-- 失败 → 回退修复对应组件
-  |
-  v
-[阶段 4] 统计输出 -> 结束
+
+  阶段 3  收尾与交付
+    统计 (页面/组件/跳过)
+    输出结束提示
+
 ```
