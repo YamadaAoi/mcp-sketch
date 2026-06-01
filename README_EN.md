@@ -4,6 +4,7 @@
 
 ## Disclaimer
 
+- Use **multi-modal models** to analyze preview images
 - Some meaningless layers are filtered out to avoid confusing AI, but valid layers may also be filtered
 - Recommend communicating with designers: export complex effects as images, set `radius` (even 1) for simple effects
 
@@ -137,7 +138,6 @@ Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips 
 
 ## Recommendations
 
-- Use multimodal models to read preview images and refine design structure
 - Keep data passed to AI under 50KB for better accuracy (local JSON is formatted, data sent to AI is compact)
 - **Use `rect` parameter for modular parsing of specific artboard regions**
 

@@ -28,8 +28,8 @@ metadata:
 ### 铁律 3：只创建空白组件，不写业务代码
 
 - 你创建的组件文件**只能包含基本骨架**。
-- **绝对禁止**在 sketch-init 阶段编写任何具体的业务逻辑。
-- 具体代码生成留给后续的 `sketch-split` 和 `sketch-draw`。
+- **绝对禁止**在 技能 `sketch-init` 阶段编写任何具体的业务逻辑。
+- 具体代码生成留给后续的 `skill: sketch-split` 和 `skill: sketch-draw`。
 
 ### 铁律 4：工作流模式下禁止询问
 
@@ -161,7 +161,7 @@ Options:
 
 ## 后续动作
 
-- 项目路由规划完成后，**必须等待 `sketch-workflow` 调用 `sketch-split`** 进行组件拆解。
+- 项目路由规划完成后，**必须等待 `skill: sketch-workflow` 调用 `skill: sketch-split`** 进行组件拆解。
 - 本技能**不负责**组件拆分和代码生成。
 
 ## 违规检测
