@@ -16,6 +16,7 @@ metadata:
 - **每个组件**：必须拥有**独立文件夹**，严禁平铺
 - **公共组件**：`src/components/ComponentName/`（PascalCase 目录名）
 - **页面特有组件**：`src/views/pageName/componentName/`（camelCase 目录名）
+- 组件名使用 PascalCase，**至少由两个单词组成**（如 `UserTable`、`SidebarMenu`），避免单单词命名
 - 文件命名：遵循项目现有规范
 
 ### 铁律 2：只拆解，不绘制

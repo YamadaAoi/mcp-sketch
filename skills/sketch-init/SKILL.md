@@ -22,6 +22,7 @@ metadata:
 - **子组件/子页面**：必须拥有**独立文件夹**，严禁平铺
   - 路径：`src/views/pageName/componentName/ComponentName` + `ComponentName.md`
   - 目录名使用`camelCase`，文件名使用`PascalCase`
+  - 组件名**至少由两个单词组成**（如 `UserTable`、`HeaderNav`），避免单单词命名
   - 每个子组件都在 `pageName/` 下有自己的子目录
 
 ### 铁律 3：只创建空白组件，不写业务代码

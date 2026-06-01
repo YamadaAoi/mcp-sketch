@@ -74,7 +74,12 @@ Options:
 - [ ] `artboard_name`：画板名称（必填）
 - [ ] `rect`：矩形区域坐标 `[x, y, width, height]`（必填）
 - [ ] `exclude_rects`：排除矩形区域坐标列表 `[[x, y, width, height]]`（可选，默认 `[]` ）
-- [ ] `assets_path`：切图存放路径（可选，默认 `src/assets/sketch`）
+- [ ] `assets_path`：切图存放路径
+
+#### **assets_path 确定规则**：从 `.md` 描述文档的 `component_path` 字段中提取组件相对路径，镜像映射到 `src/assets/` 下
+
+- 页面特有组件：`component_path: src/views/pageName/componentName/ComponentName` → `--ap src/assets/views/pageName/componentName/`
+- 公共组件：`component_path: src/components/Header/Header` → `--ap src/assets/components/Header/`
 
 **如果 rect 参数缺失，输出错误并拒绝执行。**
 
