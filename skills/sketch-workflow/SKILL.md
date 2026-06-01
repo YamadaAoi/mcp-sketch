@@ -27,9 +27,9 @@ metadata:
 
 | 子技能                | 何时调用 | 负责什么                                                           |
 | --------------------- | -------- | ------------------------------------------------------------------ |
-| `skill: sketch-init`  | 阶段 2   | 解析预览图 → 规划路由 → 创建空白组件 + `.md`                       |
-| `skill: sketch-split` | 阶段 3.3 | 分析画板结构 → 输出组件规划表(rect/exclude_rects) → 创建空白子组件 |
-| `skill: sketch-draw`  | 阶段 3.4 | 读取 `.md` + rect → 调用 `mcp-sketch analyze` → 生成完整组件代码   |
+| `skill: sketch-init`  | 阶段 1   | 解析预览图 → 规划路由 → 创建空白组件 + `.md`                       |
+| `skill: sketch-split` | 阶段 2.3 | 分析画板结构 → 输出组件规划表(rect/exclude_rects) → 创建空白子组件 |
+| `skill: sketch-draw`  | 阶段 2.4 | 读取 `.md` + rect → 调用 `mcp-sketch analyze` → 生成完整组件代码   |
 
 ## 执行清单
 

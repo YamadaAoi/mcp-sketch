@@ -86,11 +86,14 @@ Options:
 ### 步骤 2：调用 analyze 工具
 
 ```shell
-# 无子组件时
-npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" --ap /path/to/assets
+# 从 .md 的 component_path 推导 assets_path
+# component_path: src/views/userManagement/userTable/UserTable
+# → --ap src/assets/views/userManagement/userTable/
+
+npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" --ap src/assets/views/userManagement/userTable/
 
 # 有子组件时（exclude_rects 从 .md 描述文档中读取）
-npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" -e "[[x1,y1,w1,h1],[x2,y2,w2,h2]]" --ap /path/to/assets
+npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y,w,h]" -e "[[x1,y1,w1,h1],[x2,y2,w2,h2]]" --ap src/assets/views/userManagement/userTable/
 ```
 
 ### 步骤 3：读取工具返回结果
@@ -203,3 +206,4 @@ DRAW_SUCCESS
 - [ ] 生成的代码使用了项目未安装的框架或依赖
 - [ ] 未运行 `prettier` 格式化生成的组件代码
 - [ ] 未运行 `eslint` 检查，或明知 ESLint 报错仍跳过修复
+- [ ] 未按要求设置 `--ap` 切图路径（应与组件目录结构镜像）
