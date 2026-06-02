@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.1.4
+
+### Patch Changes
+
+- 支持读取解压后的设计稿文件夹，同时，修改save_result文件夹和预览图文件夹名称
+
 ## 1.1.3
 
 ### Patch Changes
