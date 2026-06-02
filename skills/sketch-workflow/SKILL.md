@@ -62,14 +62,17 @@ metadata:
    - **仅存在骨架 / 不存在** → 继续执行
 3. [ ] **组件拆解**：调用`skill: sketch-split`，传入 `file_path`, `page_name`, `artboard_name`；确认规划表与 `.md` 已生成
 4. [ ] **组件绘制循环（按依赖顺序，先子后父）**：
+   - **铁律：组件绘制期间禁止更新父组件 import**，必须等所有组件绘制完成后统一处理
    - 从规划表构建组件依赖树（依据 `children` 字段）
    - **排序规则**：按后序遍历（深度优先），确保每个组件的所有子孙组件都已绘制完毕，才绘制该组件
      - 叶节点（`children: []`）最先绘制
      - 逐层向上，直到根节点（`type: page`）最后绘制
-   - **复用检查**：遍历排序后的列表，对每个组件：
-     - 读取 `.md` 中 `type` 和 `component_path`
-     - 公共组件检查 `src/components/`，页面/父组件检查对应 `src/views/pageName/`；存在则跳过，不存在则调用`skill: sketch-draw` 并传入 `component_path`、`rect`、`exclude_rects`
-   - 等待 `DRAW_SUCCESS`
+   - **逐个组件绘制**：遍历排序后的列表，对每个组件：
+     - 读取 `.md` 中 `type`、`component_path`、`rect`、`exclude_rects`
+     - **复用检查**：公共组件检查 `src/components/`，页面/父组件检查对应 `src/views/pageName/`；存在则跳过
+     - **调用 `skill: sketch-draw`**：传入 `component_path`、`rect`、`exclude_rects`（**每个组件都必须调用 sketch-draw，包括父组件**）
+     - **等待 `DRAW_SUCCESS`**：确认当前组件绘制完成，再处理下一个组件
+   - **绘制完成后更新父组件**：所有组件绘制完成后，若父组件需要 import 子组件，由 `skill: sketch-draw` 在生成父组件代码时自动处理
 5. [ ] **页面级检查**：
    - (prettier + eslint 已在 `skill: sketch-draw` 中对每个组件自动执行)
    - 若有 `typecheck` 脚本 → 执行检查 → 报错则重新调用`skill: sketch-draw` 修复，循环直到通过
@@ -87,6 +90,9 @@ metadata:
 - [ ] 覆盖了已存在的文件（路由或组件）
 - [ ] 没有检查路由配置是否已存在
 - [ ] 跳过了 `skill: sketch-split`、`skill: sketch-draw` 直接写代码
+- [ ] **组件绘制期间更新了父组件的 import**（应等所有组件绘制完成后统一处理）
+- [ ] **父组件未调用 `skill: sketch-draw` 就直接生成代码**（父组件也必须调用 analyze 工具）
+- [ ] **未等待 `DRAW_SUCCESS` 就继续绘制下一个组件**
 - [ ] 页面组件绘制完成后，项目有 typecheck/lint 脚本但未执行
 - [ ] 校验报错时未修复直接进入下一页面
 
@@ -126,7 +132,8 @@ metadata:
          遍历排序后的列表:
            复用检查 (所有 type 均检查)
            存在 → 跳过
-           缺失 → skill: sketch-draw → DRAW_SUCCESS
+           缺失 → skill: sketch-draw → 等待 DRAW_SUCCESS
+         【禁止】在绘制循环期间更新父组件 import
       - 页面级检查
          typecheck → 修复循环
          lint → 修复循环
