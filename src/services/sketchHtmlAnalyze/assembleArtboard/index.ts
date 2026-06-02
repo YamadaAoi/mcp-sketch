@@ -26,7 +26,7 @@ function filterLayersByRect(
   excludeRects?: [number, number, number, number][]
 ) {
   const r = lyr.rect
-  if (!r?.x || !r?.y || !r?.width || !r?.height) {
+  if (r?.x == null || r?.y == null || r?.width == null || r?.height == null) {
     return false
   }
 
