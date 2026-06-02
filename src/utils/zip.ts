@@ -1,3 +1,5 @@
+import fs from 'fs/promises'
+import path from 'path'
 import { Open } from 'unzipper'
 import * as cheerio from 'cheerio'
 import { parse } from '@babel/parser'
@@ -5,6 +7,15 @@ import { type Node } from '@babel/traverse'
 import { generate } from '@babel/generator'
 import { logger } from '@/utils/logger'
 import { getSafeTraverse } from './getTraverse'
+
+interface UnifiedFile {
+  path: string
+  buffer(): Promise<Buffer>
+}
+
+interface UnifiedDirectory {
+  files: UnifiedFile[]
+}
 
 interface HtmlData {
   artboards: HtmlArtboard[]
@@ -140,8 +151,50 @@ export function normalize(p: string) {
   return decodeURIComponent(p).replace(/\\/g, '/').replace(/\/+/g, '/')
 }
 
+async function readLocalDirectory(dirPath: string): Promise<UnifiedDirectory> {
+  try {
+    const stats = await fs.stat(dirPath)
+    if (!stats.isDirectory()) {
+      throw new Error(`传入的设计稿路径不是一个文件夹: ${dirPath}`)
+    }
+  } catch (err) {
+    throw new Error(
+      `无法读取设计稿路径，请检查路径是否存在: ${dirPath} (${(err as Error).message})`
+    )
+  }
+
+  const files: UnifiedFile[] = []
+
+  async function scan(currentPath: string, relativeBase: string) {
+    const entries = await fs.readdir(currentPath, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentPath, entry.name)
+      const relativePath = path.join(relativeBase, entry.name)
+
+      if (entry.isDirectory()) {
+        await scan(fullPath, relativePath)
+      } else {
+        files.push({
+          path: relativePath,
+          buffer: () => fs.readFile(fullPath)
+        })
+      }
+    }
+  }
+
+  await scan(dirPath, '')
+  return { files }
+}
+
 export async function openSketchHtmlFile(filePath: string) {
-  const directory = await Open.file(filePath)
+  let directory: UnifiedDirectory
+
+  if (filePath.endsWith('.zip')) {
+    directory = await Open.file(filePath)
+  } else {
+    directory = await readLocalDirectory(filePath)
+  }
 
   const indexHtmlEntry = directory.files.find(f => f.path.endsWith(INDEXHTML))
   if (!indexHtmlEntry) {

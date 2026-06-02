@@ -4,7 +4,9 @@ import { openSketchHtmlFile } from '@/utils/zip'
 import { previewImage } from '../sketchHtmlPlan'
 
 export const sketchListInputSchema = z.object({
-  file_path: z.string().describe('sketch html zip file path(required)')
+  file_path: z
+    .string()
+    .describe('sketch html export path (zip or folder, required)')
 })
 
 export type SketchListInputSchema = SchemaOutput<typeof sketchListInputSchema>

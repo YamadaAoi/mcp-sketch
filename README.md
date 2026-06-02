@@ -17,9 +17,9 @@
 CLI: `npx -y mcp-sketch list [options]`
 MCP: `sketch_html_list`
 
-| 参数     | CLI 选项                 | MCP 参数  | 必填 | 说明 |
-| -------- | ------------------------ | --------- | ---- | ---- |
-| zip 路径 | `-p, --file_path <PATH>` | file_path | 是   |      |
+| 参数     | CLI 选项                 | MCP 参数  | 必填 | 说明       |
+| -------- | ------------------------ | --------- | ---- | ---------- |
+| 文件路径 | `-p, --file_path <PATH>` | file_path | 是   | zip 或目录 |
 
 例：`npx -y mcp-sketch list -p /path/to/export.zip`
 
@@ -34,11 +34,11 @@ MCP: `sketch_html_list`
 CLI: `npx -y mcp-sketch plan [options]`
 MCP: `sketch_html_plan`
 
-| 参数     | CLI 选项                 | MCP 参数      | 必填 | 说明 |
-| -------- | ------------------------ | ------------- | ---- | ---- |
-| zip 路径 | `-p, --file_path <PATH>` | file_path     | 是   |      |
-| 页面名称 | `--pn, --page_name`      | page_name     | 否   |      |
-| 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |      |
+| 参数     | CLI 选项                 | MCP 参数      | 必填 | 说明       |
+| -------- | ------------------------ | ------------- | ---- | ---------- |
+| 文件路径 | `-p, --file_path <PATH>` | file_path     | 是   | zip 或目录 |
+| 页面名称 | `--pn, --page_name`      | page_name     | 否   |            |
+| 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |            |
 
 例：`npx -y mcp-sketch plan -p /path/to/export.zip --pn 首页`
 
@@ -53,15 +53,15 @@ MCP: `sketch_html_plan`
 CLI: `npx -y mcp-sketch analyze [options]`
 MCP: `sketch_html_analyze`
 
-| 参数           | CLI 选项                 | MCP 参数      | 必填 | 说明                                    |
-| -------------- | ------------------------ | ------------- | ---- | --------------------------------------- |
-| zip 路径       | `-p, --file_path <PATH>` | file_path     | 是   |                                         |
-| 页面名称       | `--pn, --page_name`      | page_name     | 否   |                                         |
-| 画板名称       | `--an, --artboard_name`  | artboard_name | 否   |                                         |
-| 矩形区域       | `-r, --rect`             | rect          | 否   | `[x, y, width, height]`                 |
-| 排除矩形区域   | `-e, --exclude_rects`    | exclude_rects | 否   | `[[x, y, width, height], ...]`          |
-| 切图存放路径   | `--ap, --assets_path`    | assets_path   | 否   | 默认 `src/assets/sketch`                |
-| 保存结果到文件 | `--sr, --save_result`    | save_result   | 否   | 保存 JSON 到 zip 同级目录，默认 `false` |
+| 参数           | CLI 选项                 | MCP 参数      | 必填 | 说明                                             |
+| -------------- | ------------------------ | ------------- | ---- | ------------------------------------------------ |
+| 文件路径       | `-p, --file_path <PATH>` | file_path     | 是   | zip 或目录                                       |
+| 页面名称       | `--pn, --page_name`      | page_name     | 否   |                                                  |
+| 画板名称       | `--an, --artboard_name`  | artboard_name | 否   |                                                  |
+| 矩形区域       | `-r, --rect`             | rect          | 否   | `[x, y, width, height]`                          |
+| 排除矩形区域   | `-e, --exclude_rects`    | exclude_rects | 否   | `[[x, y, width, height], ...]`                   |
+| 切图存放路径   | `--ap, --assets_path`    | assets_path   | 否   | 默认 `src/assets/sketch`                         |
+| 保存结果到文件 | `--sr, --save_result`    | save_result   | 否   | 保存 JSON 到 `{input}.cache/` 目录，默认 `false` |
 
 例：`npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"`
 
@@ -134,7 +134,8 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
 ## 输出文件位置
 
 - 切图：默认 `src/assets/sketch/`（可通过 `assets_path` 自定义）
-- JSON 结果：与 zip 包同名的目录下
+- JSON 结果：`{input}.cache/` 目录下
+- 预览图：`{input}.cache/` 目录下（webp 格式，sharp 不可用时为原始格式）
 
 ## 使用建议
 

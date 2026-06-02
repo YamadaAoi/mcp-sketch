@@ -11,14 +11,16 @@ import { processImage } from '@/utils/saveFile'
 import { filterArtboards } from '../sketchHtmlAnalyze/filterArtboards'
 
 export const sketchPlanInputSchema = z.object({
-  file_path: z.string().describe('sketch html zip file path(required)'),
+  file_path: z
+    .string()
+    .describe('sketch html export path (zip or folder, required)'),
   page_name: z.string().describe('page name (optional)').optional(),
   artboard_name: z.string().describe('artboard name (optional)').optional()
 })
 
 /**
  *
- * @property {string} file_path - sketch html zip文件文件路径(必填)
+ * @property {string} file_path - sketch html文件路径(zip或目录,必填)
  * @property {string} page_name - 指定页面名称(可选)
  * @property {string} artboard_name - 指定画板名称(可选)
  */
@@ -38,7 +40,11 @@ export async function previewImage(
     if (imageData) {
       const extname = path.extname(imgPath)
       const fileName = path.basename(imgPath, extname)
-      const dest = path.join(parsed.dir, parsed.name, `${fileName}${extname}`)
+      const dest = path.join(
+        parsed.dir,
+        `${parsed.name}.cache`,
+        `${fileName}${extname}`
+      )
       previewPath = await processImage(imageData, dest, artboard.width)
     }
   }

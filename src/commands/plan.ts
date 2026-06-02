@@ -14,9 +14,9 @@ async function handlePlan(opts: Record<string, unknown>) {
 export const plan = new Command()
   .name('plan')
   .description(
-    'Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export zip.'
+    'Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export archive (zip or folder).'
   )
-  .option('-p, --file_path <PATH>', 'Sketch HTML zip archive path')
+  .option('-p, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
   .option('--pn, --page_name [PAGENAME]', 'Page name')
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .action((opts: Record<string, unknown>) => {

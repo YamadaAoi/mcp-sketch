@@ -13,8 +13,10 @@ async function handleList(opts: Record<string, unknown>) {
 
 export const list = new Command()
   .name('list')
-  .description('List the artboards from the Sketch Meaxure export zip.')
-  .option('-p, --file_path <PATH>', 'Sketch HTML zip archive path')
+  .description(
+    'List the artboards from the Sketch Meaxure export archive (zip or folder).'
+  )
+  .option('-p, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
   .action((opts: Record<string, unknown>) => {
     handleList(opts).catch(err => {
       logger.error(err, 'sketch-cli list')

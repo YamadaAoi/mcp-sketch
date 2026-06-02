@@ -9,7 +9,7 @@
 
 ## skill: skecth-init
 
-- 调用`npx -y mcp-sketch list [options]`命令提取 Sketch 导出 zip 中的所有画板（名称、预览图），通过多模态模型读取预览图，智能规划路由结构
+- 调用`npx -y mcp-sketch list [options]`命令提取 Sketch 导出文件（zip 或目录）中的所有画板（名称、预览图），通过多模态模型读取预览图，智能规划路由结构
 - 只负责规划路由，编写路由配置文件，新建空白入口组件，绝不编写组件具体实现代码
 
 ## skill: sketch-split

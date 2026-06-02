@@ -1,6 +1,6 @@
 ---
 name: sketch-split
-description: 本技能会提取 sketch 设计稿 zip 里的单个画板信息并合理拆分为待开发组件
+description: 本技能会提取 sketch 设计稿 (zip 或目录) 里的单个画板信息并合理拆分为待开发组件
 metadata:
   author: zhouyinkui
   version: '2026.06.01'
@@ -64,10 +64,10 @@ $ npx -y mcp-sketch plan -h
 
 Usage: npx -y mcp-sketch plan [options]
 
-Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export zip.
+Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export archive (zip or folder).
 
 Options:
-  -p, --file_path <PATH>                Sketch HTML zip archive path
+  -p, --file_path <PATH>                Sketch HTML export path (zip or folder)
   --pn, --page_name [PAGENAME]          Page name
   --an, --artboard_name [ARTBOARDNAME]  Artboard name
 ```
@@ -83,7 +83,7 @@ Options:
 ### 步骤 2：调用工具获取画板基本信息
 
 - 根据参数推断：
-  - `-p`: Sketch zip 文件路径
+  - `-p`: Sketch 文件路径（zip 或目录）
   - `--pn`: 页面名称
   - `--an`: 画板名称
 - 调用工具：`npx -y mcp-sketch plan -p /path/to/zip --pn 页面名 --an 画板名`

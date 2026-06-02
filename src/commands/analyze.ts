@@ -23,9 +23,9 @@ async function handleAnalyze(opts: Record<string, unknown>) {
 export const analyze = new Command()
   .name('analyze')
   .description(
-    'parsing Sketch Meaxure exported HTML zip archives and extracting design structure information'
+    'parsing Sketch Meaxure exported HTML archives (zip or folder) and extracting design structure information'
   )
-  .option('-p, --file_path <PATH>', 'Sketch HTML zip archive path')
+  .option('-p, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
   .option('--pn, --page_name [PAGENAME]', 'Page name')
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .option(

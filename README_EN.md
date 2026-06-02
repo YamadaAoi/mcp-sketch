@@ -17,9 +17,9 @@ Returns basic info for all artboards (page name, artboard name, preview path).
 CLI: `npx -y mcp-sketch list [options]`
 MCP: `sketch_html_list`
 
-| Parameter | CLI Flag                 | MCP Parameter | Required | Description |
-| --------- | ------------------------ | ------------- | -------- | ----------- |
-| zip path  | `-p, --file_path <PATH>` | file_path     | yes      |             |
+| Parameter | CLI Flag                 | MCP Parameter | Required | Description   |
+| --------- | ------------------------ | ------------- | -------- | ------------- |
+| file path | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder |
 
 Example: `npx -y mcp-sketch list -p /path/to/export.zip`
 
@@ -34,11 +34,11 @@ Lightweight plan: return preview image path and basic artboard info (width, heig
 CLI: `npx -y mcp-sketch plan [options]`
 MCP: `sketch_html_plan`
 
-| Parameter     | CLI Flag                 | MCP Parameter | Required | Description |
-| ------------- | ------------------------ | ------------- | -------- | ----------- |
-| zip path      | `-p, --file_path <PATH>` | file_path     | yes      |             |
-| page name     | `--pn, --page_name`      | page_name     | no       |             |
-| artboard name | `--an, --artboard_name`  | artboard_name | no       |             |
+| Parameter     | CLI Flag                 | MCP Parameter | Required | Description   |
+| ------------- | ------------------------ | ------------- | -------- | ------------- |
+| file path     | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder |
+| page name     | `--pn, --page_name`      | page_name     | no       |               |
+| artboard name | `--an, --artboard_name`  | artboard_name | no       |               |
 
 Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
 
@@ -53,15 +53,15 @@ Full parse: extract layer structure, styles, assets, output design JSON + previe
 CLI: `npx -y mcp-sketch analyze [options]`
 MCP: `sketch_html_analyze`
 
-| Parameter     | CLI Flag                 | MCP Parameter | Required | Description                              |
-| ------------- | ------------------------ | ------------- | -------- | ---------------------------------------- |
-| zip path      | `-p, --file_path <PATH>` | file_path     | yes      |                                          |
-| page name     | `--pn, --page_name`      | page_name     | no       |                                          |
-| artboard name | `--an, --artboard_name`  | artboard_name | no       |                                          |
-| rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                  |
-| exclude rects | `-e, --exclude_rects`    | exclude_rects | no       | `[[x, y, width, height], ...]`           |
-| assets path   | `--ap, --assets_path`    | assets_path   | no       | default `src/assets/sketch`              |
-| save result   | `--sr, --save_result`    | save_result   | no       | save JSON alongside zip, default `false` |
+| Parameter     | CLI Flag                 | MCP Parameter | Required | Description                                          |
+| ------------- | ------------------------ | ------------- | -------- | ---------------------------------------------------- |
+| file path     | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder                                        |
+| page name     | `--pn, --page_name`      | page_name     | no       |                                                      |
+| artboard name | `--an, --artboard_name`  | artboard_name | no       |                                                      |
+| rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                              |
+| exclude rects | `-e, --exclude_rects`    | exclude_rects | no       | `[[x, y, width, height], ...]`                       |
+| assets path   | `--ap, --assets_path`    | assets_path   | no       | default `src/assets/sketch`                          |
+| save result   | `--sr, --save_result`    | save_result   | no       | save JSON into `{input}.cache/` dir, default `false` |
 
 Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
@@ -134,7 +134,8 @@ Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips 
 ## Output File Location
 
 - Assets: default `src/assets/sketch/` (customizable via `assets_path`)
-- JSON result: saved in a directory named after the zip file
+- JSON result: saved into `{input}.cache/` directory
+- Preview image: saved into `{input}.cache/` directory (webp format, fallback to original if sharp unavailable)
 
 ## Recommendations
 

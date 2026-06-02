@@ -1,6 +1,6 @@
 ---
 name: sketch-draw
-description: 本技能会提取 sketch 设计稿 zip 里的单个画板指定区域设计结构并生成前端组件代码
+description: 本技能会提取 sketch 设计稿 (zip 或目录) 里的单个画板指定区域设计结构并生成前端组件代码
 metadata:
   author: zhouyinkui
   version: '2026.06.01'
@@ -51,10 +51,10 @@ $ npx -y mcp-sketch analyze -h
 
 Usage: mcp-sketch analyze [options]
 
-parsing Sketch Meaxure exported HTML zip archives and extracting design structure information
+parsing Sketch Meaxure exported HTML archives (zip or folder) and extracting design structure information
 
 Options:
-  -p, --file_path <PATH>                Sketch HTML zip archive path
+  -p, --file_path <PATH>                Sketch HTML export path (zip or folder)
   --pn, --page_name [PAGENAME]          Page name
   --an, --artboard_name [ARTBOARDNAME]  Artboard name
   -r, --rect [RECT]                     Specify rectangular region to parse, format: [x, y, width, height] (x, y is top-left corner)
@@ -69,7 +69,7 @@ Options:
 
 在调用工具前，验证以下参数：
 
-- [ ] `file_path`：Sketch zip 文件路径（必填）
+- [ ] `file_path`：Sketch 文件路径（zip 或目录，必填）
 - [ ] `page_name`：页面名称（必填）
 - [ ] `artboard_name`：画板名称（必填）
 - [ ] `rect`：矩形区域坐标 `[x, y, width, height]`（必填）

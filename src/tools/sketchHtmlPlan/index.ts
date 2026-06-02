@@ -17,7 +17,7 @@ const toolName = 'sketch_html_plan'
  * page优先级：page_name > 第一个page
  * artboard优先级：artboard_name > 第一个artboard
  * @param {SketchPlanInputSchema} args - sketch文件规划参数
- * @property {string} file_path - sketch html zip文件路径(必填)
+ * @property {string} file_path - sketch html文件路径(zip或目录,必填)
  * @property {string} page_name - 指定页面名称(可选)
  * @property {string} artboard_name - 指定画板名称(可选)
  * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的画板信息字符串作为参考
@@ -43,7 +43,7 @@ export function toolSketchHtmlPlan(): RegisterToolParams {
     {
       title: toolName,
       description:
-        'Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export zip',
+        'Returns the preview image path and other basic data for the specified artboard from the Sketch Meaxure export archive (zip or folder)',
       inputSchema: sketchPlanInputSchema
     },
     sketchHtmlPlan

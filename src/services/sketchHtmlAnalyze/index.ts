@@ -8,10 +8,12 @@ import { filterArtboards } from './filterArtboards'
 import { assembleArtboard } from './assembleArtboard'
 
 /**
- * 解析sketch html zip文件分析参数
+ * 解析sketch html文件分析参数
  */
 export const sketchAnalyzeInputSchema = z.object({
-  file_path: z.string().describe('sketch html zip file path(required)'),
+  file_path: z
+    .string()
+    .describe('sketch html export path (zip or folder, required)'),
   page_name: z.string().describe('page name (optional)').optional(),
   artboard_name: z.string().describe('artboard name (optional)').optional(),
   rect: z
@@ -33,8 +35,8 @@ export const sketchAnalyzeInputSchema = z.object({
 })
 
 /**
- * 解析sketch html zip文件分析参数类型
- * @property {string} file_path - sketch html zip文件文件路径(必填)
+ * 解析sketch html文件分析参数类型
+ * @property {string} file_path - sketch html文件路径(zip或目录,必填)
  * @property {string} page_name - 指定页面名称(可选)
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
@@ -47,8 +49,8 @@ export type SketchAnalyzeInputSchema = SchemaOutput<
 >
 
 /**
- * 分析sketch html zip文件，提取指定节点数据，存储到指定位置json文件中，返回json文件位置
- * json位置拼接规则：{args.file_path所在文件夹}/{args.file_name无后缀}/{nodeInfo.pageId}_{nodeInfo.artboardId}}.json
+ * 分析sketch html文件(zip或目录)，提取指定节点数据，存储到指定位置json文件中，返回json文件位置
+ * json位置拼接规则：{args.file_path所在文件夹}/{args.file_name无后缀}.cache/{pageName}_{artboardName}[_rect].json
  * @param args 分析参数
  * @returns json文件位置
  */
@@ -77,7 +79,7 @@ export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
 
     const parsed = path.parse(args.file_path)
     if (args.save_result) {
-      const targetPath = `${parsed.dir}/${parsed.name}/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
+      const targetPath = `${parsed.dir}/${parsed.name}.cache/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
       await writeJsonFile(targetPath, assembledArtboard.artboard)
     }
 
@@ -90,7 +92,7 @@ export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
         const fileName = path.basename(assembledArtboard.previewPath, extname)
         const dest = path.join(
           parsed.dir,
-          parsed.name,
+          `${parsed.name}.cache`,
           `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${newExcludeRects?.length ? `_exclude_${newExcludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
         )
         assembledArtboard.previewPath = await processImage(

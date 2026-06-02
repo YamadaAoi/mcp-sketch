@@ -1,13 +1,13 @@
 ---
 name: sketch-init
-description: 本技能会提取 sketch 设计稿 zip 里所有画板并规划路由
+description: 本技能会提取 sketch 设计稿 (zip 或目录) 里所有画板并规划路由
 metadata:
   author: zhouyinkui
   version: '2026.06.01'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
-此技能基于 `mcp-sketch` 工具，利用 `list` 命令轻量级提取 Sketch 导出 zip 中的所有画板（名称、预览图），通过多模态模型读取预览图，智能规划路由结构
+此技能基于 `mcp-sketch` 工具，利用 `list` 命令轻量级提取 Sketch 导出文件（zip 或目录）中的所有画板（名称、预览图），通过多模态模型读取预览图，智能规划路由结构
 
 # 阶段隔离声明
 
@@ -50,10 +50,10 @@ $ npx -y mcp-sketch list -h
 
 Usage: npx -y mcp-sketch list [options]
 
-Returns the basic data for all artboards from the Sketch Meaxure export zip.
+Returns the basic data for all artboards from the Sketch Meaxure export archive (zip or folder).
 
 Options:
-  -p, --file_path <PATH>                Sketch HTML zip archive path
+  -p, --file_path <PATH>                Sketch HTML export path (zip or folder)
 ```
 
 ## 执行步骤

@@ -17,7 +17,7 @@ const toolName = 'sketch_html_list'
  * page优先级：page_name > 第一个page
  * artboard优先级：artboard_name > 第一个artboard
  * @param {SketchListInputSchema} args - sketch文件列出参数
- * @property {string} file_path - sketch html zip文件路径(必填)
+ * @property {string} file_path - sketch html文件路径(zip或目录,必填)
  * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的画板列表作为参考
  */
 async function sketchHtmlList(
@@ -40,7 +40,8 @@ export function toolSketchHtmlList(): RegisterToolParams {
     toolName,
     {
       title: toolName,
-      description: 'List the artboards from the Sketch Meaxure export zip',
+      description:
+        'List the artboards from the Sketch Meaxure export archive (zip or folder)',
       inputSchema: sketchListInputSchema
     },
     sketchHtmlList

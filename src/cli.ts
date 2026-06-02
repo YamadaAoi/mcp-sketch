@@ -6,7 +6,9 @@ import { analyze } from '@/commands/analyze'
 export function startCli() {
   const program = new Command()
     .name('mcp-sketch')
-    .description('A CLI tool for analyzing Sketch Meaxure zip files')
+    .description(
+      'A CLI tool for analyzing Sketch Meaxure exported archives (zip or folder)'
+    )
     .version(__VERSION__, '-v, --version', 'Show version number')
 
   program.addCommand(list)
