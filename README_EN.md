@@ -23,10 +23,6 @@ MCP: `sketch_html_list`
 
 Example: `npx -y mcp-sketch list -p /path/to/export.zip`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-init`
-
-- With skill: AI surveys all artboards, plans routes, creates blank components and description docs.
-
 ### plan
 
 Lightweight plan: return preview image path and basic artboard info (width, height, name), no layer details.
@@ -41,10 +37,6 @@ MCP: `sketch_html_plan`
 | artboard name | `--an, --artboard_name`  | artboard_name | no       |               |
 
 Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
-
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-split`
-
-- With skill: AI decomposes the artboard into components, plans directory structure, creates component docs.
 
 ### analyze
 
@@ -65,15 +57,18 @@ MCP: `sketch_html_analyze`
 
 Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-draw`
+## Skills
 
-- With skill: AI auto-infers parameters, calls the tool, reads preview to refine structure, outputs high-fidelity pages.
+> **Note**: Skills are still under active iteration. LLMs are unpredictable — they may deviate from the workflow or sneak logic code into blank components ("hallucination"). The author keeps updating them, and feel free to customize them for your own project.
 
-### Workflow: one-click generation
+Auxiliary skills installed via `npx skills@latest add YamadaAoi/mcp-sketch` that automate the design-to-code workflow with AI.
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-workflow`
-
-- With skill: AI orchestrates init (planning), split (decomposition), and draw (rendering) into a seamless pipeline for one-click project generation.
+| Skill             | Command              | Purpose                                                                                    |
+| ----------------- | -------------------- | ------------------------------------------------------------------------------------------ |
+| `sketch-workflow` | `-s sketch-workflow` | One-click generation: AI orchestrates init → split → draw in a seamless pipeline           |
+| `sketch-init`     | `-s sketch-init`     | AI surveys all artboards, plans routes, creates blank components and description docs      |
+| `sketch-split`    | `-s sketch-split`    | AI decomposes artboards into components, plans directory structure, creates component docs |
+| `sketch-draw`     | `-s sketch-draw`     | AI auto-infers parameters, calls analyze, reads previews, outputs high-fidelity pages      |
 
 ## MCP Configuration
 

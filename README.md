@@ -23,10 +23,6 @@ MCP: `sketch_html_list`
 
 例：`npx -y mcp-sketch list -p /path/to/export.zip`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-init`
-
-- 结合 skill：AI 基于所有画板概览项目全貌、规划路由、创建空白组件和描述文档。
-
 ### plan
 
 轻量规划，返回画板预览图路径及基本信息（宽高、名称），不提取图层细节。
@@ -41,10 +37,6 @@ MCP: `sketch_html_plan`
 | 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |            |
 
 例：`npx -y mcp-sketch plan -p /path/to/export.zip --pn 首页`
-
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-split`
-
-- 结合 skill：AI 基于设计图拆解组件、规划目录结构、创建组件描述文档。
 
 ### analyze
 
@@ -65,15 +57,18 @@ MCP: `sketch_html_analyze`
 
 例：`npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"`
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-draw`
+## Skills
 
-- 结合 skill：AI 自动推断参数、调用工具、读预览图修正结构，输出高还原度页面。
+> **注意**：技能仍在迭代中，AI 大模型存在不确定性，可能出现不按工作流执行、在空白组件中混入逻辑代码等"幻觉"行为。作者会持续更新优化，不妨定制适合自己项目的版本。
 
-### 工作流：一键生成
+通过 `npx skills@latest add YamadaAoi/mcp-sketch` 安装的辅助技能，配合 AI 实现设计稿到代码的自动化工作流。
 
-#### Skill: `npx skills@latest add YamadaAoi/mcp-sketch -s sketch-workflow`
-
-- 结合 skill：AI 自动编排 init（规划）、split（拆解）、draw（绘制）三个技能，串联成完整流水线，实现"一键生成项目"的终极体验。
+| Skill             | 命令                 | 用途                                                              |
+| ----------------- | -------------------- | ----------------------------------------------------------------- |
+| `sketch-workflow` | `-s sketch-workflow` | 一键生成工作流：AI 自动编排 init → split → draw，串联完整流水线   |
+| `sketch-init`     | `-s sketch-init`     | AI 概览所有画板、规划路由、创建空白组件和描述文档                 |
+| `sketch-split`    | `-s sketch-split`    | AI 基于设计图拆解组件、规划目录结构、创建组件描述文档             |
+| `sketch-draw`     | `-s sketch-draw`     | AI 自动推断参数、调用 analyze、读预览图修正结构，输出高还原度页面 |
 
 ## MCP 配置
 
