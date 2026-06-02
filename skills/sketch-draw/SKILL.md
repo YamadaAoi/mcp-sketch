@@ -15,9 +15,9 @@ metadata:
 
 - 检测到工作流模式时，生成完毕后直接输出 `DRAW_SUCCESS`
 
-### 铁律 2：必须基于 rect 坐标绘制
+### 铁律 2：必须基于 rect 参数限定绘制范围
 
-- 你**必须**接收 `rect` 参数 `[x, y, width, height]`
+- 你**必须**接收 `rect` 参数 `[x, y, width, height]` 限定本次绘制的区域范围
 - 你**只能**绘制该矩形区域内的内容
 - 没有 rect 参数 = 拒绝执行
 
@@ -51,7 +51,7 @@ metadata:
 #### 禁止行为
 
 - **禁止忽略 `css` 数组**：图层的 `css` 字段包含设计稿导出的精确 CSS 属性，必须原样提取，不得自行估算
-- **禁止忽略 `rect` 坐标**：图层的 `rect` 包含精确的 `[x, y, w, h]`，必须用于计算元素位置和尺寸，不得凭感觉编写
+- **禁止忽略 `rect` 坐标**：图层的 `rect` 是理解布局关系的**核心参考**（左右顺序、上下层级、相对宽度比），禁止不看 rect 凭感觉排版
 - **禁止忽略 `name` 字段**：`text` 图层的 `name` 是设计稿中的文案内容，必须作为组件中的文本内容使用
 - **禁止忽略 `styleName`**：设计系统的样式令牌，应记录并在可能时映射为 CSS 变量
 
@@ -266,7 +266,12 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 #### 4.1 绘制原则
 
 - **禁止绝对定位**：优先使用 flex/grid 布局
-- **相对单位优先**：使用 `%`、`rem`、`vw/vh`，仅图标/固定尺寸元素使用 `px`
+- **相对单位优先**：对于布局容器、区块间距、列表项等，使用 `%`、`flex-grow`、`calc()` 实现自适应。仅按钮、输入框、图标、头像等具固定尺寸的原子元素使用 `px`
+- **用 rect 算比例，不硬编码像素**：
+  - 参考 rect 中的 `x` 和 `width` 计算元素在容器中的**相对占比**（如两个元素水平排列，宽度比约为 3:1，则 flex: 3 和 flex: 1）
+  - 参考 rect 中的 `y` 确定元素的上**下排列顺序**，用 flex 天然顺序实现
+  - `calc(100% - npx)` 适合处理"除固定侧边栏外的剩余空间"
+  - 同一行多个元素时优先用 `flex-wrap` + `gap`，而非人工计算每个元素宽度
 - **切图必须引用**：设计稿导出的切图必须通过 `background-image` 或 `<img>` 使用，路径使用 `@/assets/...` 别名
 - **语义化标签**：合理使用 `header`、`main`、`section`、`nav` 等
 - **与项目现有代码风格一致**：文件后缀、导入方式、CSS 方案、命名规范均参考已有组件
@@ -275,20 +280,20 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 
 代码中的**每一个值**都必须来自步骤 3.4 的结构化数据提取表，不得凭感觉编写：
 
-| 代码中的值 | 必须来源于                            | 示例                                  |
-| ---------- | ------------------------------------- | ------------------------------------- |
-| 字体大小   | text 图层的 `css` 中 `font-size`      | `font-size: 34px`                     |
-| 文字颜色   | text 图层的 `css` 中 `color`          | `color: #ffffff`                      |
-| 字重       | text 图层的 `css` 中 `font-weight`    | `font-weight: 700`                    |
-| 行高       | text 图层的 `css` 中 `line-height`    | `line-height: 45px`                   |
-| 字间距     | text 图层的 `css` 中 `letter-spacing` | `letter-spacing: 2px`                 |
-| 文案内容   | text 图层的 `name` 字段               | `电磁信号保密监测器系统`              |
-| 背景色     | shape 图层的 `css` 中 `background`    | `background: #2979ff`                 |
-| 边框       | shape 图层的 `css` 中 `border`        | `border: 1px solid #5a5c5e`           |
-| 圆角       | shape 图层的 `css` 中 `border-radius` | `border-radius: 27px`                 |
-| 元素位置   | 图层的 `rect` 中 `x, y`               | 基于x,y合理布局，禁止无脑使用left/top |
-| 元素尺寸   | 图层的 `rect` 中 `w, h`               | `width: 400px; height: 54px`          |
-| 切图引用   | slice 图层的 `assets[].path`          | `url('@/assets/.../登录框.png')`      |
+| 代码中的值 | 必须来源于                            | 示例                                                       |
+| ---------- | ------------------------------------- | ---------------------------------------------------------- |
+| 字体大小   | text 图层的 `css` 中 `font-size`      | `font-size: 34px`                                          |
+| 文字颜色   | text 图层的 `css` 中 `color`          | `color: #ffffff`                                           |
+| 字重       | text 图层的 `css` 中 `font-weight`    | `font-weight: 700`                                         |
+| 行高       | text 图层的 `css` 中 `line-height`    | `line-height: 45px`                                        |
+| 字间距     | text 图层的 `css` 中 `letter-spacing` | `letter-spacing: 2px`                                      |
+| 文案内容   | text 图层的 `name` 字段               | `电磁信号保密监测器系统`                                   |
+| 背景色     | shape 图层的 `css` 中 `background`    | `background: #2979ff`                                      |
+| 边框       | shape 图层的 `css` 中 `border`        | `border: 1px solid #5a5c5e`                                |
+| 圆角       | shape 图层的 `css` 中 `border-radius` | `border-radius: 27px`                                      |
+| 元素位置   | 图层的 `rect` 中 `x, y`               | 参考 x,y 确定排列顺序和左右关系，用 flex/grid 实现         |
+| 元素尺寸   | 图层的 `rect` 中 `w, h`               | 按元素类型决定：固定原子用 px，布局容器用 %/flex-grow/calc |
+| 切图引用   | slice 图层的 `assets[].path`          | `url('@/assets/.../登录框.png')`                           |
 
 #### 4.2 图片资源优先级链条（强制）
 
@@ -334,11 +339,11 @@ npx -y mcp-sketch analyze -p /path/to/zip --pn 页面名 --an 画板名 -r "[x,y
 - [ ] 代码中的每个 `border-radius` 值与提取表一致
 - [ ] 代码中的文案内容与提取表的 `name` 字段一致
 - [ ] 代码中引用的切图路径与提取表的 `assets[].path` 一致
-- [ ] 布局结构与设计稿一致
-- [ ] 元素位置关系正确（使用 `rect` 坐标验证）
+- [ ] 布局结构与设计稿一致（左右顺序、上下层级、相对宽高比，而非像素级匹配）
+- [ ] 元素位置关系正确（用 `rect` 参考验证排列顺序，而非精确坐标）
+- [ ] 响应式适配合理（容器用了相对单位，而非全部 px 写死）
 - [ ] 颜色、字体与设计稿一致（使用 `css` 属性验证）
 - [ ] 图片/图标正确引用
-- [ ] 响应式适配合理
 - [ ] 最低保证 90% 还原度
 
 ### 步骤 6：代码质量自检 (强制)
@@ -400,6 +405,7 @@ DRAW_SUCCESS
 - [ ] **用纯 CSS 模拟替代设计稿已提供的背景/装饰切图**
 - [ ] **未输出结构化数据提取表就直接生成代码**
 - [ ] **忽略图层 `css` 数组中的属性，自行估算 font-size / color / border 等样式值**
-- [ ] **忽略图层 `rect` 坐标，凭感觉编写元素位置和尺寸**
+- [ ] **忽略图层 `rect` 坐标，完全凭感觉排版（不看左右关系、不参考相对宽度比）**
+- [ ] **布局容器全部用 px 写死宽高，未使用相对单位实现自适应**
 - [ ] **忽略图层 `name` 字段，未将设计稿文案内容作为组件文本使用**
 - [ ] **忽略图层 `styleName` 令牌，未记录设计系统样式映射**
