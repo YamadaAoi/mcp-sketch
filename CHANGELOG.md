@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.1.5
+
+### Patch Changes
+
+- 过滤图层边界情况调整
+
 ## 1.1.4
 
 ### Patch Changes
