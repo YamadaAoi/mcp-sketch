@@ -130,18 +130,37 @@ Options:
 - 父组件的 `exclude_rects` 必须包含所有直接子组件的 rect 坐标
 - 父组件的 `children` 必须列出所有直接子组件的名称
 
-### 步骤 5：创建空白组件和描述文档
+### 步骤 5：更新父组件描述文档
+
+在创建子组件之前，**必须**更新 `sketch-init` 创建的父组件 `.md`，补全 `sketch-split` 阶段分析出的层级信息：
+
+对规划表中 `type: page` 的父组件：
+
+1. 读取其已有的 `.md` 文件（位置在 `component_path` 同级目录）
+2. 追加/更新以下元数据字段：
+
+   ```yaml
+   rect: [0, 0, artboard_width, artboard_height]
+   exclude_rects: [[子组件1 rect], [子组件2 rect], ...] # 所有直接子组件的 rect
+   children: [ChildComponentName1, ChildComponentName2, ...] # 所有直接子组件名称
+   ```
+
+3. **保留原有字段**（`type`, `component_path`, `file_path`, `page_name`, `artboard_name`, `preview_path`），仅新增或更新 `rect`、`exclude_rects`、`children`
+
+> 嵌套父组件（中间层 `common` / `page-specific` 组件）的 `.md` 在本步骤创建时已包含完整字段，无需单独更新。
+
+### 步骤 6：创建空白组件和描述文档
 
 根据规划表，为**每个组件**创建：
 
-#### 5.1 目录结构 (强制)
+#### 6.1 目录结构 (强制)
 
 按组件类型决定存放位置：
 
 - 参照`铁律 1：目录结构规范`和`铁律 5：强制提取公共组件`，创建组件目录结构
 - **严禁**将所有子组件文件平铺在同一个目录下
 
-#### 5.2 空白组件
+#### 6.2 空白组件
 
 - 参照`铁律 4：适配项目技术栈`创建符合项目技术栈的空白组件
 
@@ -153,7 +172,7 @@ Options:
 
 **注意**：组件内容**只能是空白组件**，不含任何业务代码或样式声明
 
-#### 5.3 描述文档
+#### 6.3 描述文档
 
 - 文件名：`ComponentName.md`
 - 位置：与组件文件同级
@@ -168,7 +187,8 @@ Options:
   page_name: somePage
   artboard_name: someArtboard
   rect: [x, y, width, height]
-  exclude_rects: [[x1, y1, w1, h1], [x2, y2, w2, h2]] # 直接子组件的rect列表
+  exclude_rects: [[x1, y1, w1, h1], [x2, y2, w2, h2]] # 直接子组件的rect列表，无子组件则为 []
+  children: [ChildComponentName] # 直接子组件名称列表，无子组件则为 []
   preview_path: src/path/to/previewImage(relative path)
   ---
 
@@ -181,13 +201,14 @@ Options:
   如果是公共组件，描述其在哪些页面中被复用
   ```
 
-### 步骤 6：产物验证 (强制)
+### 步骤 7：产物验证 (强制)
 
 创建完成后，**必须**逐个验证以下产物：
 
 - [ ] 新建组件内容是否大于`10`行，如果大于`10`行，判断是否是空白组件
 - [ ] 组件规划表已输出（包含所有组件的 rect 坐标和类型）
-- [ ] 含子组件的父组件规划表中包含 `exclude_rects` 字段
+- [ ] 含子组件的父组件规划表中包含 `exclude_rects` 和 `children` 字段
+- [ ] `type: page` 父组件的 `.md` 已更新 `rect`、`exclude_rects`、`children` 字段
 - [ ] 公共组件（如侧边栏、导航栏）被标记为 `common` 类型，放在 `src/components/` 下而非页面 `pageName/` 下
 - [ ] `src/components/` 下已有的公共组件未被重复创建
 - [ ] 目录结构符合"每个组件独立文件夹"规范
@@ -212,6 +233,7 @@ Options:
 - [ ] **规划表中缺少 `type: page` 的父组件行**
 - [ ] **父组件的 `exclude_rects` 未包含所有直接子组件的 rect**
 - [ ] **父组件的 `children` 字段为空但实际存在子组件**
+- [ ] **未更新 `type: page` 父组件的 `.md`（缺少 rect/exclude_rects/children）**
 - [ ] 公共布局组件（侧边栏、导航栏等）未标记为 `common`，错误地放入页面 `pageName/` 下
 - [ ] 没有创建 `.md` 描述文档
 - [ ] 直接开始调用 `skill: sketch-draw`（应由 workflow 调用）

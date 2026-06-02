@@ -61,9 +61,14 @@ metadata:
    - **已存在完整实现** → 提示用户跳过或确认覆盖
    - **仅存在骨架 / 不存在** → 继续执行
 3. [ ] **组件拆解**：调用`skill: sketch-split`，传入 `file_path`, `page_name`, `artboard_name`；确认规划表与 `.md` 已生成
-4. [ ] **组件绘制循环**：遍历规划表中的每个组件，按顺序执行：
-   - 读取 `.md` 中 `type` 字段确定组件归属（`common` / `page-specific`）
-   - **复用检查**：公共组件检查 `src/components/`，页面组件检查 `src/views/pageName/`；存在则跳过，不存在则调用`skill: sketch-draw` 并传入 `component_path`、`rect`、`exclude_rects`
+4. [ ] **组件绘制循环（按依赖顺序，先子后父）**：
+   - 从规划表构建组件依赖树（依据 `children` 字段）
+   - **排序规则**：按后序遍历（深度优先），确保每个组件的所有子孙组件都已绘制完毕，才绘制该组件
+     - 叶节点（`children: []`）最先绘制
+     - 逐层向上，直到根节点（`type: page`）最后绘制
+   - **复用检查**：遍历排序后的列表，对每个组件：
+     - 读取 `.md` 中 `type` 和 `component_path`
+     - 公共组件检查 `src/components/`，页面/父组件检查对应 `src/views/pageName/`；存在则跳过，不存在则调用`skill: sketch-draw` 并传入 `component_path`、`rect`、`exclude_rects`
    - 等待 `DRAW_SUCCESS`
 5. [ ] **页面级检查**：
    - (prettier + eslint 已在 `skill: sketch-draw` 中对每个组件自动执行)
@@ -115,9 +120,11 @@ metadata:
          骨架/无 → 继续
       - skill: sketch-split (拆解)
          输出规划表 + .md
-      - 组件绘制循环
-         遍历规划表:
-           读取 type / 复用检查
+         更新父组件 .md (rect/exclude_rects/children)
+      - 组件绘制循环 (后序遍历：子先父后)
+         按 children 字段拓扑排序 (叶节点 → 中间 → 根)
+         遍历排序后的列表:
+           复用检查 (所有 type 均检查)
            存在 → 跳过
            缺失 → skill: sketch-draw → DRAW_SUCCESS
       - 页面级检查
