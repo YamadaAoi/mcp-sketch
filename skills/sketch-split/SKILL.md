@@ -3,7 +3,7 @@ name: sketch-split
 description: 本技能会提取 sketch 设计稿 (zip 或目录) 里的单个画板信息并合理拆分为待开发组件
 metadata:
   author: zhouyinkui
-  version: '2026.06.01'
+  version: '2026.06.02'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
@@ -109,18 +109,26 @@ Options:
 
 **规划表格式（必须包含以下字段）**：
 
-| 组件名称    | 组件路径                                     | 组件描述     | 类型          | rect 坐标             | exclude_rects (直接子组件) | 归属画板 |
-| ----------- | -------------------------------------------- | ------------ | ------------- | --------------------- | -------------------------- | -------- |
-| SidebarMenu | src/components/SidebarMenu                   | 左侧菜单栏   | common        | [0, 0, 200, 900]      | []                         | 用户管理 |
-| HeaderNav   | src/components/HeaderNav                     | 顶部导航栏   | common        | [0, 0, 1920, 64]      | [[20, 10, 100, 44]]        | 用户管理 |
-| UserTable   | src/views/userManagement/userTable/UserTable | 用户列表表格 | page-specific | [200, 120, 1720, 600] | []                         | 用户管理 |
+| 组件名称 | 组件路径 | 组件描述 | 类型 | rect 坐标 | exclude_rects (直接子组件) | children (子组件名称) | 归属画板 |
+| -------- | -------- | -------- | ---- | --------- | -------------------------- | --------------------- | -------- |
 
 **字段说明**：
 
 - **组件路径**：必须包含独立文件夹。公共组件在 `src/components/` 下，页面特有组件在 `src/views/pageName/` 下
-- **类型**：`common` = 跨页面复用的布局/公共组件（侧边栏、导航栏、面包屑、用户头像等），`page-specific` = 仅当前页面独有的功能区块
+- **类型**：
+  - `page` = 页面入口组件（sketch-init 创建的父组件），负责页面整体布局和子组件调用
+  - `common` = 跨页面复用的布局/公共组件（侧边栏、导航栏、面包屑、用户头像等）
+  - `page-specific` = 仅当前页面独有的功能区块
 - **rect 坐标**：`[x, y, width, height]` 格式，单位 px
 - **exclude_rects**：该组件之下直接子组件的 rect 坐标列表。无子组件则为 `[]`。当 `skill: sketch-draw` 绘制此组件时，会将这些区域排除，避免父组件重复渲染子组件内容
+- **children**：该组件包含的直接子组件名称列表（PascalCase），用于在父组件中 import 和调用。无子组件则为 `[]`
+
+**父组件规划规则（强制）**：
+
+- **每个页面必须有一个 `type: page` 的父组件**，即 sketch-init 创建的页面入口组件
+- 父组件的 `rect` 为整个画板尺寸 `[0, 0, width, height]`
+- 父组件的 `exclude_rects` 必须包含所有直接子组件的 rect 坐标
+- 父组件的 `children` 必须列出所有直接子组件的名称
 
 ### 步骤 5：创建空白组件和描述文档
 
@@ -201,6 +209,9 @@ Options:
 - [ ] 没有输出组件规划表
 - [ ] 规划表中缺少 rect 坐标
 - [ ] 规划表中缺少 `exclude_rects`（对含子组件的父组件）
+- [ ] **规划表中缺少 `type: page` 的父组件行**
+- [ ] **父组件的 `exclude_rects` 未包含所有直接子组件的 rect**
+- [ ] **父组件的 `children` 字段为空但实际存在子组件**
 - [ ] 公共布局组件（侧边栏、导航栏等）未标记为 `common`，错误地放入页面 `pageName/` 下
 - [ ] 没有创建 `.md` 描述文档
 - [ ] 直接开始调用 `skill: sketch-draw`（应由 workflow 调用）

@@ -3,7 +3,7 @@ name: sketch-init
 description: 本技能会提取 sketch 设计稿 (zip 或目录) 里所有画板并规划路由
 metadata:
   author: zhouyinkui
-  version: '2026.06.01'
+  version: '2026.06.02'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
@@ -60,6 +60,7 @@ Options:
 
 ### 步骤 1：调用 list 获取全量画板
 
+- **重要：不要手动解压 zip 文件！**
 - 根据用户输入或参数推断 `-p` 文件路径
 - 调用工具：`npx -y mcp-sketch list -p /path/to/sketch/export.zip`
 - **list 仅在此处调用一次**，后续所有过滤与分析均基于本次返回结果

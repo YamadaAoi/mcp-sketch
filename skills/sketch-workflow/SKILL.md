@@ -3,7 +3,7 @@ name: sketch-workflow
 description: 支持按需选择画板的全自动 Sketch 代码生成工作流。
 metadata:
   author: zhouyinkui
-  version: '2026.06.01'
+  version: '2026.06.02'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
