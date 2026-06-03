@@ -18,12 +18,6 @@ export const sketchPlanInputSchema = z.object({
   artboard_name: z.string().describe('artboard name (optional)').optional()
 })
 
-/**
- *
- * @property {string} file_path - sketch html文件路径(zip或目录,必填)
- * @property {string} page_name - 指定页面名称(可选)
- * @property {string} artboard_name - 指定画板名称(可选)
- */
 export type SketchPlanInputSchema = SchemaOutput<typeof sketchPlanInputSchema>
 
 export async function previewImage(
@@ -52,6 +46,14 @@ export async function previewImage(
   return previewPath
 }
 
+/**
+ * 获取sketch html文件中的指定artboard的基本信息
+ * @param args 输入参数
+ * @param args.file_path sketch html文件路径
+ * @param args.page_name 指定页面名称(可选)
+ * @param args.artboard_name 指定画板名称(可选)
+ * @returns 输出参数，包含预览图片路径、宽度、高度等信息
+ */
 export async function handleSketchHtmlPlan(args: SketchPlanInputSchema) {
   let response = 'Sketch Exception'
 
@@ -65,10 +67,10 @@ export async function handleSketchHtmlPlan(args: SketchPlanInputSchema) {
     )
 
     response = JSON.stringify({
-      previewPath,
       filePath: args.file_path,
       pageName: targetArtboard.pageName,
       artboardName: targetArtboard.name,
+      previewPath,
       width: targetArtboard.width,
       height: targetArtboard.height
     })

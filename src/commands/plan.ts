@@ -21,7 +21,7 @@ export const plan = new Command()
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .action((opts: Record<string, unknown>) => {
     handlePlan(opts).catch(err => {
-      logger.error(err, 'sketch-cli analyze')
+      logger.error(err, 'sketch-cli plan')
       process.exit(1)
     })
   })
