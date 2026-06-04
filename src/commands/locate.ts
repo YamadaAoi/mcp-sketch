@@ -6,6 +6,9 @@ import {
 import { logger } from '@/utils/logger'
 
 async function handleLocate(opts: Record<string, unknown>) {
+  if (typeof opts.rank === 'string') {
+    opts.rank = Number(opts.rank)
+  }
   const args = sketchLocateInputSchema.parse(opts)
   const text = await handleSketchHtmlLocate(args)
   console.log(text)
