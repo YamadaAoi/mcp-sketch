@@ -38,6 +38,22 @@ MCP: `sketch_html_plan`
 
 Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
 
+### locate
+
+Locate the top `n` layers that most affect the artboard layout, returning their coordinates. Used in the `sketch-split` phase to correct `rect` values in the component plan.
+
+CLI: `npx -y mcp-sketch locate [options]`
+MCP: `sketch_html_locate`
+
+| Parameter     | CLI Flag                 | MCP Parameter | Required | Description                   |
+| ------------- | ------------------------ | ------------- | -------- | ----------------------------- |
+| file path     | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder                 |
+| page name     | `--pn, --page_name`      | page_name     | no       |                               |
+| artboard name | `--an, --artboard_name`  | artboard_name | no       |                               |
+| rank          | `-r, --rank`             | rank          | no       | return top n layers by impact |
+
+Example: `npx -y mcp-sketch locate -p /path/to/export.zip --pn Home --an "User Management" -r 10`
+
 ### analyze
 
 Full parse: extract layer structure, styles, assets, output design JSON + preview image.
@@ -57,18 +73,48 @@ MCP: `sketch_html_analyze`
 
 Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
-## Skills
+## Skills & Agents
 
-> **Note**: Skills are still under active iteration. LLMs are unpredictable — they may deviate from the workflow or sneak logic code into blank components ("hallucination"). The author keeps updating them, and feel free to customize them for your own project.
+> **Note**: Still under active iteration. LLMs are unpredictable. The author keeps updating them, and feel free to customize them for your own project.
 
-Auxiliary skills installed via `npx skills@latest add YamadaAoi/mcp-sketch` that automate the design-to-code workflow with AI.
+### Architecture
 
-| Skill             | Command              | Purpose                                                                                    |
-| ----------------- | -------------------- | ------------------------------------------------------------------------------------------ |
-| `sketch-workflow` | `-s sketch-workflow` | One-click generation: AI orchestrates init → split → draw in a seamless pipeline           |
-| `sketch-init`     | `-s sketch-init`     | AI surveys all artboards, plans routes, creates blank components and description docs      |
-| `sketch-split`    | `-s sketch-split`    | AI decomposes artboards into components, plans directory structure, creates component docs |
-| `sketch-draw`     | `-s sketch-draw`     | AI auto-infers parameters, calls analyze, reads previews, outputs high-fidelity pages      |
+The workflow uses a two-layer "orchestrate + execute" architecture:
+
+```
+skills/sketch-workflow/SKILL.md    ← Orchestrator: 5-stage state machine
+agents/
+├── sketch-init.md                  ← Sub-agent: Project Architect
+├── sketch-pick.md                  ← Sub-agent: Design Extraction Specialist
+├── sketch-split.md                 ← Sub-agent: Senior Frontend Architect
+├── sketch-layout.md                ← Sub-agent: Layout Engineer
+└── sketch-draw.md                  ← Sub-agent: Senior Frontend Developer
+```
+
+### Workflow
+
+After loading the `sketch-workflow` skill, the main agent schedules 5 sub-agents according to the state machine:
+
+`sketch-init → sketch-pick → sketch-split → sketch-layout → sketch-draw`
+
+Each phase:
+
+1. Create a sub-agent and pass in parameters
+2. Wait for the sub-agent to return `SUCCESS`/`FAILED` markers
+3. Disk verification (verify actual files on disk, don't trust the sub-agent's word)
+4. Update `sketch-cache/` state file, proceed to next phase
+
+### Usage
+
+Usage depends on the AI tool platform:
+
+| Platform          | Description                                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **opencode**      | Place `agents/*.md` into `.opencode/agents/` — framework auto-registers them as sub-agents. Main agent loads `sketch-workflow` via `skill`, invokes sub-agents via `task` |
+| **Claude Code**   | Read `skills/sketch-workflow/SKILL.md` as workflow guide, follow `agents/*.md` instructions phase by phase                                                                |
+| **Trae / others** | Use file contents as system prompts or step-by-step instructions                                                                                                          |
+
+> The frontmatter (mode/tools/permission) in agents/\*.md is opencode-specific format. For agent configuration on each platform, refer to the corresponding docs: [opencode agents](https://opencode.ai/docs/agents), [Claude Code sub-agents](https://code.claude.com/docs/sub-agents). The instruction content is platform-agnostic and works with any AI tool.
 
 ## MCP Configuration
 
@@ -115,6 +161,10 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
 ### list
 
 `[{ pageName, artboardName, previewPath }]` (array of all artboards)
+
+### locate
+
+`[{ name, type, rect: [x, y, w, h] }]` (top n layout-impacting layers with coordinates)
 
 ### analyze
 

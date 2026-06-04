@@ -1,150 +1,181 @@
 ﻿---
 name: sketch-workflow
-description: 支持按需选择画板的全自动 Sketch 代码生成工作流。
+description: 选择画板后全自动 Sketch 代码生成工作流
 metadata:
   author: zhouyinkui
-  version: '2026.06.02'
+  version: '2026.06.04'
   source: scripts located at https://github.com/YamadaAoi/mcp-sketch
 ---
 
-此技能是 `Sketch` 代码生成自动化体系的"总指挥"。支持画板筛选、现状检测与按需生成。
+此技能是 `Sketch` 代码生成自动化体系的"总指挥"，定义了一个完整的 5 阶段流水线
+
+## 持久化存储：sketch-cache 目录
+
+`sketch-cache`位于项目根目录，是工作流的核心工作目录，用于存储项目配置、中间状态和组件文档
+
+### 目录结构
+
+```
+sketch-cache/
+├── artboards/
+│   └── {page_name}-{artboard_name}.json (画板中间状态文件)
+│   └── ...
+└── proj-init.md (项目基本信息)
+```
+
+### 文件说明
+
+- **proj-init.md**：由 sketch-init 阶段生成，之后作为全局只读参考。包含项目技术栈、代码风格约定、目录结构约定
+- **artboards/{page_name}-{artboard_name}.json**：画板中间状态文件：
+
+```typescript
+interface ArtboardState {
+  pageName: string
+  artboardName: string
+  filePath: string
+  stage?:
+    | 'sketch-init'
+    | 'sketch-pick'
+    | 'sketch-split'
+    | 'sketch-layout'
+    | 'sketch-draw'
+  components?: Array<{
+    componentPath: string
+    status?: 'created' | 'layout' | 'draw'
+    children: string[]
+    rect: [number, number, number, number]
+    excludeRects: Array<[number, number, number, number]>
+  }>
+  lastUpdateTime: string
+}
+```
 
 ## 核心铁律
 
-### 铁律 1：基于现状，能复用不重复
+### 铁律 1：状态驱动，跳过已完成
 
-- **路由复用**：创建路由前，必须先检查路由配置。如果路由已存在，直接使用，**禁止重复写入**。
-- **文件复用**：创建组件前，检查文件是否已存在。如果存在且非空，**禁止覆盖**，应提示用户或跳过。
-- **智能增量**：只生成缺失的骨架和代码，已存在的资源直接利用。
+- 每阶段执行前，先读取 `sketch-cache/artboards/{pageName}-{artboardName}.json`，根据 `stage` 判断是否已完成
+- 已完成阶段**直接跳过**，绝不重复执行
+- 阶段完成后立即更新 JSON 状态文件（`stage`、组件 `status`、`lastUpdateTime`）
+- 不得修改其他画板的状态文件，也不得擅自修改 `sketch-cache/proj-init.md`
 
 ### 铁律 2：你是编排者，不是编码者
 
-- **绝对禁止**自行编写组件代码。
-- 所有代码生成**必须**通过`skill: sketch-draw` 完成。
-- 你只负责调度子技能、管理选择列表、检查现状。
+- **绝对禁止**自行编写组件代码
+- 你只负责调度各阶段工作，把具体编码任务委托给子agent 处理
+- 如发现某个阶段输出有误，应重新执行该阶段，而非自己动手修复
 
-#### 调度协议
+### 铁律 3：调度顺序严格
 
-| 子技能                | 何时调用 | 负责什么                                                           |
-| --------------------- | -------- | ------------------------------------------------------------------ |
-| `skill: sketch-init`  | 阶段 1   | 解析预览图 → 规划路由 → 创建空白组件 + `.md`                       |
-| `skill: sketch-split` | 阶段 2.3 | 分析画板结构 → 输出组件规划表(rect/exclude_rects) → 创建空白子组件 |
-| `skill: sketch-draw`  | 阶段 2.4 | 读取 `.md` + rect → 调用 `mcp-sketch analyze` → 生成完整组件代码   |
+各阶段不可逆、不可跳跃：
 
-## 执行清单
+`sketch-init → sketch-pick → sketch-split → sketch-layout → sketch-draw`
 
-以下阶段**按序号严格顺序执行**，阶段内条目按从上到下顺序执行。未完成当前步骤不得跳至下一步。
+#### 调度表
 
-### 阶段 0：环境预检
+| 阶段          | 何时执行                             | 负责什么                                                   |
+| ------------- | ------------------------------------ | ---------------------------------------------------------- |
+| sketch-init   | `sketch-cache/proj-init.md` 不存在时 | 读取项目代码，生成 proj-init.md                            |
+| sketch-pick   | 用户尚未选定画板时                   | 枚举所有画板，等待用户单选                                 |
+| sketch-split  | 画板 stage 未达到 `sketch-split`     | 分析画板设计稿，输出组件规划表，创建空白组件和 md 描述文档 |
+| sketch-layout | 画板 stage 为 `sketch-split`         | 更新路由配置，为父组件编写子容器 div 和 import             |
+| sketch-draw   | 组件 status 为 `layout` 或 `created` | 获取图层数据，生成组件功能代码                             |
 
-- [ ] 向所有子技能注入上下文 `{"execution_mode": "automated", "parent_workflow": true}`
+## 子agent 通信协议
 
----
+所有子agent 遵循统一的通信约定：
 
-### 阶段 1：按需初始化
+1. **启动**：委托子agent 并传入所需参数
+2. **等待返回**：暂停流水线，等待子agent 执行完毕返回结果
+3. **解析结果**：从返回内容中提取 `SUCCESS` 或 `FAILED` 标记
+4. **分支处理**：
+   - `SUCCESS` → 继续下一步（解析输出、磁盘验证、更新状态）
+   - `FAILED` → 输出子agent 返回的错误描述并终止流水线，等待用户处理
 
-1. [ ] **执行**：调用`skill: sketch-init`，传入 `file_path`，由技能内部完成枚举、选择、规划、创建
-2. [ ] **解析输出**：从 `skill: sketch-init` 返回结果中提取选中画板列表 `selected_artboards`
-3. [ ] **产物验证**：
-   - 验证选中画板对应的**空白组件文件**和**路由**是否存在
-   - **若缺失且未报错，输出错误并终止**
+## 入口流程
 
----
+### 步骤 1：获取文件路径
 
-### 阶段 2：页面级循环
+要求用户提供 Sketch Meaxure 导出文件的路径（zip 或目录），记为 `FILE_PATH`。若用户未提供，主动询问
 
-对每个 `artboard_name` 按以下顺序执行：
+### 步骤 2：初始化项目配置
 
-1. [ ] **进度同步**：输出日志 `"开始处理页面：[页面名]"`
-2. [ ] **现状检查**：
-   - 检查该页面下的子组件目录或文件是否已有内容
-   - **type: page 组件（init阶段创建的空白入口组件）** → 直接跳过询问，继续执行
-   - **其他类型组件且已存在完整实现** → 提示用户跳过或确认覆盖
-   - **仅存在骨架 / 不存在** → 继续执行
-3. [ ] **组件拆解**：调用`skill: sketch-split`，传入 `file_path`, `page_name`, `artboard_name`；确认规划表与 `.md` 已生成
-4. [ ] **组件绘制循环（按依赖顺序，先子后父）**：
-   - **铁律：组件绘制期间禁止更新父组件 import**，必须等所有组件绘制完成后统一处理
-   - 从规划表构建组件依赖树（依据 `children` 字段）
-   - **排序规则**：按后序遍历（深度优先），确保每个组件的所有子孙组件都已绘制完毕，才绘制该组件
-     - 叶节点（`children: []`）最先绘制
-     - 逐层向上，直到根节点（`type: page`）最后绘制
-   - **逐个组件绘制**：遍历排序后的列表，对每个组件：
-     - 读取 `.md` 中 `type`、`component_path`、`rect`、`exclude_rects`
-     - **复用检查**：公共组件检查 `src/components/`，页面/父组件检查对应 `src/views/pageName/`；存在则跳过
-     - **调用 `skill: sketch-draw`**：传入 `component_path`、`rect`、`exclude_rects`（**每个组件都必须调用 sketch-draw，包括父组件**）
-     - **等待 `DRAW_SUCCESS`**：确认当前组件绘制完成，再处理下一个组件
-   - **绘制完成后更新父组件**：所有组件绘制完成后，若父组件需要 import 子组件，由 `skill: sketch-draw` 在生成父组件代码时自动处理
-5. [ ] **页面级检查**：
-   - (prettier + eslint 已在 `skill: sketch-draw` 中对每个组件自动执行)
-   - 若有 `typecheck` 脚本 → 执行检查 → 报错则重新调用`skill: sketch-draw` 修复，循环直到通过
-   - 若有 `lint` 脚本且此前未运行 → 执行检查 → 报错则修复，循环直到通过
+检查 `sketch-cache/proj-init.md` 是否存在。若不存在，委托子agent `sketch-init`，等待返回 `INIT_SUCCESS`。然后**磁盘验证** `sketch-cache/proj-init.md` 确实存在于磁盘，若不存在则让子agent 重新生成
 
----
+### 步骤 3：选择画板
 
-### 阶段 3：收尾与交付
+委托子agent `sketch-pick`，传入 `FILE_PATH`，等待用户选定画板
 
-1. [ ] **统计**：汇总生成的页面数、组件数、**跳过的组件数**
-2. [ ] **最终提示**：`"流程结束！已按需生成代码，请预览效果。"`
+用户选定画板后，提取 `pageName` 和 `artboardName`：
 
-## 违规检测清单
+- 若状态文件 `sketch-cache/artboards/{pageName}-{artboardName}.json` 已存在 → 读取恢复进度，向用户汇报当前阶段
+- 若不存在 → 创建该文件写入初始状态：
 
-- [ ] 覆盖了已存在的文件（路由或组件）
-- [ ] 没有检查路由配置是否已存在
-- [ ] 跳过了 `skill: sketch-split`、`skill: sketch-draw` 直接写代码
-- [ ] **组件绘制期间更新了父组件的 import**（应等所有组件绘制完成后统一处理）
-- [ ] **父组件未调用 `skill: sketch-draw` 就直接生成代码**（父组件也必须调用 analyze 工具）
-- [ ] **未等待 `DRAW_SUCCESS` 就继续绘制下一个组件**
-- [ ] 页面组件绘制完成后，项目有 typecheck/lint 脚本但未执行
-- [ ] 校验报错时未修复直接进入下一页面
-
-## 流程图
-
+```json
+{
+  "filePath": "FILE_PATH",
+  "pageName": "...",
+  "artboardName": "...",
+  "stage": "sketch-pick",
+  "components": [],
+  "lastUpdateTime": "<当前时间>"
+}
 ```
-启动
-  |
-  v
 
-  阶段 0  注入自动化上下文
-    向所有子技能注入 execution_mode
+选定画板后进入自动流水线，每阶段执行前先读取 JSON 状态文件，**已完成的阶段直接跳过，绝不重复执行**
 
-  |
-  v
+### 步骤 4：sketch-split — 组件拆分
 
-  阶段 1  skill: sketch-init (初始化)
-    调用 list 获取全量画板
-    → 用户选择 (含"全部"选项)
-    → 规划路由 + 创建空白组件
-    → 产物验证 (文件/路由)
+若 `stage` 为 `sketch-split` 或更高 → **跳过**。否则：
 
-  |
-  v
+1. 委托子agent `sketch-split`，传入 `FILE_PATH`、`pageName`、`artboardName`，等待返回 `SPLIT_SUCCESS`
+2. 从子agent 输出的组件规划表中解析每个组件的信息（componentPath、children、rect、excludeRects）
+3. **磁盘验证**：检查每个组件的代码文件和 `.md` 文档是否确实存在于磁盘，而非仅相信子agent 的返回。若文件缺失，让子agent 重新创建后再继续
+4. 更新 JSON 状态：
+   - `stage` → `sketch-split`
+   - 将规划表中的组件填入 `components` 数组（`status: "created"`）
+   - `lastUpdateTime` 更新
 
-  阶段 2  页面级循环
-    对每个 artboard：
-      - 进度同步
-      - 现状检查 (已有内容？)
-         type: page组件 → 直接继续
-         其他类型且完整实现 → 跳过确认
-         骨架/无 → 继续
-      - skill: sketch-split (拆解)
-         输出规划表 + .md
-         更新父组件 .md (rect/exclude_rects/children)
-      - 组件绘制循环 (后序遍历：子先父后)
-         按 children 字段拓扑排序 (叶节点 → 中间 → 根)
-         遍历排序后的列表:
-           复用检查 (所有 type 均检查)
-           存在 → 跳过
-           缺失 → skill: sketch-draw → 等待 DRAW_SUCCESS
-         【禁止】在绘制循环期间更新父组件 import
-      - 页面级检查
-         typecheck → 修复循环
-         lint → 修复循环
+### 步骤 5：sketch-layout — 组件布局
 
-  |
-  v
+若 `stage` 为 `sketch-layout` 或更高 → **跳过**
 
-  阶段 3  收尾与交付
-    统计 (页面/组件/跳过)
-    输出结束提示
+**前置校验**（仅 `stage === sketch-split` 时）：检查每个组件的代码文件和 `.md` 文件是否存在。有缺失则重置对应组件 `status` 为 `created`，回到步骤 4
 
-```
+1. 委托子agent `sketch-layout`，传入 `pageName`、`artboardName`，等待返回 `LAYOUT_SUCCESS`
+2. **磁盘验证**：对有子组件的父组件，读取代码文件确认是否已包含子组件的 `import` 和子容器 `div`，而非仅相信子agent 的返回。若缺失，让子agent 重新处理
+3. 更新 JSON 状态：
+   - `stage` → `sketch-layout`
+   - 有直接子组件的父组件 `status` → `layout`
+   - `lastUpdateTime` 更新
+
+### 步骤 6：sketch-draw — 组件绘制
+
+遍历 `components`，对每个 `status` 不为 `draw` 的组件：
+
+1. 读取该组件对应的 md 描述文档，获取元数据
+2. **前置校验**：若该组件 `children` 不为空，检查 `import` 和子容器 `div` 是否存在。缺失则将该父组件 `status` 置回 `created`，回到步骤 5
+3. 委托子agent `sketch-draw`，传入 md 中的元数据，等待返回 `DRAW_SUCCESS`
+4. **磁盘验证**：读取文件内容确认是否已填充真实代码，而非仅相信子agent 的返回。若仍为空白占位符（只有 `<div>{{...}}</div>` 或空模板），让子agent 重新生成
+5. 更新 JSON 状态：该组件 `status` → `draw`，`lastUpdateTime` 更新
+
+全部组件 `status` 为 `draw` 后：
+
+- `stage` → `sketch-draw`
+- 输出 `画板 [pageName]-[artboardName] 全部组件生成完毕`
+
+## 状态恢复
+
+若工作流中断后重新启动：
+
+1. 扫描所有 `sketch-cache/artboards/*.json`
+2. 跳过 `stage: sketch-draw` 的已完成画板
+3. 对未完成的画板，按 `stage` 升序排列，`stage` 相同时按 `lastUpdateTime` 降序排列（取最近更新的画板）
+4. 选择排名第一的画板，从对应阶段继续
+
+**还原验证**：恢复时对选定画板的每个组件执行三项磁盘检查：
+
+- `.md` 描述文档缺失 → 该组件 `status` 重置为 `created`
+- 代码文件缺失 → 该组件 `status` 重置为 `created`
+- 父组件代码文件中缺少子组件 `import` 或子容器 `div` → 该父组件 `status` 重置为 `created`
+- 重置后重新触发对应阶段
