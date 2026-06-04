@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.2.0
+
+### Minor Changes
+
+- 新增locate工具；调整技能，分别在主、子agent里运行
+
 ## 1.1.5
 
 ### Patch Changes
