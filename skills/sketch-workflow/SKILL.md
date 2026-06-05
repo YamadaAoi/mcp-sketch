@@ -92,6 +92,65 @@ interface ArtboardState {
    - `SUCCESS` → 继续下一步（解析输出、磁盘验证、更新状态）
    - `FAILED` → 输出子agent 返回的错误描述并终止流水线，等待用户处理
 
+## 委托模板
+
+每次调度子 agent 时，**必须使用以下模板**，不得自行修改或省略约束条件。
+
+### sketch-init 模板
+
+```
+请为当前项目初始化 sketch 工作流配置
+
+项目信息：
+- 工作目录：<WORK_DIR>
+- 项目类型：<根据 package.json 描述>
+- Sketch 文件路径：<FILE_PATH>
+
+```
+
+### sketch-pick 模板
+
+```
+请从 Sketch Meaxure 导出文件中枚举所有画板供用户选择
+
+文件路径：<FILE_PATH>
+```
+
+### sketch-split 模板
+
+```
+请分析 Sketch 画板设计稿，拆分组件规划
+
+文件信息：
+- 文件路径：<FILE_PATH>
+- 页面名称：<pageName>
+- 画板名称：<artboardName>
+
+```
+
+### sketch-layout 模板
+
+```
+请为 Sketch 画板的组件执行布局配置
+
+画板信息：
+- 页面名称：<pageName>
+- 画板名称：<artboardName>
+
+```
+
+### sketch-draw 模板
+
+```
+请为 Sketch 画板的指定组件生成功能代码。
+
+组件信息：
+- 组件路径：<componentPath>
+- 描述文档路径：<md_path>
+- 子组件：<children 列表（如有）>
+
+```
+
 ## 入口流程
 
 ### 步骤 1：获取文件路径
@@ -113,7 +172,7 @@ interface ArtboardState {
 
 ```json
 {
-  "filePath": "FILE_PATH",
+  "filePath": "<relative path to FILE_PATH>",
   "pageName": "...",
   "artboardName": "...",
   "stage": "sketch-pick",
