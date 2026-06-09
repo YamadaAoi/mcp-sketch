@@ -75,15 +75,36 @@ MCP: `sketch_html_analyze`
 
 ## Skills & Agents
 
-> **注意**：仍在迭代中，AI 大模型存在不确定性。作者会持续更新优化，不妨定制适合自己项目的版本。
+> **注意**：技能和 agent 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限，以达到最佳效果。
 
-### 架构
+### 安装
 
-工作流采用"编排 + 执行"分离的两层架构：
+通过 CLI 一键安装技能和 agent 到当前项目：
+
+```bash
+npx -y mcp-sketch install
+```
+
+指定工作目录：
+
+```bash
+npx -y mcp-sketch install --cwd /path/to/project
+```
+
+交互式选择 AI 工具平台（Claude Code / OpenCode），自动将文件写入对应目录：
+
+| 平台            | 技能目录            | agent 目录          |
+| --------------- | ------------------- | ------------------- |
+| **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
+| **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
+
+> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具（如 Trae、Cursor 等）如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装；否则请先以 Claude Code 方式安装，再对照安装后的文件内容手动粘贴到对应工具的合适位置。
+
+安装后的文件结构：
 
 ```
-skills/sketch-workflow/SKILL.md    ← 总指挥：定义 5 阶段流水线的状态机
-agents/
+{skills}/sketch-workflow/SKILL.md    ← 总指挥：定义 5 阶段流水线的状态机
+{agents}/
 ├── sketch-init.md                  ← 子agent：项目架构师
 ├── sketch-pick.md                  ← 子agent：设计稿解析专员
 ├── sketch-split.md                 ← 子agent：资深前端架构师
@@ -103,16 +124,6 @@ agents/
 2. 等待子agent 返回 `SUCCESS`/`FAILED` 标记
 3. 磁盘验证（不信任子agent 自述，以磁盘事实为准）
 4. 更新 `sketch-cache/` 状态文件，进入下一阶段
-
-### 使用方式
-
-具体使用方式取决于 AI 工具平台：
-
-| 平台            | 说明                                                                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **opencode**    | 将 `agents/*.md` 放入 `.opencode/agents/`，框架自动注册为子agent；主 agent 通过 `skill` 加载 `sketch-workflow`，通过 `task` 调用子agent |
-| **Claude Code** | 读取 `skills/sketch-workflow/SKILL.md` 作为流程指引，按顺序阅读 `agents/*.md` 执行各阶段                                                |
-| **Trae / 其他** | 将各文件内容作为系统提示或分步骤指令使用                                                                                                |
 
 > agents/\*.md 的 frontmatter（mode/tools/permission）为 opencode 专用格式。各平台的 agent 配置方式请查阅对应文档：[opencode agents](https://opencode.ai/docs/zh-cn/agents)、[Claude Code sub-agents](https://code.claude.com/docs/zh-CN/sub-agents)。各 agent 指令内容平台无关，均可在任意 AI 工具中使用。
 

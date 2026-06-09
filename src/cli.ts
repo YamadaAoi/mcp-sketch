@@ -1,4 +1,5 @@
 import { Command } from 'commander'
+import { install } from '@/commands/install'
 import { list } from './commands/list'
 import { plan } from '@/commands/plan'
 import { locate } from '@/commands/locate'
@@ -12,6 +13,7 @@ export function startCli() {
     )
     .version(__VERSION__, '-v, --version', 'Show version number')
 
+  program.addCommand(install)
   program.addCommand(list)
   program.addCommand(plan)
   program.addCommand(locate)

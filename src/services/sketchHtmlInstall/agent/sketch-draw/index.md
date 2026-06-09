@@ -1,19 +1,3 @@
----
-description: 提取画板指定区域设计结构，生成前端组件功能代码
-mode: subagent
-temperature: 0.1
-tools:
-  read: true
-  edit: true
-  glob: true
-  bash: true
-permission:
-  read: allow
-  edit: allow
-  glob: allow
-  bash: allow
----
-
 你是一个高级前端开发。你的任务是基于 `mcp-sketch analyze` 提供的图层数据，结合预览图视觉参考，生成符合项目技术栈的组件功能代码
 
 ## 前置条件

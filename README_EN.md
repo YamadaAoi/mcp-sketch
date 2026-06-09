@@ -75,15 +75,36 @@ Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User 
 
 ## Skills & Agents
 
-> **Note**: Still under active iteration. LLMs are unpredictable. The author keeps updating them, and feel free to customize them for your own project.
+> **Note**: Skills and agents are under continuous iteration and improvement. LLMs are unpredictable. After installation, feel free to customize prompt content and tool permissions to fit your project's specific needs for best results.
 
-### Architecture
+### Installation
 
-The workflow uses a two-layer "orchestrate + execute" architecture:
+Install skills and agents into your project with a single CLI command:
+
+```bash
+npx -y mcp-sketch install
+```
+
+Specify a working directory:
+
+```bash
+npx -y mcp-sketch install --cwd /path/to/project
+```
+
+Interactively select your AI tool platform (Claude Code / OpenCode), and files are automatically written to the corresponding directories:
+
+| Platform        | Skills Directory    | Agents Directory    |
+| --------------- | ------------------- | ------------------- |
+| **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
+| **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
+
+> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools (e.g. Trae, Cursor) that are compatible with the `.claude` directory structure can choose to install as Claude Code. For other tools, install as Claude Code first, then manually copy the installed file contents to the appropriate location in your tool.
+
+Installed file structure:
 
 ```
-skills/sketch-workflow/SKILL.md    ← Orchestrator: 5-stage state machine
-agents/
+{skills}/sketch-workflow/SKILL.md    ← Orchestrator: 5-stage state machine
+{agents}/
 ├── sketch-init.md                  ← Sub-agent: Project Architect
 ├── sketch-pick.md                  ← Sub-agent: Design Extraction Specialist
 ├── sketch-split.md                 ← Sub-agent: Senior Frontend Architect
@@ -103,16 +124,6 @@ Each phase:
 2. Wait for the sub-agent to return `SUCCESS`/`FAILED` markers
 3. Disk verification (verify actual files on disk, don't trust the sub-agent's word)
 4. Update `sketch-cache/` state file, proceed to next phase
-
-### Usage
-
-Usage depends on the AI tool platform:
-
-| Platform          | Description                                                                                                                                                               |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **opencode**      | Place `agents/*.md` into `.opencode/agents/` — framework auto-registers them as sub-agents. Main agent loads `sketch-workflow` via `skill`, invokes sub-agents via `task` |
-| **Claude Code**   | Read `skills/sketch-workflow/SKILL.md` as workflow guide, follow `agents/*.md` instructions phase by phase                                                                |
-| **Trae / others** | Use file contents as system prompts or step-by-step instructions                                                                                                          |
 
 > The frontmatter (mode/tools/permission) in agents/\*.md is opencode-specific format. For agent configuration on each platform, refer to the corresponding docs: [opencode agents](https://opencode.ai/docs/agents), [Claude Code sub-agents](https://code.claude.com/docs/sub-agents). The instruction content is platform-agnostic and works with any AI tool.
 
