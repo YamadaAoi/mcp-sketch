@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.2.2
+
+### Patch Changes
+
+- 添加install工具
+
 ## 1.2.1
 
 ### Patch Changes
