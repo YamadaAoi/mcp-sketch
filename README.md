@@ -4,9 +4,8 @@
 
 ## 声明
 
-- 使用**多模态模型**，`sketch-*`技能需要分析预览图
+- 使用**多模态模型**，`sketch-*`工作流需要分析预览图
 - 工具会过滤一部分无意义图层，但不排除误过滤有效图层的情况
-- 建议与设计师沟通：复杂效果切图，简单效果设 `radius`（哪怕 1）
 
 ## 工具
 
@@ -76,7 +75,11 @@ MCP: `sketch_html_analyze`
 
 ## Skills & Agents
 
-> **注意**：技能和 agent 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限，以达到最佳效果。
+> **注意**：skills & agents 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限，以达到最佳效果。
+
+> skills & agents 的 frontmatter 各平台有自己的专用格式，配置方式请查阅对应文档：[opencode agents](https://opencode.ai/docs/zh-cn/agents)、[Claude Code sub-agents](https://code.claude.com/docs/zh-CN/sub-agents)。
+
+> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具（如 Trae、Cursor 等）如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装；否则请先以 Claude Code 方式安装，再对照安装后的文件内容手动粘贴到对应工具的合适位置。
 
 ### 安装
 
@@ -98,8 +101,6 @@ npx -y mcp-sketch install --cwd /path/to/project
 | --------------- | ------------------- | ------------------- |
 | **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
 | **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
-
-> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具（如 Trae、Cursor 等）如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装；否则请先以 Claude Code 方式安装，再对照安装后的文件内容手动粘贴到对应工具的合适位置。
 
 安装后的文件结构：
 
@@ -125,8 +126,6 @@ npx -y mcp-sketch install --cwd /path/to/project
 2. 等待子agent 返回 `SUCCESS`/`FAILED` 标记
 3. 磁盘验证（不信任子agent 自述，以磁盘事实为准）
 4. 更新 `sketch-cache/` 状态文件，进入下一阶段
-
-> agents/\*.md 的 frontmatter（mode/tools/permission）为 opencode 专用格式。各平台的 agent 配置方式请查阅对应文档：[opencode agents](https://opencode.ai/docs/zh-cn/agents)、[Claude Code sub-agents](https://code.claude.com/docs/zh-CN/sub-agents)。各 agent 指令内容平台无关，均可在任意 AI 工具中使用。
 
 ## MCP 配置
 

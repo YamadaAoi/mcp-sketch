@@ -71,7 +71,10 @@ export async function handleSketchHtmlLocate(args: SketchLocateInputSchema) {
           ((lyr.type === 'slice' && !!lyr.exportable?.length) ||
             (lyr.type === 'shape' &&
               lyr.css?.some(
-                s => s.includes('background') || s.includes('border')
+                s =>
+                  s.includes('background') ||
+                  s.includes('border') ||
+                  s.includes('shadow')
               )))
       )
       .map(lyr => {

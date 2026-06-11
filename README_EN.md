@@ -4,9 +4,8 @@
 
 ## Disclaimer
 
-- Use **multi-modal models** to analyze preview images
+- Use **multi-modal models** — the `sketch-*` workflow requires analyzing preview images
 - Some meaningless layers are filtered out to avoid confusing AI, but valid layers may also be filtered
-- Recommend communicating with designers: export complex effects as images, set `radius` (even 1) for simple effects
 
 ## Tools
 
@@ -78,6 +77,10 @@ Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User 
 
 > **Note**: Skills and agents are under continuous iteration and improvement. LLMs are unpredictable. After installation, feel free to customize prompt content and tool permissions to fit your project's specific needs for best results.
 
+> The frontmatter in each platform's agent & skill files has its own format. Refer to the corresponding docs for configuration: [opencode agents](https://opencode.ai/docs/agents), [Claude Code sub-agents](https://code.claude.com/docs/sub-agents).
+
+> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools (e.g. Trae, Cursor) that are compatible with the `.claude` directory structure can choose to install as Claude Code. For other tools, install as Claude Code first, then manually copy the installed file contents to the appropriate location in your tool.
+
 ### Installation
 
 Install skills and agents into your project with a single CLI command:
@@ -98,8 +101,6 @@ Interactively select your AI tool platform (Claude Code / OpenCode), and files a
 | --------------- | ------------------- | ------------------- |
 | **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
 | **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
-
-> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools (e.g. Trae, Cursor) that are compatible with the `.claude` directory structure can choose to install as Claude Code. For other tools, install as Claude Code first, then manually copy the installed file contents to the appropriate location in your tool.
 
 Installed file structure:
 
@@ -125,8 +126,6 @@ Each phase:
 2. Wait for the sub-agent to return `SUCCESS`/`FAILED` markers
 3. Disk verification (verify actual files on disk, don't trust the sub-agent's word)
 4. Update `sketch-cache/` state file, proceed to next phase
-
-> The frontmatter (mode/tools/permission) in agents/\*.md is opencode-specific format. For agent configuration on each platform, refer to the corresponding docs: [opencode agents](https://opencode.ai/docs/agents), [Claude Code sub-agents](https://code.claude.com/docs/sub-agents). The instruction content is platform-agnostic and works with any AI tool.
 
 ## MCP Configuration
 
@@ -174,15 +173,15 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
 
 `[{ pageName, artboardName, previewPath }]` (array of all artboards)
 
-### locate
-
-`[{ name, type, rect: [x, y, w, h] }]` (top n layout-impacting layers with coordinates)
-
 ### analyze
 
 `{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
 
 Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips issue), the original full artboard image is returned. If installed, the image is resized, cropped to `rect` (if specified), and compressed to webp. Only processes preview image, not assets.
+
+### locate
+
+`[{ name, type, rect: [x, y, w, h] }]` (top n layout-impacting layers with coordinates)
 
 ### plan
 

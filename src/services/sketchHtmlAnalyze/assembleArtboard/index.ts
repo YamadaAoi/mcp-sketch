@@ -15,8 +15,12 @@ function filterLayers(lyr: HtmlLayer) {
     (lyr.type === 'slice' && !!lyr.exportable?.length) ||
     lyr.type === 'text' ||
     (lyr.type === 'shape' &&
-      !!lyr.radius?.length &&
-      lyr.css?.some(s => s.includes('background') || s.includes('border')))
+      lyr.css?.some(
+        s =>
+          s.includes('background') ||
+          s.includes('border') ||
+          s.includes('shadow')
+      ))
   )
 }
 
