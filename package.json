@@ -11,10 +11,10 @@
     "package.json"
   ],
   "scripts": {
-    "build": "vite build && tsc --noEmit",
+    "build": "tsup && tsc --noEmit",
     "start": "node dist/index.js",
-    "dev": "vite build && node dist/index.js",
-    "watch": "vite build --watch",
+    "dev": "tsup && node dist/index.js",
+    "watch": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -24,9 +24,7 @@
     "csadd": "changeset",
     "csver": "pnpm changeset version",
     "release-only": "changeset publish --registry=https://registry.npmjs.com/",
-    "release": "pnpm build && pnpm release-only",
-    "test": "vitest",
-    "test:watch": "vitest watch"
+    "release": "pnpm build && pnpm release-only"
   },
   "repository": {
     "type": "git",
@@ -76,21 +74,19 @@
     "@changesets/cli": "2.29.8",
     "@types/babel__generator": "7.27.0",
     "@types/babel__traverse": "7.28.0",
-    "@types/node": "22.10.2",
+    "@types/node": "25.9.3",
     "@types/prompts": "2.4.9",
     "@types/unzipper": "0.10.11",
     "@typescript-eslint/eslint-plugin": "8.51.0",
     "@typescript-eslint/parser": "8.51.0",
-    "@vitest/coverage-v8": "4.0.16",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.4",
     "lint-staged": "16.2.7",
     "prettier": "3.7.4",
     "simple-git-hooks": "2.13.1",
-    "typescript": "5.7.2",
-    "vite": "5.4.11",
-    "vitest": "4.0.16"
+    "tsup": "8.5.1",
+    "typescript": "5.7.2"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged --allow-empty --concurrent false"

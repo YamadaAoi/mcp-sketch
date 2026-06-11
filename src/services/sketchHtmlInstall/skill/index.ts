@@ -1,5 +1,5 @@
 import type { InstallConfig } from '../installer'
-import SketchWorkflowPrompt from './sketch-workflow/index.md?raw'
+import SketchWorkflowPrompt from './sketch-workflow/index.md'
 
 export const SkillPool: InstallConfig[] = [
   {

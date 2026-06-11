@@ -1,9 +1,9 @@
 import type { InstallConfig } from '../installer'
-import SketchInitPrompt from './sketch-init/index.md?raw'
-import SketchPickPrompt from './sketch-pick/index.md?raw'
-import SketchSplitPrompt from './sketch-split/index.md?raw'
-import SketchLayoutPrompt from './sketch-layout/index.md?raw'
-import SketchDrawPrompt from './sketch-draw/index.md?raw'
+import SketchInitPrompt from './sketch-init/index.md'
+import SketchPickPrompt from './sketch-pick/index.md'
+import SketchSplitPrompt from './sketch-split/index.md'
+import SketchLayoutPrompt from './sketch-layout/index.md'
+import SketchDrawPrompt from './sketch-draw/index.md'
 
 export const AgentPool: InstallConfig[] = [
   {
