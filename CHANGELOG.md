@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.2.3
+
+### Patch Changes
+
+- locate参数调整；图层过滤规则调整
+
 ## 1.2.2
 
 ### Patch Changes
