@@ -30,7 +30,7 @@ export function toolSketchHtmlLocate(): RegisterToolParams {
     {
       title: toolName,
       description:
-        'Returns the layers with high layout score rank from the Sketch Meaxure export archive (zip or folder)',
+        'Returns the layers with high layout score from the Sketch Meaxure export archive (zip or folder)',
       inputSchema: sketchLocateInputSchema
     },
     sketchHtmlLocate

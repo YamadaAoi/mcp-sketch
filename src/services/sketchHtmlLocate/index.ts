@@ -10,7 +10,14 @@ export const sketchLocateInputSchema = z.object({
     .describe('sketch html export path (zip or folder, required)'),
   page_name: z.string().describe('page name (optional)').optional(),
   artboard_name: z.string().describe('artboard name (optional)').optional(),
-  rank: z.number().describe('layer area rank (optional)').optional()
+  limit: z
+    .number()
+    .describe('number of layers to return (optional, default 10)')
+    .optional(),
+  offset: z
+    .number()
+    .describe('starting index in sorted layers (optional, default 0)')
+    .optional()
 })
 
 export type SketchLocateInputSchema = SchemaOutput<
@@ -35,7 +42,7 @@ function calculateLayoutScore(lyr: { rect: Array<number | undefined> }) {
 }
 
 /**
- * 从 Sketch HTML 导出文件的指定页面和画板中提取布局分数排名前 rank 的图层
+ * 从 Sketch HTML 导出文件的指定页面和画板中提取布局分数排名靠前的图层
  * 布局分数计算规则：
  * 1. 面积（area）：图层宽度乘以高度
  * 2. 最长边（longest side）：图层宽度和高度中较长的边
@@ -46,7 +53,8 @@ function calculateLayoutScore(lyr: { rect: Array<number | undefined> }) {
  * @param args.file_path - Sketch HTML 导出文件路径
  * @param args.page_name - 页面名称 (可选)
  * @param args.artboard_name - 画板名称 (可选)
- * @param args.rank - 图层布局分数排名 (可选)
+ * @param args.offset - 起始偏移量 (可选，默认 0)
+ * @param args.limit - 返回数量 (可选，默认 10)
  * @returns 图层信息 JSON 字符串
  */
 export async function handleSketchHtmlLocate(args: SketchLocateInputSchema) {
@@ -78,7 +86,9 @@ export async function handleSketchHtmlLocate(args: SketchLocateInputSchema) {
       const scoreB = calculateLayoutScore(b)
       return scoreB - scoreA
     })
-    response = JSON.stringify(layers.slice(0, args.rank ?? 10))
+    const offset = args.offset ?? 0
+    const limit = args.limit ?? 10
+    response = JSON.stringify(layers.slice(offset, offset + limit))
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
   }

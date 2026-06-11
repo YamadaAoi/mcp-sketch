@@ -45,14 +45,15 @@ MCP: `sketch_html_plan`
 CLI: `npx -y mcp-sketch locate [options]`
 MCP: `sketch_html_locate`
 
-| 参数     | CLI 选项                 | MCP 参数      | 必填 | 说明            |
-| -------- | ------------------------ | ------------- | ---- | --------------- |
-| 文件路径 | `-p, --file_path <PATH>` | file_path     | 是   | zip 或目录      |
-| 页面名称 | `--pn, --page_name`      | page_name     | 否   |                 |
-| 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |                 |
-| 图层数量 | `-r, --rank`             | rank          | 否   | 返回前 n 个图层 |
+| 参数     | CLI 选项                 | MCP 参数      | 必填 | 说明                    |
+| -------- | ------------------------ | ------------- | ---- | ----------------------- |
+| 文件路径 | `-p, --file_path <PATH>` | file_path     | 是   | zip 或目录              |
+| 页面名称 | `--pn, --page_name`      | page_name     | 否   |                         |
+| 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |                         |
+| 起始偏移 | `--offset`               | offset        | 否   | 起始索引（默认 0）      |
+| 数量限制 | `--limit`                | limit         | 否   | 返回图层数量（默认 10） |
 
-例：`npx -y mcp-sketch locate -p /path/to/export.zip --pn 首页 --an 用户管理 -r 10`
+例：`npx -y mcp-sketch locate -p /path/to/export.zip --pn 首页 --an 用户管理 --limit 10`
 
 ### analyze
 

@@ -76,9 +76,9 @@
 
 ### 步骤 5：获取图层信息修正规划
 
-`npx -y mcp-sketch locate -p "FILE_PATH" --pn "page_name" --an "artboard_name" -r n`
+`npx -y mcp-sketch locate -p "FILE_PATH" --pn "page_name" --an "artboard_name" -o m -l n`
 
-- 根据规划表中的 `rect` 推测需要获取前 `n` 个图层
+- 根据规划表中的 `rect` 推测需要获取从第 `m` 个开始的前 `n` 个图层
 - 根据返回的图层 rect 修正规划表中的 rect、exclude_rects、直接子组件名称、组件路径等字段
 
 ### 步骤 6：创建组件和描述文档

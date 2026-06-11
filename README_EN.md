@@ -50,9 +50,10 @@ MCP: `sketch_html_locate`
 | file path     | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder                 |
 | page name     | `--pn, --page_name`      | page_name     | no       |                               |
 | artboard name | `--an, --artboard_name`  | artboard_name | no       |                               |
-| rank          | `-r, --rank`             | rank          | no       | return top n layers by impact |
+| offset        | `--offset`               | offset        | no       | starting index (default 0)    |
+| limit         | `--limit`                | limit         | no       | number of layers (default 10) |
 
-Example: `npx -y mcp-sketch locate -p /path/to/export.zip --pn Home --an "User Management" -r 10`
+Example: `npx -y mcp-sketch locate -p /path/to/export.zip --pn Home --an "User Management" --limit 10`
 
 ### analyze
 
