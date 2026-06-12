@@ -88,14 +88,24 @@
 
 根据更新后的规划表创建**组件**和**描述文档**（目标文件已存在则跳过）：
 
+> **警告：split 只负责拆分，不负责布局**
+>
+> - 只生成最基础的组件，**严禁**做以下事情：
+>   - ❌ 编写 `import` 语句
+>   - ❌ 在 HTML 中添加子组件的容器 div
+>   - ❌ 编写任何布局定位代码（flex、grid、absolute 定位等）
+>   - ❌ 编写业务逻辑、事件处理
+> - 这些工作全部由后续的任务完成
+> - 每个组件必须有独立文件夹，严禁平铺
+
 - 根据 `proj-init.md` 中的技术栈生成**仅包含**以下内容的标准组件，根据实际组件名称替换 `ComponentName` 和css类名 `component-name`：
-  - html模板
+  - html模板（**只有一个 div，包含类名和组件名，没有其他任何内容**）
 
   ```html
   <div class="component-name">ComponentName</div>
   ```
 
-  - css样式
+  - css样式（**只有模版里的基础样式，不含任何布局定位**）
 
   ```css
   .component-name {
