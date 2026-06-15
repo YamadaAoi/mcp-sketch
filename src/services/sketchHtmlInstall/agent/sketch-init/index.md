@@ -63,7 +63,7 @@
 
 从 `package.json` 的 `scripts` 字段中检测启动本地项目的命令（如 `vite`、`webpack serve`、`next dev`、`ng serve`、`react-scripts start` 等）
 
-- 若检测到启动命令，尝试启动项目
+- 若检测到启动命令，**必须**启动项目
   - 若启动成功则记录端口号
   - 若失败则读取对应配置文件（`vite.config.*`、`webpack.config.*`、`vue.config.*`、`next.config.*`、`angular.json` 等）获取端口配置（如 `server.port`、`devServer.port`）。若配置文件中未找到端口，则根据构建工具版本推断默认端口（如 Vite <2.0 默认 3000，>=2.0 默认 5173，Webpack/CRA/Next.js 默认 3000，Vue CLI 默认 8080 等）。版本号从 `package.json` 的依赖版本中获取
 

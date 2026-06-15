@@ -35,7 +35,7 @@
   - 具体目录前缀以 `proj-init.md` 中的约定为准
 
 ```bash
-npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -r {rect} -e {exclude_rects} --ap {assets_path}
+npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap {assets_path}
 ```
 
 ### 步骤 3：解析返回结果
