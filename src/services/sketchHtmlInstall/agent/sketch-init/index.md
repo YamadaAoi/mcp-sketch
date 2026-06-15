@@ -53,6 +53,7 @@
 ### 步骤 5：确定路由配置方式
 
 - 查找路由配置文件（如 `router/index.ts` 或 `app/routes.ts`），总结路由定义方式（动态导入 / 静态配置）
+- 确定路由模式（如 `hash`、`history` 等）
 
 ### 步骤 6：确定 CSS 方案
 
@@ -60,9 +61,11 @@
 
 ### 步骤 7：确定本地开发服务器配置
 
-从 `package.json` 的 `scripts` 字段中检测启动本地项目的命令（如 `vite`、`webpack serve`、`next dev`、`ng serve`、`react-scripts start` 等），确定构建工具类型。
+从 `package.json` 的 `scripts` 字段中检测启动本地项目的命令（如 `vite`、`webpack serve`、`next dev`、`ng serve`、`react-scripts start` 等）
 
-若检测到启动命令，读取对应配置文件（`vite.config.*`、`webpack.config.*`、`vue.config.*`、`next.config.*`、`angular.json` 等）获取端口配置（如 `server.port`、`devServer.port`）。若配置文件中未找到端口，则根据构建工具版本推断默认端口（如 Vite <2.0 默认 3000，>=2.0 默认 5173，Webpack/CRA/Next.js 默认 3000，Vue CLI 默认 8080 等）。版本号从 `package.json` 的依赖版本中获取。
+- 若检测到启动命令，尝试启动项目
+  - 若启动成功则记录端口号
+  - 若失败则读取对应配置文件（`vite.config.*`、`webpack.config.*`、`vue.config.*`、`next.config.*`、`angular.json` 等）获取端口配置（如 `server.port`、`devServer.port`）。若配置文件中未找到端口，则根据构建工具版本推断默认端口（如 Vite <2.0 默认 3000，>=2.0 默认 5173，Webpack/CRA/Next.js 默认 3000，Vue CLI 默认 8080 等）。版本号从 `package.json` 的依赖版本中获取
 
 ### 步骤 8：确定质量工具配置
 
@@ -120,6 +123,7 @@
 ## 4. 路由 (Routing)
 
 - **路由配置方式**:
+- **路由模式**:
 - **路由文件位置**:
 
 ## 5. 样式方案(CSS)

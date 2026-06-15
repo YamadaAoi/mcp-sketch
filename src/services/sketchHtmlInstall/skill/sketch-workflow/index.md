@@ -74,73 +74,14 @@ interface ArtboardState {
 
 ## 子agent 通信协议
 
-所有子agent 遵循统一的通信约定：
+所有 子agent 遵循统一的通信约定：
 
-1. **启动**：委托子agent 并传入所需参数
-2. **等待返回**：暂停流水线，等待子agent 执行完毕返回结果
-3. **解析结果**：从返回内容中提取 `SUCCESS` 或 `FAILED` 标记
-4. **分支处理**：
-   - `SUCCESS` → 继续下一步（解析输出、磁盘验证、更新状态）
-   - `FAILED` → 输出子agent 返回的错误描述并终止流水线，等待用户处理
-
-## 委托模板
-
-每次调度子 agent 时，**必须使用以下模板**，不得自行修改或省略约束条件。
-
-### sketch-init 模板
-
-```
-请为当前项目初始化 sketch 工作流配置
-
-项目信息：
-- 工作目录：<WORK_DIR>
-- 项目类型：<根据 package.json 描述>
-- Sketch 文件路径：<FILE_PATH>
-
-```
-
-### sketch-pick 模板
-
-```
-请从 Sketch Meaxure 导出文件中枚举所有画板供用户选择
-
-文件路径：<FILE_PATH>
-```
-
-### sketch-split 模板
-
-```
-请分析 Sketch 画板设计稿，拆分组件规划
-
-文件信息：
-- 文件路径：<FILE_PATH>
-- 页面名称：<pageName>
-- 画板名称：<artboardName>
-
-```
-
-### sketch-layout 模板
-
-```
-请为 Sketch 画板的组件执行布局配置
-
-画板信息：
-- 页面名称：<pageName>
-- 画板名称：<artboardName>
-
-```
-
-### sketch-draw 模板
-
-```
-请为 Sketch 画板的指定组件生成功能代码。
-
-组件信息：
-- 组件路径：<componentPath>
-- 描述文档路径：<md_path>
-- 子组件：<children 列表（如有）>
-
-```
+- 1. **启动**：委托子agent，并传入所需参数
+- 2. **等待返回**：暂停流水线，等待子agent 执行完毕返回结果
+- 3. **解析结果**：从返回内容中提取 `SUCCESS` 或 `FAILED` 标记
+- 4. **分支处理**：
+  - `SUCCESS` → 继续下一步（解析输出、磁盘验证、更新状态）
+  - `FAILED` → 输出子agent 返回的错误描述并终止流水线，等待用户处理
 
 ## 入口流程
 
@@ -150,41 +91,68 @@ interface ArtboardState {
 
 ### 步骤 2：初始化项目配置
 
-检查 `sketch-cache/proj-init.md` 是否存在。若不存在，委托子agent `sketch-init`，等待返回 `INIT_SUCCESS`。然后**磁盘验证** `sketch-cache/proj-init.md` 确实存在于磁盘，若不存在则让子agent 重新生成
+- 检查 `sketch-cache/proj-init.md` 是否存在
+  - 若不存在，委托子agent `sketch-init`，**严格按照**以下模板传入所需参数，不得自行添加或省略参数，等待返回 `INIT_SUCCESS`
+
+  ```
+  请为当前项目初始化 sketch 工作流配置
+
+  项目信息：
+  - 工作目录：<WORK_DIR>
+
+  ```
+
+- 然后**磁盘验证** `sketch-cache/proj-init.md` 确实存在于磁盘，若不存在则让子agent 重新生成
 
 ### 步骤 3：选择画板
 
-委托子agent `sketch-pick`，传入 `FILE_PATH`，等待用户选定画板
+- 委托子agent `sketch-pick`，**严格按照**以下模板传入所需参数，不得自行添加或省略参数，等待用户选定画板
 
-用户选定画板后，提取 `pageName` 和 `artboardName`：
+  ```
+  请从 Sketch Meaxure 导出文件中枚举所有画板供用户选择
 
-- 若状态文件 `sketch-cache/artboards/{pageName}-{artboardName}.json` 已存在 → 读取恢复进度，向用户汇报当前阶段
-- 若不存在 → 创建该文件写入初始状态：
+  文件路径：<FILE_PATH>
+  ```
 
-```json
-{
-  "filePath": "<relative path to FILE_PATH>",
-  "pageName": "...",
-  "artboardName": "...",
-  "stage": "sketch-pick",
-  "components": [],
-  "lastUpdateTime": "<当前时间>"
-}
-```
+- 用户选定画板后，提取 `pageName` 和 `artboardName`：
+  - 若状态文件 `sketch-cache/artboards/{pageName}-{artboardName}.json` 已存在 → 读取恢复进度，向用户汇报当前阶段
+  - 若不存在 → 创建该文件写入初始状态：
 
-选定画板后进入自动流水线，每阶段执行前先读取 JSON 状态文件，**已完成的阶段直接跳过，绝不重复执行**
+  ```json
+  {
+    "filePath": "<relative path to FILE_PATH>",
+    "pageName": "...",
+    "artboardName": "...",
+    "stage": "sketch-pick",
+    "components": [],
+    "lastUpdateTime": "<当前时间>"
+  }
+  ```
+
+- 选定画板后进入自动流水线，每阶段执行前先读取 JSON 状态文件，**已完成的阶段直接跳过，绝不重复执行**
 
 ### 步骤 4：sketch-split — 组件拆分
 
 若 `stage` 为 `sketch-split` 或更高 → **跳过**。否则：
 
-1. 委托子agent `sketch-split`，传入 `FILE_PATH`、`pageName`、`artboardName`，等待返回 `SPLIT_SUCCESS`
-2. 从子agent 输出的组件规划表中解析每个组件的信息（componentPath、children、rect、excludeRects）
-3. **磁盘验证**：检查每个组件的代码文件和 `.md` 文档是否确实存在于磁盘，而非仅相信子agent 的返回。若文件缺失，让子agent 重新创建后再继续
-4. 更新 JSON 状态：
-   - `stage` → `sketch-split`
-   - 将规划表中的组件填入 `components` 数组（`status: "created"`）
-   - `lastUpdateTime` 更新
+- 1. 委托子agent `sketch-split`，**严格按照**以下模板传入所需参数，不得自行添加或省略参数，等待返回 `SPLIT_SUCCESS`
+
+  ```
+  请分析 Sketch 画板设计稿，拆分组件规划
+
+  文件信息：
+  - 文件路径：<FILE_PATH>
+  - 页面名称：<pageName>
+  - 画板名称：<artboardName>
+
+  ```
+
+- 2. 从子agent 输出的组件规划表中解析每个组件的信息（componentPath、children、rect、excludeRects）
+- 3. **磁盘验证**：检查每个组件的代码文件和 `.md` 文档是否确实存在于磁盘，而非仅相信子agent 的返回。若文件缺失，让子agent 重新创建后再继续
+- 4. 更新 JSON 状态：
+  - `stage` → `sketch-split`
+  - 将规划表中的组件填入 `components` 数组（`status: "created"`）
+  - `lastUpdateTime` 更新
 
 ### 步骤 5：sketch-layout — 组件布局
 
@@ -192,22 +160,43 @@ interface ArtboardState {
 
 **前置校验**（仅 `stage === sketch-split` 时）：检查每个组件的代码文件和 `.md` 文件是否存在。有缺失则重置对应组件 `status` 为 `created`，回到步骤 4
 
-1. 委托子agent `sketch-layout`，传入 `pageName`、`artboardName`，等待返回 `LAYOUT_SUCCESS`
-2. **磁盘验证**：对有子组件的父组件，读取代码文件确认是否已包含子组件的 `import` 和子容器 `div`，而非仅相信子agent 的返回。若缺失，让子agent 重新处理
-3. 更新 JSON 状态：
-   - `stage` → `sketch-layout`
-   - 有直接子组件的父组件 `status` → `layout`
-   - `lastUpdateTime` 更新
+- 1. 委托子agent `sketch-layout`，**严格按照**以下模板传入所需参数，不得自行添加或省略参数，等待返回 `LAYOUT_SUCCESS`
+
+  ```
+  请为 Sketch 画板的组件执行布局配置
+
+  画板信息：
+  - 页面名称：<pageName>
+  - 画板名称：<artboardName>
+
+  ```
+
+- 2. **磁盘验证**：对有子组件的父组件，读取代码文件确认是否已包含子组件的 `import` 和子容器 `div`，而非仅相信子agent 的返回。若缺失，让子agent 重新处理
+- 3. 更新 JSON 状态：
+  - `stage` → `sketch-layout`
+  - 有直接子组件的父组件 `status` → `layout`
+  - `lastUpdateTime` 更新
 
 ### 步骤 6：sketch-draw — 组件绘制
 
 遍历 `components`，对每个 `status` 不为 `draw` 的组件：
 
-1. 读取该组件对应的 md 描述文档，获取元数据
-2. **前置校验**：若该组件 `children` 不为空，检查 `import` 和子容器 `div` 是否存在。缺失则将该父组件 `status` 置回 `created`，回到步骤 5
-3. 委托子agent `sketch-draw`，传入 md 中的元数据，等待返回 `DRAW_SUCCESS`
-4. **磁盘验证**：读取文件内容确认是否已填充真实代码，而非仅相信子agent 的返回。若仍为空白占位符（只有 `<div>{{...}}</div>` 或空模板），让子agent 重新生成
-5. 更新 JSON 状态：该组件 `status` → `draw`，`lastUpdateTime` 更新
+- 1. 读取该组件对应的 md 描述文档，获取元数据
+- 2. **前置校验**：若该组件 `children` 不为空，检查 `import` 和子容器 `div` 是否存在。缺失则将该父组件 `status` 置回 `created`，回到步骤 5
+- 3. 并行委托子agent `sketch-draw`，**严格按照**以下模板传入所需参数，不得自行添加或省略参数，等待返回 `DRAW_SUCCESS`
+
+  ```
+  请为 Sketch 画板的指定组件生成功能代码
+
+  组件信息：
+  - 组件路径：<componentPath>
+  - 描述文档路径：<md_path>
+  - 子组件：<children 列表（如有）>
+
+  ```
+
+- 4. **磁盘验证**：读取文件内容确认是否已填充真实代码，而非仅相信子agent 的返回。若仍为空白占位符（只有 `<div>{{...}}</div>` 或空模板），让子agent 重新生成
+- 5. 更新 JSON 状态：该组件 `status` → `draw`，`lastUpdateTime` 更新
 
 全部组件 `status` 为 `draw` 后：
 
