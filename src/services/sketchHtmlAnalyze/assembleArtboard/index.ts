@@ -48,14 +48,19 @@ function filterLayersByRect(
     if (!isInRect) return false
   }
 
-  // 判断图层是否与任意 excludeRect 相交
+  // 判断图层是否完全包含在任意 excludeRect 内
   if (excludeRects?.length) {
     const rRight = r.x + r.width
     const rBottom = r.y + r.height
     for (const e of excludeRects) {
       const eRight = e[0] + e[2]
       const eBottom = e[1] + e[3]
-      if (r.x < eRight && rRight > e[0] && r.y < eBottom && rBottom > e[1]) {
+      if (
+        r.x >= e[0] &&
+        r.y >= e[1] &&
+        rRight <= eRight &&
+        rBottom <= eBottom
+      ) {
         return false
       }
     }
