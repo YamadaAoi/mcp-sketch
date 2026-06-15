@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.2.4
+
+### Patch Changes
+
+- 修复部分图层误排除bug；优化流水线
+
 ## 1.2.3
 
 ### Patch Changes
