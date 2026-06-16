@@ -1,9 +1,15 @@
 import type { InstallConfig } from '../installer'
 import SketchInitPrompt from './sketch-init/index.md'
+import SketchInitCheckPrompt from './sketch-init-check/index.md'
 import SketchPickPrompt from './sketch-pick/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
+import SketchBoundPrompt from './sketch-bound/index.md'
+import SketchGenBasePrompt from './sketch-gen-base/index.md'
+import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
+import SketchLayoutCheckPrompt from './sketch-layout-check/index.md'
 import SketchDrawPrompt from './sketch-draw/index.md'
+import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 
 export const AgentPool: InstallConfig[] = [
   {
@@ -68,6 +74,73 @@ export const AgentPool: InstallConfig[] = [
             value: {
               read: 'allow',
               edit: 'allow',
+              glob: 'allow',
+              grep: 'allow',
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchInitCheckPrompt,
+    name: 'sketch-init-check',
+    description: '审核 proj-init.md 文件，确认其符合项目实际情况',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-init-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Glob, Grep, Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-init-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              read: true,
+              glob: true,
+              grep: true,
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              read: 'allow',
               glob: 'allow',
               grep: 'allow',
               bash: 'allow'
@@ -144,7 +217,7 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchSplitPrompt,
     name: 'sketch-split',
-    description: '提取 Sketch 画板设计信息，拆分组件规划，创建组件和描述文档',
+    description: '分析设计稿画板预览图，合理拆分组件，制定组件规划表',
     platforms: [
       {
         agent: 'claude',
@@ -159,7 +232,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash'
+            value: 'Bash'
           },
           {
             key: 'permissionMode',
@@ -171,6 +244,128 @@ export const AgentPool: InstallConfig[] = [
         agent: 'opencode',
         baseDir: '.opencode/agents',
         fileName: 'sketch-split.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchBoundPrompt,
+    name: 'sketch-bound',
+    description: '根据设计稿图层数据，修正组件规划的 rect，确保与设计稿一致',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-bound.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-bound.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchGenBasePrompt,
+    name: 'sketch-gen-base',
+    description: '基于组件规划布局数据，生成基础的组件代码',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-gen-base.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Write, Edit, Glob, Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-gen-base.md',
         meta: [
           {
             key: 'name'
@@ -202,6 +397,73 @@ export const AgentPool: InstallConfig[] = [
               read: 'allow',
               edit: 'allow',
               glob: 'allow',
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchGenBaseCheckPrompt,
+    name: 'sketch-gen-base-check',
+    description: '审核基础组件是否符合要求',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-gen-base-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Glob, Grep, Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-gen-base-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              read: true,
+              glob: true,
+              grep: true,
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              read: 'allow',
+              glob: 'allow',
+              grep: 'allow',
               bash: 'allow'
             }
           }
@@ -278,6 +540,73 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
+    prompt: SketchLayoutCheckPrompt,
+    name: 'sketch-layout-check',
+    description: '审核布局是否符合要求',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-layout-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Glob, Grep, Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-layout-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              read: true,
+              glob: true,
+              grep: true,
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              read: 'allow',
+              glob: 'allow',
+              grep: 'allow',
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
     prompt: SketchDrawPrompt,
     name: 'sketch-draw',
     description: '提取画板指定区域设计结构，生成前端组件功能代码',
@@ -337,6 +666,73 @@ export const AgentPool: InstallConfig[] = [
               read: 'allow',
               edit: 'allow',
               glob: 'allow',
+              bash: 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchDrawCheckPrompt,
+    name: 'sketch-draw-check',
+    description: '审核绘制的组件是否符合要求',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-draw-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Glob, Grep, Bash'
+          },
+          {
+            key: 'permissionMode',
+            value: 'auto'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-draw-check.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'tools',
+            value: {
+              read: true,
+              glob: true,
+              grep: true,
+              bash: true
+            }
+          },
+          {
+            key: 'permission',
+            value: {
+              read: 'allow',
+              glob: 'allow',
+              grep: 'allow',
               bash: 'allow'
             }
           }

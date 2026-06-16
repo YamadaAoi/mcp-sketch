@@ -21,7 +21,11 @@ export const SkillPool: InstallConfig[] = [
           },
           {
             key: 'allowed-tools',
-            value: 'Edit Write Bash PowerShell'
+            value: 'Edit Write Bash Bash(npx -y mcp-sketch *)'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Bash(unzip *)'
           }
         ]
       },
