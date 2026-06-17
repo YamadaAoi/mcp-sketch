@@ -16,6 +16,8 @@
 读取 `sketch-cache/proj-init.md` 获取格式化、代码检查、类型检查的完整命令并执行：
 
 - 若项目没有对应的检查工具，跳过即可
+- 执行时精确到 `component_path` 组件文件（如 `eslint <component_path>`），无需全量扫描
+- typecheck（如 `tsc --noEmit`）不支持指定文件，需全量检查，过滤与 `component_path` 相关的错误
 - 若有报错，检查报错内容是否涉及 `component_path` 组件文件：
   - 涉及 → 返回失败信息，附上与 `component_path` 相关的具体错误和修复命令
   - 不涉及（报错全是已有项目错误）→ 无视，视为通过

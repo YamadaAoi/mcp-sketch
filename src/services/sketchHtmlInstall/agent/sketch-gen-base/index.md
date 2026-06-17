@@ -41,7 +41,7 @@
   - **输出要求**:
     - 仅输出该基础组件的基础代码，不包含任何业务逻辑或额外的导入语句
 
-- 2. 创建组件描述文档 `{component_path}.md`，格式如下：
+- 2. 创建组件描述文档，**必须去掉组件文件扩展名**后加 `.md`（如 `component_path` 为 `src/views/login/Login.vue`，则描述文件为 `src/views/login/Login.md`），格式如下：
 
   ```markdown
   ---
@@ -61,11 +61,13 @@
 
 1. 检查 `component_path` 组件文件是否存在
 2. 检查组件是否有自己的专属同名文件夹
-3. 检查 `{component_path}.md` 描述文件是否存在于组件所在目录且格式正确
+3. 检查组件描述文件是否存在（`component_path` 去掉扩展名加 `.md`，如 `Login.vue` → `Login.md`）且格式正确
 4. 检查 DOM 结构：单根节点、根节点类名 `component-name`、根节点内只包含组件名称
 5. 检查样式：宽高 100%、position relative、Flex 居中、护眼背景色（透明度 50%）
 6. 确认没有导入语句
-7. 运行 lint/typecheck 并过滤 `component_path` 相关错误
+7. 运行 lint/typecheck：
+   - lint：`eslint <component_path>`（精确到组件文件，无需全量扫描）
+   - typecheck：`tsc --noEmit`（不支持指定文件，需全量检查，过滤 `component_path` 相关错误）
 8. 有任一项不符合 → 定位并修复 → 重新验证（最多内部重试 3 次）
 9. 若 3 次后仍未通过，返回 `GEN_BASE_FAILED`
 

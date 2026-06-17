@@ -66,7 +66,9 @@
    - 每个子组件是否已正确 import
    - 容器样式是否为响应式布局（灵活运用 `%`、`flex`、`calc`）
    - **如果出现 `position: absolute`、固定 `px` 布局或 `@media` 媒体查询**，思考有没有更好的布局方案替代
-2. 运行 lint/typecheck 并过滤本次修改的组件相关错误
+2. 运行 lint/typecheck：
+   - lint：`eslint <涉及的组件文件路径>`（精确到本次修改的文件，无需全量扫描）
+   - typecheck：`tsc --noEmit`（不支持指定文件，需全量检查，过滤本次修改的组件相关错误）
 3. 有任一项不符合 → 定位并修复 → 重新验证（最多内部重试 3 次）
 4. 若 3 次后仍未通过，返回 `LAYOUT_FAILED`
 
