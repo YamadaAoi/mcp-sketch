@@ -161,19 +161,38 @@ sketch-cache/artboards/{pageName}-{artboardName}.json
 
 **触发**：有 `status === "layout"` 的组件
 
-委托 `sketch-layout`，在 prompt 中显式写出参数：
+委托 `sketch-layout`：
 
-- `pageName: <页面名>`
-- `artboardName: <画板名>`
+- 首次调用时，prompt 中显式写出参数：
+  - `pageName: <页面名>`
+  - `artboardName: <画板名>`
+- 用户不满意后重新委托时，额外传入：
+  - `errorDescription: <用户反馈内容>`
+
+**注意**：**绝对禁止**自行修改组件代码或布局样式！
 
 等待返回：
 
-- SUCCESS → 这些组件 `status → ready-to-draw`
+- SUCCESS →
   - 打开浏览器预览布局效果：
     1. 读取 `sketch-cache/proj-init.md` 获取本地开发服务器配置，若未配置则跳过
-    2. 拼接预览 URL：hash 模式 `http://localhost:{端口}/#/{路由路径}`，history 模式 `http://localhost:{端口}/{路由路径}`
-    3. 使用 bash 命令打开页面（`start {url}` 或 `open {url}`）
+    2. 检查端口是否已被占用，若未被占用，**后台**运行启动命令
+    3. 拼接预览 URL：hash 模式 `http://localhost:{端口}/#/{路由路径}`，history 模式 `http://localhost:{端口}/{路由路径}`
+    4. 使用 bash 命令打开页面（`start {url}` 或 `open {url}`）
   - **等待用户确认布局效果**
+    - 用户满意 → 这些组件 `status → ready-to-draw`
+    - 用户不满意 →
+      - 收集用户具体反馈，判断问题类型：
+      - **布局问题**（CSS 布局、响应式、排列方式、间距等）：
+        - 增加 retryCount，重新委托 `sketch-layout`（传入 `errorDescription`），最多 3 次
+        - 修复后重新打开浏览器预览，**等待用户确认**
+      - **拆分问题**（组件划分不合理、应拆分未拆分、组件命名不当、父子关系错误等）：
+        - **绝对禁止自行调整组件拆分**，只能委托 `sketch-split` 修复
+        - 委托 `sketch-split`（传入 `errorDescription`）
+        - 从返回结果中解析新的组件规划表，更新状态文件中的 `components`
+        - 所有组件 `status → "gen-base"`、`retryCount → 0`（组件树已变，全部重新生成）
+        - `stage → sketch-split`（触发重新 bound → gen-base → layout）
+        - 增加 retryCount 后重新从**步骤 5**开始执行（最多 3 次），超过则标记为失败并终止
 - FAILED → 增加 retryCount，重新尝试（最多 3 次），超过则终止
 
 `stage → sketch-layout`

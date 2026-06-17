@@ -8,7 +8,14 @@
 
 ## 执行步骤
 
-以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name` 均由调用方传入上下文
+参数由调用方传入：
+
+- `FILE_PATH` — Sketch 文件路径
+- `page_name` — 页面名
+- `artboard_name` — 画板名
+- `errorDescription`（可选） — 修复模式下传入的用户反馈，描述拆分问题
+
+若调用方传入了 `errorDescription`，则跳过步骤 1-4，直接进入**步骤 6：修复模式**
 
 ### 步骤 1：读取 `sketch-cache/proj-init.md` 确认目录结构、命名规范、技术栈
 
@@ -62,6 +69,21 @@ npx -y mcp-sketch plan -p {FILE_PATH} --pn {page_name} --an {artboard_name}
 - **rect**：`[x, y, width, height]`，单位 px
 - **exclude_rects**：直接子组件的 `rect` 坐标列表，无子组件则为 `[]`
 - **直接子组件**：直接子组件名称列表（PascalCase），无子组件则为 `[]`
+
+### 步骤 6：修复模式
+
+当调用方传入 `errorDescription` 时进入修复模式：
+
+- 1. 读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件，获取当前组件规划
+- 2. 根据 `errorDescription` 定位拆分问题
+- 3. 重新执行步骤 2（`mcp-sketch plan`）获取最新画板图层数据
+- 4. 重新分析并输出修正后的组件规划表（格式同步骤 5）
+- 5. 常见修复场景：
+  - 组件合并/拆分不当 → 调整组件边界和层级
+  - 组件类型判断错误 → 更正 `type`（page/common/page-specific）
+  - 漏拆分组件 → 补充新组件及父子关系
+  - 组件命名不规范 → 按 `proj-init.md` 规范重命名
+  - 父子关系错误 → 修正层级和 `children`/`exclude_rects`
 
 ## 输出格式
 
