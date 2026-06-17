@@ -1,13 +1,10 @@
 import type { InstallConfig } from '../installer'
 import SketchInitPrompt from './sketch-init/index.md'
-import SketchInitCheckPrompt from './sketch-init-check/index.md'
 import SketchPickPrompt from './sketch-pick/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
 import SketchBoundPrompt from './sketch-bound/index.md'
 import SketchGenBasePrompt from './sketch-gen-base/index.md'
-import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
-import SketchLayoutCheckPrompt from './sketch-layout-check/index.md'
 import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 
@@ -32,10 +29,6 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'tools',
             value: 'Read, Write, Edit, Glob, Grep, Bash'
-          },
-          {
-            key: 'permissionMode',
-            value: 'auto'
           }
         ]
       },
@@ -59,88 +52,10 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              read: true,
-              write: true,
-              edit: true,
-              glob: true,
-              grep: true,
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
               read: 'allow',
               edit: 'allow',
-              glob: 'allow',
-              grep: 'allow',
-              bash: 'allow'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchInitCheckPrompt,
-    name: 'sketch-init-check',
-    description: '审核 proj-init.md 文件，确认其符合项目实际情况',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-init-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'permissionMode',
-            value: 'auto'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-init-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'tools',
-            value: {
-              read: true,
-              glob: true,
-              grep: true,
-              bash: true
-            }
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
               glob: 'allow',
               grep: 'allow',
               bash: 'allow'
@@ -169,11 +84,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Bash, AskUserQuestion'
+            value: 'Glob, Grep, Bash, AskUserQuestion'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Read, Write, Edit, Bash(unzip *)'
           }
         ]
       },
@@ -197,15 +112,10 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              bash: true,
-              question: true
-            }
-          },
-          {
             key: 'permission',
             value: {
+              glob: 'allow',
+              grep: 'allow',
               bash: 'allow',
               question: 'allow'
             }
@@ -232,11 +142,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Bash'
+            value: 'Read, Bash'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Write, Edit, Bash(unzip *)'
           }
         ]
       },
@@ -260,14 +170,13 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
+              read: 'allow',
+              write: 'deny',
+              edit: 'deny',
+              glob: 'allow',
+              grep: 'allow',
               bash: 'allow'
             }
           }
@@ -293,11 +202,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Bash'
+            value: 'Read, Bash'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Write, Edit, Bash(unzip *)'
           }
         ]
       },
@@ -321,14 +230,13 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
+              read: 'allow',
+              write: 'deny',
+              edit: 'deny',
+              glob: 'allow',
+              grep: 'allow',
               bash: 'allow'
             }
           }
@@ -355,10 +263,6 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'tools',
             value: 'Read, Write, Edit, Glob, Bash'
-          },
-          {
-            key: 'permissionMode',
-            value: 'auto'
           }
         ]
       },
@@ -382,86 +286,10 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              read: true,
-              write: true,
-              edit: true,
-              glob: true,
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
               read: 'allow',
               edit: 'allow',
-              glob: 'allow',
-              bash: 'allow'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchGenBaseCheckPrompt,
-    name: 'sketch-gen-base-check',
-    description: '审核基础组件是否符合要求',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-gen-base-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'permissionMode',
-            value: 'auto'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-gen-base-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'tools',
-            value: {
-              read: true,
-              glob: true,
-              grep: true,
-              bash: true
-            }
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
               glob: 'allow',
               grep: 'allow',
               bash: 'allow'
@@ -493,8 +321,8 @@ export const AgentPool: InstallConfig[] = [
             value: 'Read, Edit, Glob, Bash'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Write'
           }
         ]
       },
@@ -518,85 +346,11 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              read: true,
-              edit: true,
-              glob: true,
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'deny',
               edit: 'allow',
-              glob: 'allow',
-              bash: 'allow'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchLayoutCheckPrompt,
-    name: 'sketch-layout-check',
-    description: '审核布局是否符合要求',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-layout-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'permissionMode',
-            value: 'auto'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-layout-check.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'tools',
-            value: {
-              read: true,
-              glob: true,
-              grep: true,
-              bash: true
-            }
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
               glob: 'allow',
               grep: 'allow',
               bash: 'allow'
@@ -624,11 +378,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Edit, Glob, Bash'
+            value: 'Read, Write, Edit, Glob, Bash'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Bash(unzip *)'
           }
         ]
       },
@@ -652,20 +406,12 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              read: true,
-              edit: true,
-              glob: true,
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
               read: 'allow',
               edit: 'allow',
               glob: 'allow',
+              grep: 'allow',
               bash: 'allow'
             }
           }
@@ -694,8 +440,8 @@ export const AgentPool: InstallConfig[] = [
             value: 'Read, Glob, Grep, Bash'
           },
           {
-            key: 'permissionMode',
-            value: 'auto'
+            key: 'disallowedTools',
+            value: 'Write, Edit'
           }
         ]
       },
@@ -719,18 +465,11 @@ export const AgentPool: InstallConfig[] = [
             value: 0.1
           },
           {
-            key: 'tools',
-            value: {
-              read: true,
-              glob: true,
-              grep: true,
-              bash: true
-            }
-          },
-          {
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'deny',
+              edit: 'deny',
               glob: 'allow',
               grep: 'allow',
               bash: 'allow'
