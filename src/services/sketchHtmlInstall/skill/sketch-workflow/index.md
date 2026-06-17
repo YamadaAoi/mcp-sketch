@@ -81,8 +81,7 @@ sketch-cache/artboards/{pageName}-{artboardName}.json
 - 不存在 → 委托 `sketch-init`，传入参数 `WORK_DIR: <当前工作目录>`
   - SUCCESS → 继续
   - FAILED → 重试（最多 3 次），超过则终止
-- 存在 → 直接读取 proj-init.md 里的监听端口和启动命令
-- 读取监听端口和启动命令，未占用端口则后台启动项目
+- 存在 → 跳过
 
 ### 步骤 3：选择画板
 
