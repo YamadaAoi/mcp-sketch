@@ -169,8 +169,6 @@ sketch-cache/artboards/{pageName}-{artboardName}.json
 - 用户不满意后重新委托时，额外传入：
   - `errorDescription: <用户反馈内容>`
 
-**注意**：**绝对禁止**自行修改组件代码或布局样式！
-
 等待返回：
 
 - SUCCESS →
@@ -182,6 +180,7 @@ sketch-cache/artboards/{pageName}-{artboardName}.json
   - **等待用户确认布局效果**
     - 用户满意 → 这些组件 `status → ready-to-draw`
     - 用户不满意 →
+      - **注意**：**绝对禁止**自行修改组件代码或布局样式！
       - 收集用户具体反馈，判断问题类型：
       - **布局问题**（CSS 布局、响应式、排列方式、间距等）：
         - 增加 retryCount，重新委托 `sketch-layout`（传入 `errorDescription`），最多 3 次
