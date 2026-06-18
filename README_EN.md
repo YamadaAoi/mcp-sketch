@@ -5,9 +5,101 @@
 ## Disclaimer
 
 - Use **multi-modal models** — the `sketch-*` workflow requires analyzing preview images
-- Some meaningless layers are filtered out to avoid confusing AI, but valid layers may also be filtered
+
+## Agents
+
+> **Note**: Agents are under continuous iteration and improvement. LLMs are unpredictable. After installation, feel free to customize prompt content and tool permissions to fit your project's specific needs.
+
+> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools that are compatible with the `.claude` directory structure can choose to install as Claude Code.
+
+### Installation
+
+Install agents into your project with a single CLI command:
+
+```bash
+npx -y mcp-sketch install
+```
+
+Interactively select your AI tool platform, and files are automatically written to the corresponding directories:
+
+| Platform        | Agents Directory    |
+| --------------- | ------------------- |
+| **Claude Code** | `.claude/agents/`   |
+| **OpenCode**    | `.opencode/agents/` |
+
+Installed file structure:
+
+```
+{agents}/
+├── sketch-leader.md              ← Main agent: Frontend Leader
+├── sketch-init.md                ← Sub-agent: Project Architect
+├── sketch-pick.md                ← Sub-agent: Design Extraction Specialist
+├── sketch-split.md               ← Sub-agent: Senior Frontend Architect
+├── sketch-bound.md               ← Sub-agent: Boundary Correction Specialist
+├── sketch-gen-base.md            ← Sub-agent: Base Component Generator
+├── sketch-layout.md              ← Sub-agent: Layout Engineer
+├── sketch-draw.md                ← Sub-agent: Senior Frontend Developer
+└── sketch-draw-check.md          ← Sub-agent: Component Review Specialist
+```
+
+### Leader Architecture
+
+sketch-leader is the **main agent** — you talk to it directly. It analyzes requirements, dispatches sub-agents, reviews results, and manages state files.
+
+### Switch to Leader
+
+**OpenCode**:
+
+- After starting `opencode`, press `TAB` to switch to `sketch-leader`
+
+**Claude Code**:
+
+- Specify the agent when starting `claude`
+
+```
+claude --agent sketch-leader
+```
+
+After switching, all your messages are sent to sketch-leader, which dispatches sub-agents to complete the work.
+
+### Workflow
+
+| Phase         | Sub-agent         | Parallel |
+| ------------- | ----------------- | -------- |
+| Initialize    | sketch-init       | ❌       |
+| Pick Artboard | sketch-pick       | ❌       |
+| Split         | sketch-split      | ❌       |
+| Bound         | sketch-bound      | ❌       |
+| Gen Base      | sketch-gen-base   | ✅       |
+| Layout        | sketch-layout     | ❌       |
+| Draw          | sketch-draw       | ✅       |
+| Review        | sketch-draw-check | ✅       |
+
+### Usage
+
+**New flow**: Tell leader what page you want to implement. It automatically executes the workflow, pausing after layout for you to preview and confirm.
+
+**Fix mode**: Tell leader what's wrong (e.g. "spacing too large", "color is off"). It analyzes the issue and dispatches the right sub-agent to fix it.
+
+**Problem type judgment**:
+
+| Problem                        | Who to call   |
+| ------------------------------ | ------------- |
+| Poor component split           | sketch-split  |
+| Inter-component layout issues  | sketch-layout |
+| Intra-component layout/styles  | sketch-draw   |
+| Component position/size issues | sketch-bound  |
+
+### State Files
+
+- Project config: `sketch-cache/proj-init.md`
+- Artboard state: `sketch-cache/artboards/{pageName}-{artboardName}.json`
+
+Leader updates state files after each sub-agent completes. Resume from where you left off if interrupted. All file paths use relative paths.
 
 ## Tools
+
+> The following are low-level tools, available for Agent use or standalone use.
 
 ### list
 
@@ -21,6 +113,8 @@ MCP: `sketch_html_list`
 | file path | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder |
 
 Example: `npx -y mcp-sketch list -p /path/to/export.zip`
+
+Returns: `[{ pageName, artboardName, previewPath }]`
 
 ### plan
 
@@ -36,6 +130,8 @@ MCP: `sketch_html_plan`
 | artboard name | `--an, --artboard_name`  | artboard_name | no       |               |
 
 Example: `npx -y mcp-sketch plan -p /path/to/export.zip --pn Home`
+
+Returns: `{ previewPath, filePath, pageName, artboardName, width, height }`
 
 ### locate
 
@@ -53,6 +149,8 @@ MCP: `sketch_html_locate`
 | limit         | `--limit`                | limit         | no       | number of layers (default 10) |
 
 Example: `npx -y mcp-sketch locate -p /path/to/export.zip --pn Home --an "User Management" --limit 10`
+
+Returns: `[{ name, type, rect: [x, y, w, h] }]`
 
 ### analyze
 
@@ -73,59 +171,9 @@ MCP: `sketch_html_analyze`
 
 Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]"`
 
-## Skills & Agents
+Returns: `{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
 
-> **Note**: Skills and agents are under continuous iteration and improvement. LLMs are unpredictable. After installation, feel free to customize prompt content and tool permissions to fit your project's specific needs for best results.
-
-> The frontmatter in each platform's agent & skill files has its own format. Refer to the corresponding docs for configuration: [opencode agents](https://opencode.ai/docs/agents), [Claude Code sub-agents](https://code.claude.com/docs/sub-agents).
-
-> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools (e.g. Trae, Cursor) that are compatible with the `.claude` directory structure can choose to install as Claude Code. For other tools, install as Claude Code first, then manually copy the installed file contents to the appropriate location in your tool.
-
-### Installation
-
-Install skills and agents into your project with a single CLI command:
-
-```bash
-npx -y mcp-sketch install
-```
-
-Specify a working directory:
-
-```bash
-npx -y mcp-sketch install --cwd /path/to/project
-```
-
-Interactively select your AI tool platform (Claude Code / OpenCode), and files are automatically written to the corresponding directories:
-
-| Platform        | Skills Directory    | Agents Directory    |
-| --------------- | ------------------- | ------------------- |
-| **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
-| **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
-
-Installed file structure:
-
-```
-{skills}/sketch-workflow/SKILL.md    ← Orchestrator: 5-stage state machine
-{agents}/
-├── sketch-init.md                  ← Sub-agent: Project Architect
-├── sketch-pick.md                  ← Sub-agent: Design Extraction Specialist
-├── sketch-split.md                 ← Sub-agent: Senior Frontend Architect
-├── sketch-layout.md                ← Sub-agent: Layout Engineer
-└── sketch-draw.md                  ← Sub-agent: Senior Frontend Developer
-```
-
-### Workflow
-
-After loading the `sketch-workflow` skill, the main agent schedules 5 sub-agents according to the state machine:
-
-`sketch-init → sketch-pick → sketch-split → sketch-layout → sketch-draw`
-
-Each phase:
-
-1. Create a sub-agent and pass in parameters
-2. Wait for the sub-agent to return `SUCCESS`/`FAILED` markers
-3. Disk verification (verify actual files on disk, don't trust the sub-agent's word)
-4. Update `sketch-cache/` state file, proceed to next phase
+Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips issue), the original full artboard image is returned. If installed, the image is resized, cropped to `rect` (if specified), and compressed to webp. Only processes preview image, not assets.
 
 ## MCP Configuration
 
@@ -167,36 +215,11 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
 - **rect** (analyze only): filter rule — element is parsed only if its `x, y, x+width, y+height` bounds are fully inside the rect
 - **exclude_rects** (analyze only): exclusion rule — element is discarded if its `x, y, x+width, y+height` bounds are fully inside any exclusion rect. Takes effect first when used with `rect`.
 
-## Return Result
-
-### list
-
-`[{ pageName, artboardName, previewPath }]` (array of all artboards)
-
-### analyze
-
-`{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
-
-Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips issue), the original full artboard image is returned. If installed, the image is resized, cropped to `rect` (if specified), and compressed to webp. Only processes preview image, not assets.
-
-### locate
-
-`[{ name, type, rect: [x, y, w, h] }]` (top n layout-impacting layers with coordinates)
-
-### plan
-
-`{ previewPath, filePath, pageName, artboardName, width, height }`
-
 ## Output File Location
 
 - Assets: default `src/assets/sketch/` (customizable via `assets_path`)
 - JSON result: saved into `{input}.cache/` directory
 - Preview image: saved into `{input}.cache/` directory (webp format, fallback to original if sharp unavailable)
-
-## Recommendations
-
-- Keep data passed to AI under 50KB for better accuracy (local JSON is formatted, data sent to AI is compact)
-- **Use `rect` parameter for modular parsing of specific artboard regions**
 
 ## Demo
 

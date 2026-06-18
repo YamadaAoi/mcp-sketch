@@ -1,4 +1,5 @@
 import type { InstallConfig } from '../installer'
+import SketchLeaderPrompt from './sketch-leader/index.md'
 import SketchInitPrompt from './sketch-init/index.md'
 import SketchPickPrompt from './sketch-pick/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
@@ -9,6 +10,57 @@ import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 
 export const AgentPool: InstallConfig[] = [
+  {
+    prompt: SketchLeaderPrompt,
+    name: 'sketch-leader',
+    description: '前端 Leader，负责分析问题、分配任务、审核结果，绝不写代码',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-leader.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: '*'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-leader.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'primary'
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'permission',
+            value: {
+              '*': 'allow'
+            }
+          }
+        ]
+      }
+    ]
+  },
   {
     prompt: SketchInitPrompt,
     name: 'sketch-init',
@@ -84,7 +136,8 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Glob, Grep, Bash, AskUserQuestion'
+            value:
+              'Glob, Grep, Bash, Bash(npx -y mcp-sketch *), AskUserQuestion'
           },
           {
             key: 'disallowedTools',
@@ -142,7 +195,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Bash'
+            value: 'Read, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',
@@ -202,7 +255,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Bash'
+            value: 'Read, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',
@@ -378,7 +431,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Bash'
+            value: 'Read, Write, Edit, Glob, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',

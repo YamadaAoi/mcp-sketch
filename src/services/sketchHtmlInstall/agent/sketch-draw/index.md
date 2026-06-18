@@ -109,6 +109,8 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 
 ### 步骤 8：修复模式 - 根据错误描述修复
 
+> **注意**：调用方（Leader）提供的 `errorDescription` 包含问题分析和修改建议，仅供参考。你需要自行验证建议是否正确，结合自己的分析做出最终决定。
+
 - 1. 读取组件代码文件
 - 2. 根据 `errorDescription` 定位问题
 - 3. 只修复该问题，不修改其他内容

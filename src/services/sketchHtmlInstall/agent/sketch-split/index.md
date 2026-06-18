@@ -74,6 +74,8 @@ npx -y mcp-sketch plan -p {FILE_PATH} --pn {page_name} --an {artboard_name}
 
 当调用方传入 `errorDescription` 时进入修复模式：
 
+> **注意**：调用方（Leader）提供的 `errorDescription` 包含问题分析和修改建议，仅供参考。你需要自行验证建议是否正确，结合自己的分析做出最终决定。
+
 - 1. 读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件，获取当前组件规划
 - 2. 根据 `errorDescription` 定位拆分问题
 - 3. 重新执行步骤 2（`mcp-sketch plan`）获取最新画板图层数据

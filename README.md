@@ -5,9 +5,99 @@
 ## 声明
 
 - 使用**多模态模型**，`sketch-*`工作流需要分析预览图
-- 工具会过滤一部分无意义图层，但不排除误过滤有效图层的情况
+
+## Agents
+
+> **注意**：agents 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限。
+
+> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装。
+
+### 安装
+
+```bash
+npx -y mcp-sketch install
+```
+
+交互式选择 AI 工具平台，自动将文件写入对应目录：
+
+| 平台            | agent 目录          |
+| --------------- | ------------------- |
+| **Claude Code** | `.claude/agents/`   |
+| **OpenCode**    | `.opencode/agents/` |
+
+安装后的文件结构：
+
+```
+{agents}/
+├── sketch-leader.md              ← 主agent：前端 Leader
+├── sketch-init.md                ← 子agent：项目架构师
+├── sketch-pick.md                ← 子agent：设计稿解析专员
+├── sketch-split.md               ← 子agent：资深前端架构师
+├── sketch-bound.md               ← 子agent：边界修正专员
+├── sketch-gen-base.md            ← 子agent：基础组件生成
+├── sketch-layout.md              ← 子agent：布局工程师
+├── sketch-draw.md                ← 子agent：高级前端开发
+└── sketch-draw-check.md          ← 子agent：组件审核专员
+```
+
+### Leader 架构
+
+sketch-leader 是**主 agent**，用户直接与它对话，它负责分析需求、调度子 agent、审核结果、管理状态文件。
+
+### 切换到 Leader
+
+**OpenCode**：
+
+- 启动`opencode`后通过`TAB`键切换到`sketch-leader`
+
+**Claude Code**：
+
+- 启动`claude`时指定`agent`为`sketch-leader`
+
+```
+claude --agent sketch-leader
+```
+
+切换后，你的所有消息都会发送给 sketch-leader，由它调度子 agent 完成工作。
+
+### 工作流
+
+| 阶段     | 子 agent          | 并行 |
+| -------- | ----------------- | ---- |
+| 初始化   | sketch-init       | ❌   |
+| 选择画板 | sketch-pick       | ❌   |
+| 组件拆分 | sketch-split      | ❌   |
+| 边界修正 | sketch-bound      | ❌   |
+| 生成骨架 | sketch-gen-base   | ✅   |
+| 布局骨架 | sketch-layout     | ❌   |
+| 绘制功能 | sketch-draw       | ✅   |
+| 审核     | sketch-draw-check | ✅   |
+
+### 使用方式
+
+**新流程**：告诉 leader 你要实现什么页面，它会自动按工作流执行，layout 完成后暂停让你预览确认。
+
+**修复模式**：告诉 leader 哪里有问题（如"间距太大"、"颜色不对"），它会分析问题、调用对应子 agent 修复。
+
+**问题类型判断**：
+
+| 问题                  | 调用谁        |
+| --------------------- | ------------- |
+| 组件划分不合理        | sketch-split  |
+| 组件之间布局问题      | sketch-layout |
+| 组件内部布局/样式问题 | sketch-draw   |
+| 组件位置/大小不对     | sketch-bound  |
+
+### 状态文件
+
+- 项目配置：`sketch-cache/proj-init.md`
+- 画板状态：`sketch-cache/artboards/{pageName}-{artboardName}.json`
+
+Leader 在每个子 agent 完成后更新状态文件，中断后可恢复进度。所有文件路径使用相对路径。
 
 ## 工具
+
+> 以下是底层工具，供 Agent 调用或单独使用。
 
 ### list
 
@@ -21,6 +111,8 @@ MCP: `sketch_html_list`
 | 文件路径 | `-p, --file_path <PATH>` | file_path | 是   | zip 或目录 |
 
 例：`npx -y mcp-sketch list -p /path/to/export.zip`
+
+返回结果：`[{ pageName, artboardName, previewPath }]`
 
 ### plan
 
@@ -36,6 +128,8 @@ MCP: `sketch_html_plan`
 | 画板名称 | `--an, --artboard_name`  | artboard_name | 否   |            |
 
 例：`npx -y mcp-sketch plan -p /path/to/export.zip --pn 首页`
+
+返回结果：`{ previewPath, filePath, pageName, artboardName, width, height }`
 
 ### locate
 
@@ -53,6 +147,8 @@ MCP: `sketch_html_locate`
 | 数量限制 | `--limit`                | limit         | 否   | 返回图层数量（默认 10） |
 
 例：`npx -y mcp-sketch locate -p /path/to/export.zip --pn 首页 --an 用户管理 --limit 10`
+
+返回结果：`[{ name, type, rect: [x, y, w, h] }]`
 
 ### analyze
 
@@ -73,59 +169,22 @@ MCP: `sketch_html_analyze`
 
 例：`npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]"`
 
-## Skills & Agents
+返回结果：`{ artboard: { 图层、样式、图片等 }, previewPath: "预览图路径" }`
 
-> **注意**：skills & agents 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限，以达到最佳效果。
+预览图使用 `sharp`（optionalDependencies）处理。若 `sharp` 安装失败（libvips 问题），返回原始画板图片；安装成功则调整尺寸、按 `rect` 截取、压缩为 webp。仅处理预览图，不处理切图。
 
-> skills & agents 的 frontmatter 各平台有自己的专用格式，配置方式请查阅对应文档：[opencode agents](https://opencode.ai/docs/zh-cn/agents)、[Claude Code sub-agents](https://code.claude.com/docs/zh-CN/sub-agents)。
+## 参数优先级
 
-> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具（如 Trae、Cursor 等）如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装；否则请先以 Claude Code 方式安装，再对照安装后的文件内容手动粘贴到对应工具的合适位置。
+- **page**: `page_name` > 第一个 page
+- **artboard**: `artboard_name` > 第一个 artboard
+- **rect**（仅 analyze）: 过滤规则为元素 `x, y, x+width, y+height` 全部在矩形内才保留
+- **exclude_rects**（仅 analyze）: 排除规则为元素 `x, y, x+width, y+height` 全部在任一排除矩形内则丢弃，与 `rect` 同时使用时先生效
 
-### 安装
+## 输出文件位置
 
-通过 CLI 一键安装技能和 agent 到当前项目：
-
-```bash
-npx -y mcp-sketch install
-```
-
-指定工作目录：
-
-```bash
-npx -y mcp-sketch install --cwd /path/to/project
-```
-
-交互式选择 AI 工具平台（Claude Code / OpenCode），自动将文件写入对应目录：
-
-| 平台            | 技能目录            | agent 目录          |
-| --------------- | ------------------- | ------------------- |
-| **Claude Code** | `.claude/skills/`   | `.claude/agents/`   |
-| **OpenCode**    | `.opencode/skills/` | `.opencode/agents/` |
-
-安装后的文件结构：
-
-```
-{skills}/sketch-workflow/SKILL.md    ← 总指挥：定义 5 阶段流水线的状态机
-{agents}/
-├── sketch-init.md                  ← 子agent：项目架构师
-├── sketch-pick.md                  ← 子agent：设计稿解析专员
-├── sketch-split.md                 ← 子agent：资深前端架构师
-├── sketch-layout.md                ← 子agent：布局工程师
-└── sketch-draw.md                  ← 子agent：高级前端开发
-```
-
-### 工作流
-
-主 agent 加载 `sketch-workflow` 技能后，按状态机调度 5 个子agent：
-
-`sketch-init → sketch-pick → sketch-split → sketch-layout → sketch-draw`
-
-每阶段执行：
-
-1. 创建子agent 并传入参数
-2. 等待子agent 返回 `SUCCESS`/`FAILED` 标记
-3. 磁盘验证（不信任子agent 自述，以磁盘事实为准）
-4. 更新 `sketch-cache/` 状态文件，进入下一阶段
+- 切图：默认 `src/assets/sketch/`（可通过 `assets_path` 自定义）
+- JSON 结果：`{input}.cache/` 目录下
+- 预览图：`{input}.cache/` 目录下（webp 格式，sharp 不可用时为原始格式）
 
 ## MCP 配置
 
@@ -159,44 +218,6 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
   }
 }
 ```
-
-## 参数优先级
-
-- **page**: `page_name` > 第一个 page
-- **artboard**: `artboard_name` > 第一个 artboard
-- **rect**（仅 analyze）: 过滤规则为元素 `x, y, x+width, y+height` 全部在矩形内才保留
-- **exclude_rects**（仅 analyze）: 排除规则为元素 `x, y, x+width, y+height` 全部在任一排除矩形内则丢弃，与 `rect` 同时使用时先生效
-
-## 返回结果
-
-### list
-
-`[{ pageName, artboardName, previewPath }]`（所有画板的数组）
-
-### analyze
-
-`{ artboard: { 图层、样式、图片等 }, previewPath: "预览图路径" }`
-
-预览图使用 `sharp`（optionalDependencies）处理。若 `sharp` 安装失败（libvips 问题），返回原始画板图片；安装成功则调整尺寸、按 `rect` 截取、压缩为 webp。仅处理预览图，不处理切图。
-
-### locate
-
-`[{ name, type, rect: [x, y, w, h] }]`（前 n 个最影响布局的图层坐标列表）
-
-### plan
-
-`{ previewPath, filePath, pageName, artboardName, width, height }`
-
-## 输出文件位置
-
-- 切图：默认 `src/assets/sketch/`（可通过 `assets_path` 自定义）
-- JSON 结果：`{input}.cache/` 目录下
-- 预览图：`{input}.cache/` 目录下（webp 格式，sharp 不可用时为原始格式）
-
-## 使用建议
-
-- 传给 AI 的数据尽量不超过 50KB（本地 JSON 是格式化后的，传给 AI 的是紧凑格式）
-- **推荐用 `rect` 参数模块化解析画板特定区域**
 
 ## 引导
 

@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 import prompts from 'prompts'
 import { logger } from '@/utils/logger'
 import { install } from './installer'
-import { SkillPool } from './skill'
 import { AgentPool } from './agent'
 
 export const sketchInstallInputSchema = z.object({
@@ -34,10 +33,7 @@ export async function handleSketchHtmlInstall(args: SketchInstallInputSchema) {
     ]
   })
   if (result.agent) {
-    await install(args.cwd, result.agent as string, [
-      ...SkillPool,
-      ...AgentPool
-    ])
+    await install(args.cwd, result.agent as string, AgentPool)
   } else {
     logger.error('Agent selection canceled')
     process.exit(1)
