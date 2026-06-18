@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.2.5
+
+### Patch Changes
+
+- 改用agent实现工作流
+
 ## 1.2.4
 
 ### Patch Changes
