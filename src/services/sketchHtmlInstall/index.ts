@@ -4,6 +4,7 @@ import prompts from 'prompts'
 import { logger } from '@/utils/logger'
 import { install } from './installer'
 import { AgentPool } from './agent'
+import { SkillPool } from './skill'
 
 export const sketchInstallInputSchema = z.object({
   cwd: z
@@ -33,7 +34,8 @@ export async function handleSketchHtmlInstall(args: SketchInstallInputSchema) {
     ]
   })
   if (result.agent) {
-    await install(args.cwd, result.agent as string, AgentPool)
+    const pool = [...AgentPool, ...SkillPool]
+    await install(args.cwd, result.agent as string, pool)
   } else {
     logger.error('Agent selection canceled')
     process.exit(1)
