@@ -4,7 +4,7 @@ module.exports = {
   // 缩进空格数
   tabWidth: 2,
   // 换行符风格，可以是auto, lf, crlf, cr
-  endOfLine: 'auto',
+  endOfLine: 'lf',
   // 每行末尾自动添加分号
   semi: false,
   // 尾逗号
