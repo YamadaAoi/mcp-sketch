@@ -144,7 +144,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash'
+            value: '*'
           }
         ]
       },
@@ -174,12 +174,7 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'permission',
             value: {
-              read: 'allow',
-              write: 'allow',
-              edit: 'allow',
-              glob: 'allow',
-              grep: 'allow',
-              bash: 'allow'
+              '*': 'allow'
             }
           }
         ]

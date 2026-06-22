@@ -9,37 +9,21 @@
 4. **最多重试 3 次**：单个组件失败最多重试 3 次，超过则终止并提示用户
 5. **任务管理**：每次收到用户任务时，先列出完整的 todo 给用户看，执行过程中实时更新进度
 
-## 可用子 agent 及参数
+## 工作流
 
-| 子 agent          | 职责                        | 必需参数                                                 | 可选参数           | 并行能力 |
-| ----------------- | --------------------------- | -------------------------------------------------------- | ------------------ | -------- |
-| sketch-scribe     | 状态记录员，管理状态文件    | `action`, `stateFile`                                    | `data`             | ❌ 串行  |
-| sketch-init       | 技术负责人，分析技术栈/规范 | `WORK_DIR`                                               | -                  | ❌ 串行  |
-| sketch-pick       | 设计助理，提取画板列表      | `FILE_PATH`                                              | -                  | ❌ 串行  |
-| sketch-split      | 前端架构师，拆分组件        | `FILE_PATH`, `pageName`, `artboardName`                  | `errorDescription` | ❌ 串行  |
-| sketch-bound      | 中级前端开发，修正边界      | `FILE_PATH`, `pageName`, `artboardName`, `previewPath`   | -                  | ❌ 串行  |
-| sketch-gen-base   | 初级前端开发，生成占位组件  | `pageName`, `artboardName`, `componentPath`              | -                  | ✅ 并行  |
-| sketch-layout     | 中级前端开发，布局骨架      | `pageName`, `artboardName`                               | `errorDescription` | ❌ 串行  |
-| sketch-draw       | 高级前端开发，绘制组件功能  | `FILE_PATH`, `pageName`, `artboardName`, `componentPath` | `errorDescription` | ✅ 并行  |
-| sketch-draw-check | 质量保障工程师，审核组件    | `componentPath`                                          | -                  | ✅ 并行  |
+| 阶段     | 子 agent          | 必需参数                                                 | 可选参数           | 并行 | 依赖     | 回退点              |
+| -------- | ----------------- | -------------------------------------------------------- | ------------------ | ---- | -------- | ------------------- |
+| 状态管理 | sketch-scribe     | `action`, `stateFile`                                    | `data`             | ❌   | -        | -                   |
+| 初始化   | sketch-init       | `WORK_DIR`                                               | -                  | ❌   | -        | -                   |
+| 选择画板 | sketch-pick       | `FILE_PATH`                                              | -                  | ❌   | init     | -                   |
+| 组件拆分 | sketch-split      | `FILE_PATH`, `pageName`, `artboardName`                  | `errorDescription` | ❌   | pick     | 如果组件划分有问题  |
+| 边界修正 | sketch-bound      | `FILE_PATH`, `pageName`, `artboardName`, `previewPath`   | -                  | ❌   | split    | -                   |
+| 生成骨架 | sketch-gen-base   | `pageName`, `artboardName`, `componentPath`              | -                  | ✅   | bound    | -                   |
+| 布局骨架 | sketch-layout     | `pageName`, `artboardName`                               | `errorDescription` | ❌   | gen-base | 如果布局有问题      |
+| 绘制功能 | sketch-draw       | `FILE_PATH`, `pageName`, `artboardName`, `componentPath` | `errorDescription` | ✅   | layout   | 如果样式/内容有问题 |
+| 绘制审核 | sketch-draw-check | `componentPath`                                          | -                  | ✅   | draw     | -                   |
 
-**并行规则**：
-
-- `sketch-gen-base`、`sketch-draw`、`sketch-draw-check` 可以同时处理多个组件
-- 其他子 agent 必须串行执行（一个画板只有一个 split/bound/layout）
-
-## 工作流步骤依赖关系
-
-| 步骤              | 依赖     | 回退点              |
-| ----------------- | -------- | ------------------- |
-| sketch-init       | -        | -                   |
-| sketch-pick       | init     | -                   |
-| sketch-split      | pick     | 如果组件划分有问题  |
-| sketch-bound      | split    | -                   |
-| sketch-gen-base   | bound    | -                   |
-| sketch-layout     | gen-base | 如果布局有问题      |
-| sketch-draw       | layout   | 如果样式/内容有问题 |
-| sketch-draw-check | draw     | -                   |
+**并行规则**：`sketch-gen-base`、`sketch-draw`、`sketch-draw-check` 可并行处理多个组件；其他串行
 
 ## 状态定义
 
@@ -52,7 +36,6 @@ interface ArtboardState {
   pageName: string
   artboardName: string
   stage:
-    | 'sketch-init'
     | 'sketch-pick'
     | 'sketch-split'
     | 'sketch-bound'
@@ -84,7 +67,7 @@ interface ArtboardState {
 ### 画板 stage（按顺序）
 
 ```
-sketch-init → sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-layout → sketch-draw → sketch-draw-check → completed
+sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-layout → sketch-draw → sketch-draw-check → completed
 ```
 
 ### 组件 status（流转方向）
