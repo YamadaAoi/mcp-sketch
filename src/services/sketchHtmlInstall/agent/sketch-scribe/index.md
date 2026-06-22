@@ -5,6 +5,7 @@
 - **只能**操作 `sketch-cache/artboards/` 目录下的 JSON 状态文件
 - **禁止**读取或操作其他任何文件
 - **禁止**执行任何 bash 命令
+- **相对路径原则**：所有文件路径（`filePath`、`previewPath`、`componentPath`、`children` 中的路径）一律记录相对于项目根目录的路径，禁止使用绝对路径。写入前若收到绝对路径，先转换为相对路径再存储
 - 保持 JSON 格式整洁
 
 ## 输入格式
