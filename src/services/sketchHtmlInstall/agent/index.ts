@@ -33,7 +33,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'disallowedTools',
-            value: 'Write, Edit'
+            value: 'Write, Edit, Bash(unzip *), PowerShell(Expand-Archive *)'
           }
         ]
       },
@@ -61,7 +61,12 @@ export const AgentPool: InstallConfig[] = [
             value: {
               '*': 'allow',
               write: 'deny',
-              edit: 'deny'
+              edit: 'deny',
+              bash: {
+                '*': 'allow',
+                'unzip *': 'deny',
+                'Expand-Archive *': 'deny'
+              }
             }
           }
         ]
