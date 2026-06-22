@@ -30,19 +30,20 @@ npx -y mcp-sketch install
 ```
 {agents}/
 ├── sketch-leader.md              ← 主agent：前端 Leader
-├── sketch-init.md                ← 子agent：项目架构师
-├── sketch-pick.md                ← 子agent：设计稿解析专员
-├── sketch-split.md               ← 子agent：资深前端架构师
-├── sketch-bound.md               ← 子agent：边界修正专员
-├── sketch-gen-base.md            ← 子agent：基础组件生成
-├── sketch-layout.md              ← 子agent：布局工程师
+├── sketch-scribe.md              ← 子agent：状态记录员
+├── sketch-init.md                ← 子agent：技术负责人
+├── sketch-pick.md                ← 子agent：设计助理
+├── sketch-split.md               ← 子agent：前端架构师
+├── sketch-bound.md               ← 子agent：中级前端开发
+├── sketch-gen-base.md            ← 子agent：初级前端开发
+├── sketch-layout.md              ← 子agent：中级前端开发
 ├── sketch-draw.md                ← 子agent：高级前端开发
-└── sketch-draw-check.md          ← 子agent：组件审核专员
+└── sketch-draw-check.md          ← 子agent：质量保障工程师
 ```
 
 ### Leader 架构
 
-sketch-leader 是**主 agent**，用户直接与它对话，它负责分析需求、调度子 agent、审核结果、管理状态文件。
+sketch-leader 是**主 agent**，用户直接与它对话，它负责分析需求、调度子 agent、审核结果。
 
 ### 切换到 Leader
 
@@ -64,6 +65,7 @@ claude --agent sketch-leader
 
 | 阶段     | 子 agent          | 并行 |
 | -------- | ----------------- | ---- |
+| 状态管理 | sketch-scribe     | ❌   |
 | 初始化   | sketch-init       | ❌   |
 | 选择画板 | sketch-pick       | ❌   |
 | 组件拆分 | sketch-split      | ❌   |
@@ -93,7 +95,7 @@ claude --agent sketch-leader
 - 项目配置：`sketch-cache/proj-init.md`
 - 画板状态：`sketch-cache/artboards/{pageName}-{artboardName}.json`
 
-Leader 在每个子 agent 完成后更新状态文件，中断后可恢复进度。所有文件路径使用相对路径。
+Leader 只能读取状态文件，所有写入操作委托给 sketch-scribe。中断后可恢复进度。所有文件路径使用相对路径。
 
 ## 工具
 

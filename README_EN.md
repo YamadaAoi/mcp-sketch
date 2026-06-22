@@ -32,19 +32,20 @@ Installed file structure:
 ```
 {agents}/
 ├── sketch-leader.md              ← Main agent: Frontend Leader
-├── sketch-init.md                ← Sub-agent: Project Architect
-├── sketch-pick.md                ← Sub-agent: Design Extraction Specialist
-├── sketch-split.md               ← Sub-agent: Senior Frontend Architect
-├── sketch-bound.md               ← Sub-agent: Boundary Correction Specialist
-├── sketch-gen-base.md            ← Sub-agent: Base Component Generator
-├── sketch-layout.md              ← Sub-agent: Layout Engineer
+├── sketch-scribe.md              ← Sub-agent: State Recorder
+├── sketch-init.md                ← Sub-agent: Tech Lead
+├── sketch-pick.md                ← Sub-agent: Design Assistant
+├── sketch-split.md               ← Sub-agent: Frontend Architect
+├── sketch-bound.md               ← Sub-agent: Mid-level Frontend Developer
+├── sketch-gen-base.md            ← Sub-agent: Junior Frontend Developer
+├── sketch-layout.md              ← Sub-agent: Mid-level Frontend Developer
 ├── sketch-draw.md                ← Sub-agent: Senior Frontend Developer
-└── sketch-draw-check.md          ← Sub-agent: Component Review Specialist
+└── sketch-draw-check.md          ← Sub-agent: QA Engineer
 ```
 
 ### Leader Architecture
 
-sketch-leader is the **main agent** — you talk to it directly. It analyzes requirements, dispatches sub-agents, reviews results, and manages state files.
+sketch-leader is the **main agent** — you talk to it directly. It analyzes requirements, dispatches sub-agents, and reviews results.
 
 ### Switch to Leader
 
@@ -66,6 +67,7 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 
 | Phase         | Sub-agent         | Parallel |
 | ------------- | ----------------- | -------- |
+| State Mgmt    | sketch-scribe     | ❌       |
 | Initialize    | sketch-init       | ❌       |
 | Pick Artboard | sketch-pick       | ❌       |
 | Split         | sketch-split      | ❌       |
@@ -95,7 +97,7 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 - Project config: `sketch-cache/proj-init.md`
 - Artboard state: `sketch-cache/artboards/{pageName}-{artboardName}.json`
 
-Leader updates state files after each sub-agent completes. Resume from where you left off if interrupted. All file paths use relative paths.
+Leader can only read state files; all write operations are delegated to sketch-scribe. Resume from where you left off if interrupted. All file paths use relative paths.
 
 ## Tools
 

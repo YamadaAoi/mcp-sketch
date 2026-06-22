@@ -4,7 +4,7 @@ import prompts from 'prompts'
 
 interface Meta {
   key: string
-  value?: string | number | boolean | Record<string, string | number | boolean>
+  value?: string | number | boolean | Record<string, unknown>
 }
 
 interface Platform {
@@ -27,9 +27,15 @@ type MetaParam = keyof Omit<InstallConfig, 'prompt' | 'platforms'>
 export function generateFrontmatter(meta: Meta[]): string {
   const lines = meta.map(item => {
     if (typeof item.value === 'object' && item.value !== null) {
-      const nestedLines = Object.entries(item.value).map(
-        ([subKey, subVal]) => `  ${subKey}: ${subVal}`
-      )
+      const nestedLines = Object.entries(item.value).map(([subKey, subVal]) => {
+        if (typeof subVal === 'object' && subVal !== null) {
+          const deeperLines = Object.entries(subVal).map(
+            ([deepKey, deepVal]) => `    ${deepKey}: ${deepVal}`
+          )
+          return `  ${subKey}:\n${deeperLines.join('\n')}`
+        }
+        return `  ${subKey}: ${subVal as string | number | boolean}`
+      })
       return `${item.key}:\n${nestedLines.join('\n')}`
     }
     return `${item.key}: ${item.value}`

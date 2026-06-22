@@ -8,6 +8,7 @@ import SketchGenBasePrompt from './sketch-gen-base/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
 import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
+import SketchScribePrompt from './sketch-scribe/index.md'
 
 export const AgentPool: InstallConfig[] = [
   {
@@ -29,6 +30,10 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'tools',
             value: '*'
+          },
+          {
+            key: 'disallowedTools',
+            value: 'Write, Edit'
           }
         ]
       },
@@ -54,7 +59,66 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'permission',
             value: {
-              '*': 'allow'
+              '*': 'allow',
+              write: 'deny',
+              edit: 'deny'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    prompt: SketchScribePrompt,
+    name: 'sketch-scribe',
+    description: '状态记录员，负责管理画板状态文件的创建和更新',
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/agents',
+        fileName: 'sketch-scribe.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'tools',
+            value: 'Read, Write, Edit'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/agents',
+        fileName: 'sketch-scribe.md',
+        meta: [
+          {
+            key: 'name'
+          },
+          {
+            key: 'description'
+          },
+          {
+            key: 'mode',
+            value: 'subagent'
+          },
+          {
+            key: 'hidden',
+            value: true
+          },
+          {
+            key: 'temperature',
+            value: 0.1
+          },
+          {
+            key: 'permission',
+            value: {
+              read: 'allow',
+              write: 'allow',
+              edit: 'allow'
             }
           }
         ]
@@ -65,7 +129,7 @@ export const AgentPool: InstallConfig[] = [
     prompt: SketchInitPrompt,
     name: 'sketch-init',
     description:
-      '阅读项目代码，总结技术栈/代码风格/项目结构，生成 proj-init.md',
+      '技术负责人，阅读项目代码，总结技术栈/代码风格/项目结构，生成 proj-init.md',
     platforms: [
       {
         agent: 'claude',
@@ -100,6 +164,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -107,6 +175,7 @@ export const AgentPool: InstallConfig[] = [
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'allow',
               edit: 'allow',
               glob: 'allow',
               grep: 'allow',
@@ -121,7 +190,7 @@ export const AgentPool: InstallConfig[] = [
     prompt: SketchPickPrompt,
     name: 'sketch-pick',
     description:
-      '提取 Sketch Meaxure 设计稿 (zip/folder) 里所有画板，供用户单选',
+      '设计助理，提取 Sketch Meaxure 设计稿 (zip/folder) 里所有画板，供用户单选',
     platforms: [
       {
         agent: 'claude',
@@ -137,11 +206,11 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'tools',
             value:
-              'Glob, Grep, Bash, Bash(npx -y mcp-sketch *), AskUserQuestion'
+              'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *), AskUserQuestion'
           },
           {
             key: 'disallowedTools',
-            value: 'Read, Write, Edit, Bash(unzip *)'
+            value: 'Write, Edit, Bash(unzip *)'
           }
         ]
       },
@@ -161,16 +230,27 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
           {
             key: 'permission',
             value: {
+              read: 'allow',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow',
-              question: 'allow'
+              bash: {
+                '*': 'allow',
+                'npx -y mcp-sketch *': 'allow',
+                'unzip *': 'deny'
+              },
+              question: 'allow',
+              write: 'deny',
+              edit: 'deny'
             }
           }
         ]
@@ -180,7 +260,8 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchSplitPrompt,
     name: 'sketch-split',
-    description: '分析设计稿画板预览图，合理拆分组件，制定组件规划表',
+    description:
+      '前端架构师，分析设计稿画板预览图，合理拆分组件，制定组件规划表',
     platforms: [
       {
         agent: 'claude',
@@ -195,7 +276,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Bash, Bash(npx -y mcp-sketch *)'
+            value: 'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',
@@ -219,6 +300,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -226,11 +311,15 @@ export const AgentPool: InstallConfig[] = [
             key: 'permission',
             value: {
               read: 'allow',
-              write: 'deny',
-              edit: 'deny',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow'
+              bash: {
+                '*': 'allow',
+                'npx -y mcp-sketch *': 'allow',
+                'unzip *': 'deny'
+              },
+              write: 'deny',
+              edit: 'deny'
             }
           }
         ]
@@ -240,7 +329,8 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchBoundPrompt,
     name: 'sketch-bound',
-    description: '根据设计稿图层数据，修正组件规划的 rect，确保与设计稿一致',
+    description:
+      '中级前端开发，根据设计稿图层数据，修正组件规划的 rect，确保与设计稿一致',
     platforms: [
       {
         agent: 'claude',
@@ -255,7 +345,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Bash, Bash(npx -y mcp-sketch *)'
+            value: 'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',
@@ -279,6 +369,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -286,11 +380,15 @@ export const AgentPool: InstallConfig[] = [
             key: 'permission',
             value: {
               read: 'allow',
-              write: 'deny',
-              edit: 'deny',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow'
+              bash: {
+                '*': 'allow',
+                'npx -y mcp-sketch *': 'allow',
+                'unzip *': 'deny'
+              },
+              write: 'deny',
+              edit: 'deny'
             }
           }
         ]
@@ -300,7 +398,7 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchGenBasePrompt,
     name: 'sketch-gen-base',
-    description: '基于组件规划布局数据，生成基础的组件代码',
+    description: '初级前端开发，基于组件规划布局数据，生成基础的组件代码',
     platforms: [
       {
         agent: 'claude',
@@ -335,6 +433,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -342,6 +444,7 @@ export const AgentPool: InstallConfig[] = [
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'allow',
               edit: 'allow',
               glob: 'allow',
               grep: 'allow',
@@ -356,7 +459,7 @@ export const AgentPool: InstallConfig[] = [
     prompt: SketchLayoutPrompt,
     name: 'sketch-layout',
     description:
-      '根据组件规划表，完成路由配置和父组件布局（子容器 div + import）',
+      '中级前端开发，根据组件规划表，完成路由配置和父组件布局（子容器 div + import）',
     platforms: [
       {
         agent: 'claude',
@@ -395,6 +498,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -416,7 +523,7 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchDrawPrompt,
     name: 'sketch-draw',
-    description: '提取画板指定区域设计结构，生成前端组件功能代码',
+    description: '高级前端开发，提取画板指定区域设计结构，生成前端组件功能代码',
     platforms: [
       {
         agent: 'claude',
@@ -431,7 +538,8 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Bash, Bash(npx -y mcp-sketch *)'
+            value:
+              'Read, Write, Edit, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowedTools',
@@ -455,6 +563,10 @@ export const AgentPool: InstallConfig[] = [
             value: 'subagent'
           },
           {
+            key: 'hidden',
+            value: true
+          },
+          {
             key: 'temperature',
             value: 0.1
           },
@@ -462,10 +574,15 @@ export const AgentPool: InstallConfig[] = [
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'allow',
               edit: 'allow',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow'
+              bash: {
+                '*': 'allow',
+                'npx -y mcp-sketch *': 'allow',
+                'unzip *': 'deny'
+              }
             }
           }
         ]
@@ -475,7 +592,7 @@ export const AgentPool: InstallConfig[] = [
   {
     prompt: SketchDrawCheckPrompt,
     name: 'sketch-draw-check',
-    description: '审核绘制的组件是否符合要求',
+    description: '质量保障工程师，审核绘制的组件是否符合要求',
     platforms: [
       {
         agent: 'claude',
@@ -512,6 +629,10 @@ export const AgentPool: InstallConfig[] = [
           {
             key: 'mode',
             value: 'subagent'
+          },
+          {
+            key: 'hidden',
+            value: true
           },
           {
             key: 'temperature',
