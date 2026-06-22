@@ -68,7 +68,8 @@
         "excludeRects": [[100, 100, 400, 300]],
         "retryCount": 0
       }
-    ]
+    ],
+    "replaceComponents": false
   }
 }
 ```
@@ -76,9 +77,9 @@
 更新规则：
 
 - 只更新 `data` 中存在的字段，保留其他字段不变
-- `components` 数组采用**合并策略**：
-  - 已有组件（按 `componentPath` 匹配）→ 更新 `status` 等字段
-  - 新组件 → 追加到数组
+- `components` 数组的处理策略由 `replaceComponents` 控制：
+  - **`replaceComponents: false`（默认）**：合并策略 — 已有组件按 `componentPath` 匹配更新，新组件追加
+  - **`replaceComponents: true`**：完全替换 — 直接用 `data.components` 覆盖整个数组，丢弃旧数据
 - 更新 `lastUpdateTime` 为当前时间
 
 ### action: update-retry

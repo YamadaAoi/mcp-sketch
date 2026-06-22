@@ -11,19 +11,23 @@
 
 ## 工作流
 
-| 阶段     | 子 agent          | 必需参数                                                 | 可选参数           | 并行 | 依赖     | 回退点              |
-| -------- | ----------------- | -------------------------------------------------------- | ------------------ | ---- | -------- | ------------------- |
-| 状态管理 | sketch-scribe     | `action`, `stateFile`                                    | `data`             | ❌   | -        | -                   |
-| 初始化   | sketch-init       | `WORK_DIR`                                               | -                  | ❌   | -        | -                   |
-| 选择画板 | sketch-pick       | `FILE_PATH`                                              | -                  | ❌   | init     | -                   |
-| 组件拆分 | sketch-split      | `FILE_PATH`, `pageName`, `artboardName`                  | `errorDescription` | ❌   | pick     | 如果组件划分有问题  |
-| 边界修正 | sketch-bound      | `FILE_PATH`, `pageName`, `artboardName`, `previewPath`   | -                  | ❌   | split    | -                   |
-| 生成骨架 | sketch-gen-base   | `pageName`, `artboardName`, `componentPath`              | -                  | ✅   | bound    | -                   |
-| 布局骨架 | sketch-layout     | `pageName`, `artboardName`                               | `errorDescription` | ❌   | gen-base | 如果布局有问题      |
-| 绘制功能 | sketch-draw       | `FILE_PATH`, `pageName`, `artboardName`, `componentPath` | `errorDescription` | ✅   | layout   | 如果样式/内容有问题 |
-| 绘制审核 | sketch-draw-check | `componentPath`                                          | -                  | ✅   | draw     | -                   |
+| 阶段     | 子 agent          | 参数（← 值来源）                                                                                             | 并行 | 依赖     | 回退点              |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------ | ---- | -------- | ------------------- |
+| 状态管理 | sketch-scribe     | `action`=操作类型, `stateFile`=`sketch-cache/artboards/{pageName}-{artboardName}.json`, `data`=JSON数据      | ❌   | -        | -                   |
+| 初始化   | sketch-init       | `WORK_DIR`=用户输入的工作目录                                                                                | ❌   | -        | -                   |
+| 选择画板 | sketch-pick       | `FILE_PATH`=用户输入的zip/目录路径                                                                           | ❌   | init     | -                   |
+| 组件拆分 | sketch-split      | `FILE_PATH`=用户输入, `pageName`←init, `artboardName`←init                                                   | ❌   | pick     | 如果组件划分有问题  |
+| 边界修正 | sketch-bound      | `FILE_PATH`=用户输入, `pageName`←init, `artboardName`←init, `previewPath`←split                              | ❌   | split    | -                   |
+| 生成骨架 | sketch-gen-base   | `pageName`←init, `artboardName`←init, `componentPath`=`src/views/{pageName}/{artboardName}/{name}/index.vue` | ✅   | bound    | -                   |
+| 布局骨架 | sketch-layout     | `pageName`←init, `artboardName`←init                                                                         | ❌   | gen-base | 如果布局有问题      |
+| 绘制功能 | sketch-draw       | `FILE_PATH`=用户输入, `pageName`←init, `artboardName`←init, `componentPath`=组件路径                         | ✅   | layout   | 如果样式/内容有问题 |
+| 绘制审核 | sketch-draw-check | `componentPath`=组件路径                                                                                     | ✅   | draw     | -                   |
 
 **并行规则**：`sketch-gen-base`、`sketch-draw`、`sketch-draw-check` 可并行处理多个组件；其他串行
+
+**图例**：`=默认值`　`←上一步返回`　`{花括号}`=动态拼接
+
+**重试规则**：重新执行 `sketch-split` 时，调用 `sketch-scribe` 传入 `replaceComponents: true`，确保旧组件列表被完全替换，避免新旧并存
 
 ## 状态定义
 
