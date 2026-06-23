@@ -43,14 +43,14 @@
   - 确定 API 目录，若不存在，则使用 `src/api/`（API 目录名）
   - 确定 Assets 目录，若不存在，则使用 `src/assets/`（Assets 目录名）
   - 确定公共组件目录
-    - 若存在，在现有目录的基础上，必须保持目录结构 `已有目录/componentName/`（camelCase 目录名）
-    - 若不存在，则使用 `src/components/componentName/`（camelCase 目录名）
+    - 若存在，后续公共组件必须在该目录下创建，路径为`{已有目录}/{componentName}/{ComponentName}`
+    - 若不存在，则使用 `src/components/{componentName}/{ComponentName}`
   - 确定入口页面组件目录
-    - 若存在，在现有目录的基础上，必须保持目录结构 `已有目录/pageName/`（camelCase 目录名）
-    - 若不存在，则使用 `src/views/pageName/`（camelCase 目录名）
+    - 若存在，后续入口页面组件必须在该目录下创建，路径为`{已有目录}/{pageName}/{PageName}`
+    - 若不存在，则使用 `src/views/{pageName}/{PageName}`
   - 确定业务组件目录
-    - 若存在，在现有目录的基础上，必须保持目录结构 `已有目录/pageName/componentName/`（camelCase 目录名）
-    - 若不存在，则使用 `src/views/pageName/componentName/`（camelCase 目录名）
+    - 若存在，后续业务组件必须在该目录下创建，路径为`{已有目录}/{pageName}/{componentName}/{ComponentName}`
+    - 若不存在，则使用 `src/views/{pageName}/{componentName}/{ComponentName}`
 
 ### 步骤 5：确定路由配置方式
 
