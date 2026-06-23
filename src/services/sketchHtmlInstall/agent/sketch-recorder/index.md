@@ -25,11 +25,11 @@
 ```json
 {
   "action": "create-state",
-  "stateFile": "sketch-cache/artboards/{pageName}-{artboardName}.json",
+  "stateFile": "sketch-cache/artboards/login-main.json",
   "data": {
-    "filePath": "relative/path/to/file",
-    "pageName": "{pageName}",
-    "artboardName": "{artboardName}"
+    "filePath": "path/to/file.zip",
+    "pageName": "login",
+    "artboardName": "main"
   }
 }
 ```
@@ -38,13 +38,13 @@
 
 ```json
 {
-  "filePath": "relative/path/to/file",
+  "filePath": "<data.filePath>",
   "previewPath": "",
-  "pageName": "{pageName}",
-  "artboardName": "{artboardName}",
+  "pageName": "<data.pageName>",
+  "artboardName": "<data.artboardName>",
   "stage": "sketch-pick",
   "components": [],
-  "lastUpdateTime": "{当前时间 ISO 格式}"
+  "lastUpdateTime": "<当前时间 ISO 格式>"
 }
 ```
 
@@ -55,16 +55,16 @@
 ```json
 {
   "action": "update-state",
-  "stateFile": "sketch-cache/artboards/{pageName}-{artboardName}.json",
+  "stateFile": "sketch-cache/artboards/login-main.json",
   "data": {
     "stage": "sketch-split",
-    "previewPath": "relative/path/to/preview",
+    "previewPath": "preview.png",
     "components": [
       {
-        "componentPath": "relative/path/to/component",
+        "componentPath": "src/views/login/Login.vue",
         "type": "page",
         "status": "gen-base",
-        "children": ["relative/path/to/child"],
+        "children": ["src/views/login/LoginForm.vue"],
         "rect": [0, 0, 1920, 1080],
         "excludeRects": [[100, 100, 400, 300]],
         "retryCount": 0
@@ -90,9 +90,9 @@
 ```json
 {
   "action": "update-retry",
-  "stateFile": "sketch-cache/artboards/{pageName}-{artboardName}.json",
+  "stateFile": "sketch-cache/artboards/login-main.json",
   "data": {
-    "componentPath": "relative/path/to/child",
+    "componentPath": "src/views/login/LoginForm.vue",
     "retryCount": 2
   }
 }

@@ -1,14 +1,11 @@
 import type { InstallConfig } from '../installer'
 import SketchLeaderPrompt from './sketch-leader/index.md'
-import SketchInitPrompt from './sketch-init/index.md'
-import SketchPickPrompt from './sketch-pick/index.md'
-import SketchSplitPrompt from './sketch-split/index.md'
-import SketchBoundPrompt from './sketch-bound/index.md'
-import SketchGenBasePrompt from './sketch-gen-base/index.md'
-import SketchLayoutPrompt from './sketch-layout/index.md'
-import SketchDrawPrompt from './sketch-draw/index.md'
-import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
-import SketchScribePrompt from './sketch-scribe/index.md'
+import SketchRecorderPrompt from './sketch-recorder/index.md'
+import SketchInitializerPrompt from './sketch-initializer/index.md'
+import SketchAnalyzerPrompt from './sketch-analyzer/index.md'
+import SketchArchitectPrompt from './sketch-architect/index.md'
+import SketchDeveloperPrompt from './sketch-developer/index.md'
+import SketchCheckerPrompt from './sketch-checker/index.md'
 
 export const AgentPool: InstallConfig[] = [
   {
@@ -21,16 +18,9 @@ export const AgentPool: InstallConfig[] = [
         baseDir: '.claude/agents',
         fileName: 'sketch-leader.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Write, Edit'
-          }
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'disallowedTools', value: 'Write, Edit, Skill' }
         ]
       },
       {
@@ -38,26 +28,17 @@ export const AgentPool: InstallConfig[] = [
         baseDir: '.opencode/agents',
         fileName: 'sketch-leader.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'primary'
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'primary' },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
               '*': 'allow',
               write: 'deny',
               edit: 'deny',
+              skill: 'deny',
               bash: {
                 '*': 'allow',
                 'unzip *': 'deny',
@@ -70,50 +51,30 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchScribePrompt,
-    name: 'sketch-scribe',
-    description: '状态记录员，负责管理画板状态文件的创建和更新',
+    prompt: SketchRecorderPrompt,
+    name: 'sketch-recorder',
+    description: '记录员，负责管理画板状态文件的创建和更新',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-scribe.md',
+        fileName: 'sketch-recorder.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Write, Edit'
-          }
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'tools', value: 'Read, Write, Edit' }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-scribe.md',
+        fileName: 'sketch-recorder.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
@@ -127,47 +88,30 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchInitPrompt,
-    name: 'sketch-init',
-    description:
-      '技术负责人，阅读项目代码，总结技术栈/代码风格/项目结构，生成 proj-init.md',
+    prompt: SketchInitializerPrompt,
+    name: 'sketch-initializer',
+    description: '初始化专员，分析项目技术栈/规范，生成 proj-init.md',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-init.md',
+        fileName: 'sketch-initializer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          }
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'tools', value: 'Read, Write, Edit, Glob, Grep, Bash' }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-init.md',
+        fileName: 'sketch-initializer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
@@ -179,69 +123,49 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchPickPrompt,
-    name: 'sketch-pick',
-    description:
-      '设计助理，提取 Sketch Meaxure 设计稿 (zip/folder) 里所有画板，供用户单选',
+    prompt: SketchAnalyzerPrompt,
+    name: 'sketch-analyzer',
+    description: '分析师，调用技能和工具完成分析规划工作',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-pick.md',
+        fileName: 'sketch-analyzer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
+          { key: 'name' },
+          { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, AskUserQuestion'
+            value: 'Read, Glob, Grep, Bash, Skill, AskUserQuestion'
           },
-          {
-            key: 'disallowedTools',
-            value: 'Write, Edit'
-          }
+          { key: 'disallowedTools', value: 'Write, Edit' }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-pick.md',
+        fileName: 'sketch-analyzer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
               read: 'allow',
+              write: 'deny',
+              edit: 'deny',
               glob: 'allow',
               grep: 'allow',
+              skill: 'allow',
               bash: {
                 '*': 'allow',
                 'npx -y mcp-sketch *': 'allow',
                 'unzip *': 'deny'
               },
-              question: 'allow',
-              write: 'deny',
-              edit: 'deny'
+              question: 'allow'
             }
           }
         ]
@@ -249,68 +173,34 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchSplitPrompt,
-    name: 'sketch-split',
-    description:
-      '前端架构师，分析设计稿画板预览图，合理拆分组件，制定组件规划表',
+    prompt: SketchArchitectPrompt,
+    name: 'sketch-architect',
+    description: '架构师，调用技能和工具完成组件布局工作',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-split.md',
+        fileName: 'sketch-architect.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Write, Edit'
-          }
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'tools', value: 'Read, Write, Edit, Glob, Grep, Bash, Skill' }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-split.md',
+        fileName: 'sketch-architect.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
-              read: 'allow',
-              glob: 'allow',
-              grep: 'allow',
-              bash: {
-                '*': 'allow',
-                'npx -y mcp-sketch *': 'allow',
-                'unzip *': 'deny'
-              },
-              write: 'deny',
-              edit: 'deny'
+              '*': 'allow'
             }
           }
         ]
@@ -318,119 +208,33 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchBoundPrompt,
-    name: 'sketch-bound',
-    description:
-      '中级前端开发，根据设计稿图层数据，修正组件规划的 rect，确保与设计稿一致',
+    prompt: SketchDeveloperPrompt,
+    name: 'sketch-developer',
+    description: '开发工程师，调用技能和工具完成组件绘制、修复工作',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-bound.md',
+        fileName: 'sketch-developer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
+          { key: 'name' },
+          { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Write, Edit'
+            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill'
           }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-bound.md',
+        fileName: 'sketch-developer.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
-              glob: 'allow',
-              grep: 'allow',
-              bash: {
-                '*': 'allow',
-                'npx -y mcp-sketch *': 'allow',
-                'unzip *': 'deny'
-              },
-              write: 'deny',
-              edit: 'deny'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchGenBasePrompt,
-    name: 'sketch-gen-base',
-    description: '初级前端开发，基于组件规划布局数据，生成基础的组件代码',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-gen-base.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Write, Edit, Glob, Bash'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-gen-base.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
@@ -439,131 +243,7 @@ export const AgentPool: InstallConfig[] = [
               edit: 'allow',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchLayoutPrompt,
-    name: 'sketch-layout',
-    description:
-      '中级前端开发，根据组件规划表，完成路由配置和父组件布局（子容器 div + import）',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-layout.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Edit, Glob, Bash'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Write'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-layout.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
-              write: 'deny',
-              edit: 'allow',
-              glob: 'allow',
-              grep: 'allow',
-              bash: 'allow'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchDrawPrompt,
-    name: 'sketch-draw',
-    description: '高级前端开发，提取画板指定区域设计结构，生成前端组件功能代码',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-draw.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-draw.md',
-        meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
-              write: 'allow',
-              edit: 'allow',
-              glob: 'allow',
-              grep: 'allow',
+              skill: 'allow',
               bash: {
                 '*': 'allow',
                 'npx -y mcp-sketch *': 'allow',
@@ -576,63 +256,41 @@ export const AgentPool: InstallConfig[] = [
     ]
   },
   {
-    prompt: SketchDrawCheckPrompt,
-    name: 'sketch-draw-check',
-    description: '质量保障工程师，审核绘制的组件是否符合要求',
+    prompt: SketchCheckerPrompt,
+    name: 'sketch-checker',
+    description: '审核专员，调用技能和工具完成组件审核工作',
     platforms: [
       {
         agent: 'claude',
         baseDir: '.claude/agents',
-        fileName: 'sketch-draw-check.md',
+        fileName: 'sketch-checker.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'tools',
-            value: 'Read, Glob, Grep, Bash'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Write, Edit'
-          }
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'tools', value: 'Read, Glob, Grep, Bash, Skill' },
+          { key: 'disallowedTools', value: 'Write, Edit' }
         ]
       },
       {
         agent: 'opencode',
         baseDir: '.opencode/agents',
-        fileName: 'sketch-draw-check.md',
+        fileName: 'sketch-checker.md',
         meta: [
-          {
-            key: 'name'
-          },
-          {
-            key: 'description'
-          },
-          {
-            key: 'mode',
-            value: 'subagent'
-          },
-          {
-            key: 'hidden',
-            value: true
-          },
-          {
-            key: 'temperature',
-            value: 0.1
-          },
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'mode', value: 'subagent' },
+          { key: 'hidden', value: true },
+          { key: 'temperature', value: 0.1 },
           {
             key: 'permission',
             value: {
               read: 'allow',
-              write: 'deny',
-              edit: 'deny',
               glob: 'allow',
               grep: 'allow',
-              bash: 'allow'
+              bash: 'allow',
+              skill: 'allow',
+              write: 'deny',
+              edit: 'deny'
             }
           }
         ]
