@@ -28,10 +28,6 @@ export const AgentPool: InstallConfig[] = [
             key: 'description'
           },
           {
-            key: 'tools',
-            value: '*'
-          },
-          {
             key: 'disallowedTools',
             value: 'Write, Edit'
           }
