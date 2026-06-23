@@ -33,7 +33,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'disallowedTools',
-            value: 'Write, Edit, Bash(unzip *), PowerShell(Expand-Archive *)'
+            value: 'Write, Edit'
           }
         ]
       },
@@ -146,10 +146,6 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'description'
-          },
-          {
-            key: 'tools',
-            value: '*'
           }
         ]
       },
@@ -205,12 +201,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value:
-              'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *), AskUserQuestion'
+            value: 'Read, Glob, Grep, Bash, AskUserQuestion'
           },
           {
             key: 'disallowedTools',
-            value: 'Write, Edit, Bash(unzip *)'
+            value: 'Write, Edit'
           }
         ]
       },
@@ -276,11 +271,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
+            value: 'Read, Glob, Grep, Bash'
           },
           {
             key: 'disallowedTools',
-            value: 'Write, Edit, Bash(unzip *)'
+            value: 'Write, Edit'
           }
         ]
       },
@@ -345,11 +340,11 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
+            value: 'Read, Glob, Grep, Bash'
           },
           {
             key: 'disallowedTools',
-            value: 'Write, Edit, Bash(unzip *)'
+            value: 'Write, Edit'
           }
         ]
       },
@@ -538,12 +533,7 @@ export const AgentPool: InstallConfig[] = [
           },
           {
             key: 'tools',
-            value:
-              'Read, Write, Edit, Glob, Grep, Bash, Bash(npx -y mcp-sketch *)'
-          },
-          {
-            key: 'disallowedTools',
-            value: 'Bash(unzip *)'
+            value: 'Read, Write, Edit, Glob, Grep, Bash'
           }
         ]
       },
