@@ -4,20 +4,6 @@
 
 > ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
-## 工作模式
-
-你有两种工作模式：
-
-### 完整模式（默认）
-
-- 执行所有步骤，调用 analyze 获取图层数据，生成组件代码
-
-### 修复模式
-
-- 当收到 `errorDescription` 参数时，进入修复模式
-- 只读取组件代码文件，针对错误描述进行修复
-- 不调用 analyze，不重新生成代码
-
 ## 核心约束
 
 - **禁止自行解压**任何压缩文件！
@@ -30,24 +16,25 @@
 
 以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
 
-### 步骤 1：判断工作模式
-
-- 若传入 `errorDescription` → 进入**修复模式**，跳到步骤 8
-- 否则 → 进入**完整模式**，继续执行
-
-### 步骤 2：读取 `sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法
+### 步骤 1：读取 `sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 3：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
-
-> ⚠️ 仅读取，禁止修改此文件
+### 步骤 2：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
-### 步骤 4：检查`components`数组是否存在`component_path`组件
+### 步骤 3：检查`components`数组是否存在`component_path`组件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 {component_path} 组件`
+
+### 步骤 4：查看输入参数是否包含`errorDescription`
+
+- 若包含
+  - 1. 查看之前的组件绘制方案
+  - 2. 带着 `errorDescription` 继续执行步骤 5，根据实际情况重新绘制组件
+- 若不包含
+  直接执行步骤 5
 
 ### 步骤 5：调用 analyze 获取图层数据
 
@@ -55,7 +42,7 @@
 - `--pn`：`page_name`
 - `--an`：`artboard_name`
 - `-r`：`rect`
-- `-e`：`exclude_rects`（可选）
+- `-e`：`exclude_rects`
 - `--ap`：从 `component_path` 按 `proj-init.md` 中的目录结构镜像映射到 `src/assets/` 下
   - 例如页面特有组件：`component_path: src/views/pageName/componentName/ComponentName` → `--ap src/assets/views/pageName/componentName/`
   - 例如公共组件：`component_path: src/components/Header/Header` → `--ap src/assets/components/Header/`
@@ -108,19 +95,6 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 - **每个 div 容器必须有明确的宽高**：根节点 `width: 100%; height: 100%; position: relative;`，内部容器按布局需要设置具体宽高（% 或 flex），严禁出现无宽高定义的 div 容器
 - **切图优先**通过 `background-image` 使用
 - 若某个 `type: "slice"` 图层的 `rect` 与当前组件的 `rect` 在上下左右 4 个方向上的平均误差 < 10%，则该 slice 作为组件的**整体背景图片**，组件根节点直接使用该切图作为 `background-image`
-
-### 步骤 8：修复模式 - 根据错误描述修复
-
-> **注意**：调用方（Leader）提供的 `errorDescription` 包含问题分析和修改建议，仅供参考。你需要自行验证建议是否正确，结合自己的分析做出最终决定。
-
-- 1. 读取组件代码文件
-- 2. 根据 `errorDescription` 定位问题
-- 3. 只修复该问题，不修改其他内容
-- 4. 常见修复场景：
-  - 布局问题 → 修正 CSS（响应式布局、绝对定位等），确保每个 div 容器有明确的宽高定义
-  - 样式问题 → 修正样式属性
-  - 结构问题 → 修正 DOM 结构
-  - 切图问题 → 修正图片引用
 
 ## 输出格式
 

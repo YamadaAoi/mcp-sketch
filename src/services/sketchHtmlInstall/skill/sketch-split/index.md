@@ -22,21 +22,20 @@
 - `FILE_PATH` — Sketch 文件路径
 - `page_name` — 页面名
 - `artboard_name` — 画板名
-- `errorDescription`（可选） — 修复模式下传入的用户反馈，描述拆分问题
+- `errorDescription`（可选） — 用户反馈及问题分析
 
 ### 第一步：环境校验
 
-- 1. 读取 `sketch-cache/proj-init.md` 获取项目目录结构、命名规范（如 kebab-case/PascalCase）、技术栈（React/Vue）和UI组件库
+- 1. 读取 `sketch-cache/proj-init.md` 获取项目目录结构、命名规范、技术栈和UI组件库
 - 2. 若文件不存在，立即返回失败：proj-init.md 文件不存在
 
-### 第二步：问题诊断（修复模式）
+### 第二步：查看输入参数是否包含`errorDescription`
 
-- 若输入包含 `errorDescription`：
-  - 1. 读取缓存的 `sketch-cache/artboards/{page_name}-{artboard_name}.json`
-  - 2. 针对性修复：不要被用户的描述带偏，要结合设计稿原图验证。常见修复点：
-    - 过度合并：检查是否将“基础组件”与“容器”错误合并（如“登录按钮”不应单独拆，但“登录表单区”应拆）
-    - 漏拆分：检查重复出现的结构（如商品卡片）是否未被提取
-    - 类型错误：检查带有页面特定逻辑（如搜索、提交）的模块是否被错误标记为 common
+- 若包含
+  - 1. 读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json`，查看之前的组件拆分结果
+  - 2. 带着 `errorDescription` 继续执行第三步，根据实际情况重新拆分组件
+- 若不包含
+  直接执行第三步
 
 ### 第三步：画板分析（核心逻辑）
 
