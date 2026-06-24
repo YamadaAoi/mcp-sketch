@@ -11,18 +11,20 @@
 
 ## 工作流
 
-| 阶段     | 子 agent           | 调用 skill          | 必需参数                                                    | 并行 | 依赖         | 回退点              |
-| -------- | ------------------ | ------------------- | ----------------------------------------------------------- | ---- | ------------ | ------------------- |
-| 状态管理 | sketch-recorder    | -                   | `action`, `stateFile`                                       | ❌   | -            | -                   |
-| 初始化   | sketch-initializer | 直接执行            | -                                                           | ❌   | -            | -                   |
-| 选择画板 | sketch-analyzer    | sketch-pick         | `FILE_PATH`                                                 | ❌   | init         | -                   |
-| 组件拆分 | sketch-analyzer    | sketch-split        | `FILE_PATH`, `page_name`, `artboard_name`                   | ❌   | pick         | 如果组件划分有问题  |
-| 边界修正 | sketch-analyzer    | sketch-bound        | `FILE_PATH`, `page_name`, `artboard_name`, `preview_path`   | ❌   | split        | -                   |
-| 生成骨架 | sketch-architect   | sketch-gen-base     | `page_name`, `artboard_name`, `component_path`              | ✅   | bound        | -                   |
-| 布局骨架 | sketch-architect   | sketch-layout       | `page_name`, `artboard_name`                                | ❌   | gen-base     | 如果布局有问题      |
-| 布局审核 | sketch-checker     | sketch-layout-check | `page_name`, `artboard_name`                                | ❌   | layout       | -                   |
-| 绘制功能 | sketch-developer   | sketch-draw         | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | ✅   | layout-check | 如果样式/内容有问题 |
-| 绘制审核 | sketch-checker     | sketch-draw-check   | `component_path`                                            | ✅   | draw         | -                   |
+| 阶段       | 子 agent           | 调用 skill            | 必需参数                                                    | 并行 | 依赖           | 回退点              |
+| ---------- | ------------------ | --------------------- | ----------------------------------------------------------- | ---- | -------------- | ------------------- |
+| 状态管理   | sketch-recorder    | -                     | `action`, `stateFile`                                       | ❌   | -              | -                   |
+| 初始化     | sketch-initializer | 直接执行              | -                                                           | ❌   | -              | -                   |
+| 初始化审核 | sketch-checker     | sketch-init-check     | -                                                           | ❌   | init           | -                   |
+| 选择画板   | sketch-analyzer    | sketch-pick           | `FILE_PATH`                                                 | ❌   | init-check     | -                   |
+| 组件拆分   | sketch-analyzer    | sketch-split          | `FILE_PATH`, `page_name`, `artboard_name`                   | ❌   | pick           | 如果组件划分有问题  |
+| 边界修正   | sketch-analyzer    | sketch-bound          | `FILE_PATH`, `page_name`, `artboard_name`, `preview_path`   | ❌   | split          | -                   |
+| 生成骨架   | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`              | ✅   | bound          | -                   |
+| 骨架审核   | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`              | ✅   | gen-base       | -                   |
+| 布局骨架   | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                | ❌   | gen-base-check | 如果布局有问题      |
+| 布局审核   | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                | ❌   | layout         | -                   |
+| 绘制功能   | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | ✅   | layout-check   | 如果样式/内容有问题 |
+| 绘制审核   | sketch-checker     | sketch-draw-check     | `component_path`                                            | ✅   | draw           | -                   |
 
 **调用子 agent 时**，在 prompt 中明确告诉它要调用哪个 skill 和参数：
 
@@ -31,7 +33,7 @@
 参数：param1 = value1, param2 = value2
 ```
 
-**重试规则**：重新调用 `sketch-analyzer` 执行 `sketch-split` 时，调用 `sketch-recorder` 传入 `replaceComponents: true`，确保旧组件列表被完全替换，避免新旧并存。重试后需按顺序重新执行：`sketch-split` → `sketch-bound` → `sketch-gen-base` → `sketch-layout` → `sketch-layout-check`
+**重试规则**：重新调用 `sketch-analyzer` 执行 `sketch-split` 时，调用 `sketch-recorder` 传入 `replaceComponents: true`，确保旧组件列表被完全替换，避免新旧并存。重试后需按顺序重新执行：`sketch-split` → `sketch-bound` → `sketch-gen-base` → `sketch-gen-base-check` → `sketch-layout` → `sketch-layout-check`
 
 ## 状态定义
 
@@ -48,6 +50,7 @@ interface ArtboardState {
     | 'sketch-split'
     | 'sketch-bound'
     | 'sketch-gen-base'
+    | 'sketch-gen-base-check'
     | 'sketch-layout'
     | 'sketch-draw'
     | 'sketch-draw-check'
@@ -57,6 +60,7 @@ interface ArtboardState {
     type: 'page' | 'common' | 'page-specific'
     status:
       | 'gen-base'
+      | 'gen-base-check-pass'
       | 'layout'
       | 'layout-check-pass'
       | 'ready-to-draw'
@@ -76,14 +80,14 @@ interface ArtboardState {
 ### 画板 stage（按顺序）
 
 ```
-sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → completed
+sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-gen-base-check → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → completed
 ```
 
 ### 组件 status（流转方向）
 
 ```
-叶子组件（无子组件）：gen-base → ready-to-draw → draw → draw-check-pass → completed
-父组件（有子组件）：gen-base → layout → layout-check-pass → ready-to-draw → draw → draw-check-pass → completed
+叶子组件（无子组件）：gen-base → gen-base-check-pass → ready-to-draw → draw → draw-check-pass → completed
+父组件（有子组件）：gen-base → gen-base-check-pass → layout → layout-check-pass → ready-to-draw → draw → draw-check-pass → completed
 ```
 
 ### 状态文件位置
@@ -109,17 +113,18 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-lay
 
 每个子 agent 返回成功后，立即调用 `sketch-recorder` 更新状态文件：
 
-| 步骤                | 调用 recorder 的 action 和 data                                        |
-| ------------------- | ---------------------------------------------------------------------- |
-| sketch-pick         | `action: 'create-state'`, `data: { filePath, pageName, artboardName }` |
-| sketch-split        | `action: 'update-state'`, `data: { stage, previewPath, components }`   |
-| sketch-bound        | `action: 'update-state'`, `data: { components }`                       |
-| sketch-gen-base     | `action: 'update-state'`, `data: { components }`                       |
-| sketch-layout       | `action: 'update-state'`, `data: { stage, components }`                |
-| sketch-layout-check | `action: 'update-state'`, `data: { components }`                       |
-| sketch-draw         | `action: 'update-state'`, `data: { components }`                       |
-| sketch-draw-check   | `action: 'update-state'`, `data: { components }`                       |
-| 组件失败重试        | `action: 'update-retry'`, `data: { componentPath, retryCount }`        |
+| 步骤                  | 调用 recorder 的 action 和 data                                        |
+| --------------------- | ---------------------------------------------------------------------- |
+| sketch-pick           | `action: 'create-state'`, `data: { filePath, pageName, artboardName }` |
+| sketch-split          | `action: 'update-state'`, `data: { stage, previewPath, components }`   |
+| sketch-bound          | `action: 'update-state'`, `data: { components }`                       |
+| sketch-gen-base       | `action: 'update-state'`, `data: { components }`                       |
+| sketch-gen-base-check | `action: 'update-state'`, `data: { components }`                       |
+| sketch-layout         | `action: 'update-state'`, `data: { stage, components }`                |
+| sketch-layout-check   | `action: 'update-state'`, `data: { components }`                       |
+| sketch-draw           | `action: 'update-state'`, `data: { components }`                       |
+| sketch-draw-check     | `action: 'update-state'`, `data: { components }`                       |
+| 组件失败重试          | `action: 'update-retry'`, `data: { componentPath, retryCount }`        |
 
 - 流水线中断重启时，扫描 `sketch-cache/artboards/*.json` 并修复状态文件
 
@@ -148,13 +153,13 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-lay
    - 是数据绑定问题？（看 props/状态管理）
 5. **判断问题类型**：
 
-| 问题类型           | 表现                                                 | 调用 Agent       | 调用 Skill    | 修复后回退到                                            |
-| ------------------ | ---------------------------------------------------- | ---------------- | ------------- | ------------------------------------------------------- |
-| **拆分问题**       | 组件划分不合理、漏拆分、命名不当、父子关系错误       | sketch-analyzer  | sketch-split  | sketch-split → bound → gen-base → layout → layout-check |
-| **组件间布局问题** | 组件之间的间距、排列、响应式（看父组件的 div 容器）  | sketch-architect | sketch-layout | sketch-layout → layout-check → draw → draw-check        |
-| **组件内布局问题** | 组件内部元素的间距、排列、响应式（看组件内部的元素） | sketch-developer | sketch-draw   | sketch-draw → draw-check                                |
-| **绘制问题**       | 样式细节不对、内容缺失、交互错误、切图问题           | sketch-developer | sketch-draw   | sketch-draw → draw-check                                |
-| **边界问题**       | 组件位置/大小与设计稿不一致                          | sketch-analyzer  | sketch-bound  | sketch-bound → gen-base → layout → layout-check → draw  |
+| 问题类型           | 表现                                                 | 调用 Agent       | 调用 Skill    | 修复后回退到                                                             |
+| ------------------ | ---------------------------------------------------- | ---------------- | ------------- | ------------------------------------------------------------------------ |
+| **拆分问题**       | 组件划分不合理、漏拆分、命名不当、父子关系错误       | sketch-analyzer  | sketch-split  | sketch-split → bound → gen-base → gen-base-check → layout → layout-check |
+| **组件间布局问题** | 组件之间的间距、排列、响应式（看父组件的 div 容器）  | sketch-architect | sketch-layout | sketch-layout → layout-check → draw → draw-check                         |
+| **组件内布局问题** | 组件内部元素的间距、排列、响应式（看组件内部的元素） | sketch-developer | sketch-draw   | sketch-draw → draw-check                                                 |
+| **绘制问题**       | 样式细节不对、内容缺失、交互错误、切图问题           | sketch-developer | sketch-draw   | sketch-draw → draw-check                                                 |
+| **边界问题**       | 组件位置/大小与设计稿不一致                          | sketch-analyzer  | sketch-bound  | sketch-bound → gen-base → gen-base-check → layout → layout-check → draw  |
 
 **如何区分组件间 vs 组件内布局问题**：
 
@@ -202,14 +207,14 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-lay
 | sketch-analyzer  | `ANALYZE_OVER` | `PICK_SUCCESS` 等       | `PICK_FAILED` 等       |
 | sketch-architect | `BUILD_OVER`   | `GEN_BASE_SUCCESS` 等   | `GEN_BASE_FAILED` 等   |
 | sketch-developer | `DEVELOP_OVER` | `DRAW_SUCCESS`          | `DRAW_FAILED`          |
-| sketch-checker   | `CHECK_OVER`   | `DRAW_CHECK_SUCCESS` 等 | `DRAW_CHECK_FAILED` 等 |
+| sketch-checker   | `CHECK_OVER`   | `INIT_CHECK_SUCCESS` 等 | `INIT_CHECK_FAILED` 等 |
 
 ### 通信流程
 
 1. 调用子 agent 并传入参数，等待返回
 2. 直接执行的 agent → 解析 `XXX_SUCCESS/FAILED`
 3. 委托 skill 的 agent → 先检测 `XXX_OVER`，再解析 skill 的 `XXX_SUCCESS/FAILED`
-4. 并行调用时（gen-base、draw、draw-check、layout-check），等待所有返回后统一处理
+4. 并行调用时（gen-base、gen-base-check、draw、draw-check、layout-check），等待所有返回后统一处理
 5. 成功 → 调用 `sketch-recorder` 更新状态；失败 → 重试（< 3次）或终止
 
 ## 错误恢复
