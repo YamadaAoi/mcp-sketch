@@ -11,27 +11,27 @@
 
 ## 工作流
 
-| 阶段     | 子 agent           | 调用 skill          | 必需参数                                                 | 并行 | 依赖         | 回退点              |
-| -------- | ------------------ | ------------------- | -------------------------------------------------------- | ---- | ------------ | ------------------- |
-| 状态管理 | sketch-recorder    | -                   | `action`, `stateFile`                                    | ❌   | -            | -                   |
-| 初始化   | sketch-initializer | 直接执行            | -                                                        | ❌   | -            | -                   |
-| 选择画板 | sketch-analyzer    | sketch-pick         | `FILE_PATH`                                              | ❌   | init         | -                   |
-| 组件拆分 | sketch-analyzer    | sketch-split        | `FILE_PATH`, `pageName`, `artboardName`                  | ❌   | pick         | 如果组件划分有问题  |
-| 边界修正 | sketch-analyzer    | sketch-bound        | `FILE_PATH`, `pageName`, `artboardName`, `previewPath`   | ❌   | split        | -                   |
-| 生成骨架 | sketch-architect   | sketch-gen-base     | `pageName`, `artboardName`, `componentPath`              | ✅   | bound        | -                   |
-| 布局骨架 | sketch-architect   | sketch-layout       | `pageName`, `artboardName`                               | ❌   | gen-base     | 如果布局有问题      |
-| 布局审核 | sketch-checker     | sketch-layout-check | `page_name`, `artboard_name`                             | ❌   | layout       | -                   |
-| 绘制功能 | sketch-developer   | sketch-draw         | `FILE_PATH`, `pageName`, `artboardName`, `componentPath` | ✅   | layout-check | 如果样式/内容有问题 |
-| 绘制审核 | sketch-checker     | sketch-draw-check   | `componentPath`                                          | ✅   | draw         | -                   |
+| 阶段     | 子 agent           | 调用 skill          | 必需参数                                                    | 并行 | 依赖         | 回退点              |
+| -------- | ------------------ | ------------------- | ----------------------------------------------------------- | ---- | ------------ | ------------------- |
+| 状态管理 | sketch-recorder    | -                   | `action`, `stateFile`                                       | ❌   | -            | -                   |
+| 初始化   | sketch-initializer | 直接执行            | -                                                           | ❌   | -            | -                   |
+| 选择画板 | sketch-analyzer    | sketch-pick         | `FILE_PATH`                                                 | ❌   | init         | -                   |
+| 组件拆分 | sketch-analyzer    | sketch-split        | `FILE_PATH`, `page_name`, `artboard_name`                   | ❌   | pick         | 如果组件划分有问题  |
+| 边界修正 | sketch-analyzer    | sketch-bound        | `FILE_PATH`, `page_name`, `artboard_name`, `preview_path`   | ❌   | split        | -                   |
+| 生成骨架 | sketch-architect   | sketch-gen-base     | `page_name`, `artboard_name`, `component_path`              | ✅   | bound        | -                   |
+| 布局骨架 | sketch-architect   | sketch-layout       | `page_name`, `artboard_name`                                | ❌   | gen-base     | 如果布局有问题      |
+| 布局审核 | sketch-checker     | sketch-layout-check | `page_name`, `artboard_name`                                | ❌   | layout       | -                   |
+| 绘制功能 | sketch-developer   | sketch-draw         | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | ✅   | layout-check | 如果样式/内容有问题 |
+| 绘制审核 | sketch-checker     | sketch-draw-check   | `component_path`                                            | ✅   | draw         | -                   |
 
 **调用子 agent 时**，在 prompt 中明确告诉它要调用哪个 skill 和参数：
 
 ```
-请使用 sketch-xxx 技能，完成 xxx 工作
+请使用 skill: xxx 技能，完成 xxx 工作
 参数：param1 = value1, param2 = value2
 ```
 
-**重试规则**：重新调用 `sketch-analyzer` 执行 `sketch-split` 时，调用 `sketch-recorder` 传入 `replaceComponents: true`，确保旧组件列表被完全替换，避免新旧并存
+**重试规则**：重新调用 `sketch-analyzer` 执行 `sketch-split` 时，调用 `sketch-recorder` 传入 `replaceComponents: true`，确保旧组件列表被完全替换，避免新旧并存。重试后需按顺序重新执行：`sketch-split` → `sketch-bound` → `sketch-gen-base` → `sketch-layout` → `sketch-layout-check`
 
 ## 状态定义
 
@@ -167,7 +167,7 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-lay
 调用子 agent 时，不要只传入用户反馈，要传入**你对代码的分析和修改建议**：
 
 ```
-请使用 sketch-xxx 技能，修复 xxx 问题
+请使用 skill: xxx 技能，修复 xxx 问题
 参数：param1 = value1, param2 = value2
 
 【Leader 分析】

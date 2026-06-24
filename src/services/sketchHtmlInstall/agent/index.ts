@@ -136,7 +136,7 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, Skill, AskUserQuestion'
+            value: 'Read, Glob, Grep, Bash, AskUserQuestion, Skill'
           },
           { key: 'disallowedTools', value: 'Write, Edit' }
         ]
@@ -184,7 +184,10 @@ export const AgentPool: InstallConfig[] = [
         meta: [
           { key: 'name' },
           { key: 'description' },
-          { key: 'tools', value: 'Read, Write, Edit, Glob, Grep, Bash, Skill' }
+          {
+            key: 'tools',
+            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill'
+          }
         ]
       },
       {
@@ -267,7 +270,10 @@ export const AgentPool: InstallConfig[] = [
         meta: [
           { key: 'name' },
           { key: 'description' },
-          { key: 'tools', value: 'Read, Glob, Grep, Bash, Skill' },
+          {
+            key: 'tools',
+            value: 'Read, Glob, Grep, Bash, Skill'
+          },
           { key: 'disallowedTools', value: 'Write, Edit' }
         ]
       },

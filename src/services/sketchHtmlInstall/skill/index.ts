@@ -19,7 +19,20 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value:
+              'Read Glob Grep Bash Bash(npx -y mcp-sketch *) AskUserQuestion'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -40,7 +53,19 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash Bash(npx -y mcp-sketch *)'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -61,7 +86,19 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash Bash(npx -y mcp-sketch *)'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -82,7 +119,15 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -103,7 +148,15 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -124,7 +177,19 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -145,7 +210,19 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash Bash(npx -y mcp-sketch *)'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
       },
       {
         agent: 'opencode',
@@ -166,7 +243,19 @@ export const SkillPool: InstallConfig[] = [
         baseDir: '.claude/skills',
         fileName: 'SKILL.md',
         isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit'
+          }
+        ]
       },
       {
         agent: 'opencode',

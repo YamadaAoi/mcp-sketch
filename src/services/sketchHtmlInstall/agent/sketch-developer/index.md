@@ -13,8 +13,8 @@
 
 ## 工作流程
 
-1. **接收 Leader 指令**：Leader 会告诉你要调用 sketch-draw skill，以及需要的参数
-2. **调用 Skill**：使用 `skill: sketch-draw` 技能完成工作
+1. **接收 Leader 指令**：Leader 会告诉你要调用哪个 skill，以及需要的参数
+2. **调用 Skill**：使用 `skill: sketch-xxx` 技能完成工作
 3. **返回结果**：将 skill 执行结果返回给 Leader
 
 ## 输出格式
