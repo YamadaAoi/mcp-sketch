@@ -10,11 +10,18 @@
 
 ## 执行步骤
 
-### 步骤 1：检查 `sketch-cache/proj-init.md` 是否存在
+### 步骤 1：查看输入参数是否包含`errorDescription`
 
-若存在则直接跳过，不重复执行
+- 若包含
+  带着 `errorDescription` 继续执行步骤 2，根据实际情况重新生成 `sketch-cache/proj-init.md`
+- 若不包含
+  直接执行步骤 2
 
-### 步骤 2：确定技术栈与依赖
+### 步骤 2：检查 `sketch-cache/proj-init.md` 是否存在
+
+若**存在**且输入参数**不包含**`errorDescription`则直接跳过，不重复执行
+
+### 步骤 3：确定技术栈与依赖
 
 读取根目录及各包的 `package.json`，分析 `dependencies` 和 `devDependencies`：
 
@@ -26,7 +33,7 @@
 - **构建工具**：Vite / Rollup 等
 - **TypeScript 版本**
 
-### 步骤 3：确定代码风格与规范
+### 步骤 4：确定代码风格与规范
 
 - 读取 `.prettierrc`, `.editorconfig` 等配置，总结缩进、引号、分号规则
 - 读取 `eslint.config.*`, `tsconfig.json`, `stylelint.config` 等，总结命名限制、严格模式等
@@ -37,7 +44,7 @@
   - angular：是否使用类组件、装饰器等
   - 其他框架：根据实际情况判断组件编写规范
 
-### 步骤 4：确定项目结构
+### 步骤 5：确定项目结构
 
 - 分析 `src` 目录结构
   - 确定 API 目录，若不存在，则使用 `src/api/`（API 目录名）
@@ -52,27 +59,27 @@
     - 若存在，后续业务组件必须在该目录下创建，路径为`{已有目录}/{camelCase页面组件所在目录名}/{camelCase组件所在目录名}/{PascalCase组件名}`
     - 若不存在，则使用 `src/views/{camelCase页面组件所在目录名}/{camelCase组件所在目录名}/{PascalCase组件名}`
 
-### 步骤 5：确定路由配置方式
+### 步骤 6：确定路由配置方式
 
 - 查找路由配置文件（如 `router/index.ts` 或 `app/routes.ts`），总结路由定义方式（动态导入 / 静态配置）
 - 确定路由模式（如 `hash`、`history` 等）
 
-### 步骤 6：确定 CSS 方案
+### 步骤 7：确定 CSS 方案
 
 - 读取现有组件文件，判断 CSS 方案类型（CSS Modules / TailwindCSS / styled-components / Scoped CSS 等）
 
-### 步骤 7：确定本地开发服务器配置
+### 步骤 8：确定本地开发服务器配置
 
 从 `package.json` 的 `scripts` 字段中检测启动本地项目的命令（如 `vite`、`webpack serve`、`next dev`、`ng serve`、`react-scripts start` 等），记录到 proj-init.md 中
 
-### 步骤 8：确定质量工具配置
+### 步骤 9：确定质量工具配置
 
 - 查看`package.json` 中 `scripts` 字段，判断包管理工具（如 npm、yarn、pnpm 等），包管理工具一般是全局安装的
 - 检查 `.prettierrc*` 及 `package.json` 中 prettier 脚本，记录格式化命令
 - 检查 `eslint.config.*` 及 `package.json` 中 lint 脚本，记录检查命令
 - 检查 `tsconfig.json` 及 `package.json` 中 typecheck 脚本，记录类型检查命令
 
-### 步骤 9：输出文档
+### 步骤 10：输出文档
 
 保存至 `sketch-cache/proj-init.md`，文件夹不存在则自动创建，文件已存在则覆盖，文档格式如下：
 

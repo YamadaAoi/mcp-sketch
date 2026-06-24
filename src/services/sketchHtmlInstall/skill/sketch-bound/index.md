@@ -10,7 +10,7 @@
 
 ## 执行步骤
 
-以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name`、`preview_path` 均由调用方传入上下文
+以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name`、`preview_path`、`errorDescription` 均由调用方传入上下文
 
 ### 步骤 1：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
@@ -22,12 +22,20 @@
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 components 字段`
 - 若存在，查看规划了多少个组件
 
-### 步骤 3：读取预览图（可选）
+### 步骤 3：查看输入参数是否包含`errorDescription`
+
+- 若包含
+  - 1. 读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json`，查看之前的组件修正结果
+  - 2. 带着 `errorDescription` 继续执行步骤 4，根据实际情况重新修正组件
+- 若不包含
+  直接执行步骤 4
+
+### 步骤 4：读取预览图（可选）
 
 - 读取 `preview_path` 预览图，以资深前端架构师的视角分析设计稿布局
 - 此步骤用于辅助理解组件层级关系和布局意图，提高修正准确性
 
-### 步骤 4：使用 `mcp-sketch locate` 工具获取图层列表
+### 步骤 5：使用 `mcp-sketch locate` 工具获取图层列表
 
 - 获取的图层列表**对页面布局影响越大的图层越靠前**，从索引`m`开始（默认0），获取`n`个图层
 - 估算需要获取前多少个图层用于修正，一般规划的组件都是影响布局的组件，例如components里有10个组件，则至少需要获取前10个图层，可以适当增加获取数量，以确保所有组件的`rect`都能被修正
@@ -36,7 +44,7 @@
 npx -y mcp-sketch locate -p {FILE_PATH} --pn {page_name} --an {artboard_name} --offset {m} --limit {n}
 ```
 
-### 步骤 5：遍历`components`数组，逐个修正每个组件的 rect、exclude_rects、children等字段
+### 步骤 6：遍历`components`数组，逐个修正每个组件的 rect、exclude_rects、children等字段
 
 - sketch-split 输出的组件规划是根据预览图粗略估计的`rect`，需要根据实际图层数据进行修正
 - 结合预览图分析结果和图层数据，找出与规划组件在**上下左右4个方向上平均误差最小**的图层

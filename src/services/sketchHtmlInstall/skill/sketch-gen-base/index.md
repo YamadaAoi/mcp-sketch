@@ -6,7 +6,7 @@
 
 ## 执行步骤
 
-以下步骤中的 `page_name`、`artboard_name`、`component_path` 均由调用方传入上下文
+以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
 
 ### 步骤 1：读取 `sketch-cache/proj-init.md` 确认技术栈、样式写法
 
@@ -14,15 +14,21 @@
 
 ### 步骤 2：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
-> ⚠️ 仅读取，禁止修改此文件
-
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
 ### 步骤 3：检查`components`数组是否存在`component_path`组件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 {component_path} 组件`
 
-### 步骤 4：根据组件规划布局数据，生成基础的组件代码
+### 步骤 4：查看输入参数是否包含`errorDescription`
+
+- 若包含
+  - 1. 查看之前的基础组件生成方案
+  - 2. 带着 `errorDescription` 继续执行步骤 5，根据实际情况重新生成组件
+- 若不包含
+  直接执行步骤 5
+
+### 步骤 5：根据组件规划布局数据，生成基础的组件代码
 
 只关注以下字段：
 
