@@ -1,9 +1,6 @@
-import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
 import { openSketchHtmlFile } from '@/utils/zip'
-import { processImage, writeJsonFile } from '@/utils/saveFile'
-import { getRect } from '@/utils/util'
 import { filterArtboards } from './filterArtboards'
 import { assembleArtboard } from './assembleArtboard'
 
@@ -28,9 +25,13 @@ export const sketchAnalyzeInputSchema = z.object({
     .string()
     .describe('assets path (optional), default src/assets/sketch')
     .optional(),
-  save_result: z
-    .boolean()
-    .describe('save analysis result (optional), default false')
+  limit: z
+    .number()
+    .describe('number of top-scored layers to return (optional)')
+    .optional(),
+  offset: z
+    .number()
+    .describe('starting index in sorted layers (optional, default 0)')
     .optional()
 })
 
@@ -42,17 +43,15 @@ export const sketchAnalyzeInputSchema = z.object({
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {number[][]} exclude_rects - 指定排除解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {string} assets_path - 指定静态资源存放路径(可选)，默认src/assets/sketch
- * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认false
  */
 export type SketchAnalyzeInputSchema = SchemaOutput<
   typeof sketchAnalyzeInputSchema
 >
 
 /**
- * 分析sketch html文件(zip或目录)，提取指定节点数据，存储到指定位置json文件中，返回json文件位置
- * json位置拼接规则：{args.file_path所在文件夹}/{args.file_name无后缀}.cache/{pageName}_{artboardName}[_rect].json
+ * 分析sketch html文件(zip或目录)，提取指定节点数据，返回JSON格式的artboard信息
  * @param args 分析参数
- * @returns json文件位置
+ * @returns artboard JSON字符串
  */
 export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
   let response = 'Sketch Exception'
@@ -60,50 +59,11 @@ export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
   try {
     const sketchHtmlData = await openSketchHtmlFile(args.file_path)
     const targetArtboard = filterArtboards(args, sketchHtmlData.data.artboards)
-    const assembledArtboard = assembleArtboard(
+    const assembledArtboard = await assembleArtboard(
       targetArtboard,
-      args.assets_path,
-      args.rect,
-      args.exclude_rects,
+      args,
       sketchHtmlData.images
     )
-
-    const newRect = getRect(args.rect)
-    const newExcludeRects = args.exclude_rects?.reduce<
-      [number, number, number, number][]
-    >((acc, r) => {
-      const rect = getRect(r)
-      if (rect) acc.push(rect)
-      return acc
-    }, [])
-
-    const parsed = path.parse(args.file_path)
-    if (args.save_result) {
-      const targetPath = `${parsed.dir}/${parsed.name}.cache/${assembledArtboard.artboard.pageName ?? assembledArtboard.artboard.pageObjectID}_${assembledArtboard.artboard.name ?? assembledArtboard.artboard.objectID}${newRect ? `_${newRect.join('_')}` : ''}.json`
-      await writeJsonFile(targetPath, assembledArtboard.artboard)
-    }
-
-    if (assembledArtboard.previewPath) {
-      const imageData = sketchHtmlData.images?.find(item =>
-        item.path.endsWith(assembledArtboard.previewPath)
-      )?.data
-      if (imageData) {
-        const extname = path.extname(assembledArtboard.previewPath)
-        const fileName = path.basename(assembledArtboard.previewPath, extname)
-        const dest = path.join(
-          parsed.dir,
-          `${parsed.name}.cache`,
-          `${fileName}${newRect ? `_${newRect.join('_')}` : ''}${newExcludeRects?.length ? `_exclude_${newExcludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
-        )
-        assembledArtboard.previewPath = await processImage(
-          imageData,
-          dest,
-          assembledArtboard.artboard.width,
-          newRect
-        )
-      }
-    }
-
     response = JSON.stringify(assembledArtboard)
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`

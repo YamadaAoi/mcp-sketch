@@ -5,8 +5,8 @@
 ## 核心约束
 
 - **禁止自行解压**任何压缩文件！
-- 只能通过`mcp-sketch locate`工具获取画板信息，**禁止直接读取设计稿文件**
-- 本阶段只允许使用 `mcp-sketch locate`，严禁调用其他 `mcp-sketch` 子命令
+- 只能通过`mcp-sketch analyze`工具获取画板信息，**禁止直接读取设计稿文件**
+- 本阶段只允许使用 `mcp-sketch analyze`，严禁调用其他 `mcp-sketch` 子命令
 
 ## 执行步骤
 
@@ -35,18 +35,19 @@
 - 读取 `preview_path` 预览图，以资深前端架构师的视角分析设计稿布局
 - 此步骤用于辅助理解组件层级关系和布局意图，提高修正准确性
 
-### 步骤 5：使用 `mcp-sketch locate` 工具获取图层列表
+### 步骤 5：使用 `mcp-sketch analyze` 工具获取图层列表
 
-- 获取的图层列表**对页面布局影响越大的图层越靠前**，从索引`m`开始（默认0），获取`n`个图层
+- 返回的 `layers` 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层
+- 每个图层的 `rect` 为数组格式 `[x, y, width, height]`
 - 估算需要获取前多少个图层用于修正，一般规划的组件都是影响布局的组件，例如components里有10个组件，则至少需要获取前10个图层，可以适当增加获取数量，以确保所有组件的`rect`都能被修正
 
 ```bash
-npx -y mcp-sketch locate -p {FILE_PATH} --pn {page_name} --an {artboard_name} --offset {m} --limit {n}
+npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} --offset {m} --limit {n}
 ```
 
 ### 步骤 6：遍历`components`数组，逐个修正每个组件的 rect、exclude_rects、children等字段
 
-- sketch-split 输出的组件规划是根据预览图粗略估计的`rect`，需要根据实际图层数据进行修正
+- sketch-split 输出的组件规划是根据预览图粗略估计的`rect`（对象格式 `{x, y, width, height}`），需要根据 analyze 返回的实际图层数据进行修正（图层`rect`为数组格式 `[x, y, width, height]`）
 - 结合预览图分析结果和图层数据，找出与规划组件在**上下左右4个方向上误差最小**的图层
   - 计算方式：上下方向误差基于图层高度，左右方向误差基于图层宽度，取4个方向误差的平均值
   - 若平均误差在 **10% 以内**，即可认为该组件与该图层对应，用该图层的`rect`修正该组件的`rect`

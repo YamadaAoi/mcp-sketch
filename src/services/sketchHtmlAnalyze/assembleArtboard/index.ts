@@ -6,9 +6,9 @@ import {
   type HtmlSketchArtboard,
   type HtmlSketchLayer
 } from '@/utils/zip'
-import { saveImage } from '@/utils/saveFile'
-import { logger } from '@/utils/logger'
+import { processImage } from '@/utils/saveFile'
 import { getRect, roundIfExceeds } from '@/utils/util'
+import type { SketchAnalyzeInputSchema } from '..'
 
 function filterLayers(lyr: HtmlLayer) {
   return (
@@ -34,7 +34,6 @@ function filterLayersByRect(
     return false
   }
 
-  // 判断图层是否在 rect 内
   if (rect) {
     const isInRect =
       r.x >= rect[0] &&
@@ -48,7 +47,6 @@ function filterLayersByRect(
     if (!isInRect) return false
   }
 
-  // 判断图层是否完全包含在任意 excludeRect 内
   if (excludeRects?.length) {
     const rRight = r.x + r.width
     const rBottom = r.y + r.height
@@ -69,79 +67,173 @@ function filterLayersByRect(
   return filterLayers(lyr)
 }
 
-export function assembleArtboard(
+function calculateLayoutScore(rect: {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+}) {
+  const width = rect.width ?? 0
+  const height = rect.height ?? 0
+  const area = width * height
+  const longestSide = Math.max(width, height)
+  const minSide = Math.min(width, height)
+  const aspectRatio = minSide > 0 ? longestSide / minSide : 0
+
+  let score = area
+  if (aspectRatio >= 30) {
+    score += longestSide * 14
+  }
+  return score
+}
+
+function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
+  const layer: HtmlSketchLayer = {
+    type: lyr.type,
+    name: lyr.name,
+    rect: [
+      roundIfExceeds(lyr.rect?.x)!,
+      roundIfExceeds(lyr.rect?.y)!,
+      roundIfExceeds(lyr.rect?.width)!,
+      roundIfExceeds(lyr.rect?.height)!
+    ]
+  }
+  if (lyr.styleName) {
+    layer.styleName = lyr.styleName
+  }
+  if (lyr.css?.length) {
+    layer.css = lyr.css
+  }
+  return layer
+}
+
+function rankAndPaginate(
+  layers: HtmlLayer[],
+  rect?: [number, number, number, number],
+  excludeRects?: [number, number, number, number][],
+  limit?: number,
+  offset?: number
+) {
+  let filtered = layers.filter(l => filterLayersByRect(l, rect, excludeRects))
+
+  filtered.sort((a, b) => {
+    const scoreA = calculateLayoutScore(a.rect ?? {})
+    const scoreB = calculateLayoutScore(b.rect ?? {})
+    return scoreB - scoreA
+  })
+
+  if (limit !== undefined) {
+    const start = offset ?? 0
+    filtered = filtered.slice(start, start + limit)
+  }
+
+  return filtered
+}
+
+async function compressAssets(
+  layers: HtmlLayer[],
+  sketchLayers: HtmlSketchLayer[],
+  dest: string,
+  images?: Array<{ path: string; data: Buffer }>
+) {
+  for (let i = 0; i < layers.length; i++) {
+    const l = layers[i]
+    if (!l.exportable?.length) continue
+    sketchLayers[i].assets = await Promise.all(
+      l.exportable.map(async e => {
+        const normalizedPath = normalize(e.path)
+        const imageData = images?.find(item =>
+          item.path.endsWith(normalizedPath)
+        )?.data
+        let imagePath = ''
+        if (imageData) {
+          const destPath = path.join(dest, path.basename(normalizedPath))
+          imagePath = await processImage(imageData, destPath)
+        }
+        return {
+          ...e,
+          path: imagePath
+        }
+      })
+    )
+  }
+}
+
+async function processPreview(
+  artboard: HtmlSketchArtboard,
+  filePath: string,
+  rect?: [number, number, number, number],
+  excludeRects?: [number, number, number, number][],
+  images?: Array<{ path: string; data: Buffer }>
+) {
+  if (!artboard.previewPath) return
+
+  const parsed = path.parse(filePath)
+  const imageData = images?.find(item =>
+    item.path.endsWith(artboard.previewPath!)
+  )?.data
+  if (!imageData) return
+
+  const extname = path.extname(artboard.previewPath)
+  const fileName = path.basename(artboard.previewPath, extname)
+  const dest = path.join(
+    parsed.dir,
+    `${parsed.name}.cache`,
+    `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${excludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
+  )
+  artboard.previewPath = await processImage(
+    imageData,
+    dest,
+    artboard.width,
+    rect
+  )
+}
+
+export async function assembleArtboard(
   artboard: HtmlArtboard,
-  assetsPath?: string,
-  rect?: number[],
-  excludeRects?: number[][],
+  args: SketchAnalyzeInputSchema,
   images?: Array<{
     path: string
     data: Buffer
   }>
 ) {
-  const dest = assetsPath ?? 'src/assets/sketch'
-  let previewPath = ''
-  const newRect = getRect(rect)
-  const newExcludeRects = excludeRects?.reduce<
+  const dest = args.assets_path ?? 'src/assets/sketch'
+  const newRect = getRect(args.rect)
+  const newExcludeRects = args.exclude_rects?.reduce<
     [number, number, number, number][]
   >((acc, r) => {
     const rect = getRect(r)
     if (rect) acc.push(rect)
     return acc
   }, [])
+
+  const filtered = rankAndPaginate(
+    artboard.layers,
+    newRect,
+    newExcludeRects,
+    args.limit,
+    args.offset
+  )
+
   const newArtboard: HtmlSketchArtboard = {
+    previewPath: artboard.imagePath ? normalize(artboard.imagePath) : undefined,
     pageName: artboard.pageName,
     pageObjectID: artboard.pageObjectID,
     name: artboard.name,
     objectID: artboard.objectID,
     width: artboard.width,
     height: artboard.height,
-    layers: artboard.layers
-      .filter(l => filterLayersByRect(l, newRect, newExcludeRects))
-      .map(l => {
-        const lyr: HtmlSketchLayer = {
-          type: l.type,
-          name: l.name,
-          rect: {
-            x: roundIfExceeds(l.rect?.x),
-            y: roundIfExceeds(l.rect?.y),
-            w: roundIfExceeds(l.rect?.width),
-            h: roundIfExceeds(l.rect?.height)
-          }
-        }
-        if (l.styleName) {
-          lyr.styleName = l.styleName
-        }
-        if (l.css?.length) {
-          lyr.css = l.css
-        }
-        if (l.exportable?.length) {
-          lyr.assets = l.exportable.map(e => {
-            let imagePath = ''
-            const normalizedPath = normalize(e.path)
-            const imageData = images?.find(item =>
-              item.path.endsWith(normalizedPath)
-            )?.data
-            if (imageData) {
-              const fileName = path.basename(normalizedPath)
-              imagePath = path.join(dest, fileName)
-              saveImage(imageData, imagePath).catch(error => {
-                logger.error(`Failed to save image ${normalizedPath}: ${error}`)
-              })
-            }
-            return {
-              ...e,
-              path: imagePath
-            }
-          })
-        }
-        return lyr
-      })
+    layers: filtered.map(toSketchLayer)
   }
 
-  if (artboard.imagePath) {
-    previewPath = normalize(artboard.imagePath)
-  }
+  await compressAssets(filtered, newArtboard.layers, dest, images)
+  await processPreview(
+    newArtboard,
+    args.file_path,
+    newRect,
+    newExcludeRects,
+    images
+  )
 
-  return { previewPath, artboard: newArtboard }
+  return newArtboard
 }

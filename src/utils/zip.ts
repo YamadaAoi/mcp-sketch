@@ -53,15 +53,13 @@ export interface HtmlArtboard {
   imagePath?: string
 }
 
+/**
+ * 解析后的layer数据
+ */
 export interface HtmlSketchLayer {
   type: string
   name: string
-  rect: {
-    x?: number | string
-    y?: number | string
-    w?: number | string
-    h?: number | string
-  }
+  rect: [number | string, number | string, number | string, number | string]
   styleName?: string
   css?: string[]
   assets?: Array<{
@@ -71,6 +69,9 @@ export interface HtmlSketchLayer {
   }>
 }
 
+/**
+ * 解析后的artboard数据
+ */
 export interface HtmlSketchArtboard {
   pageName: string
   pageObjectID: string
@@ -79,6 +80,7 @@ export interface HtmlSketchArtboard {
   width: number
   height: number
   layers: HtmlSketchLayer[]
+  previewPath?: string
 }
 
 export interface SketchImage {

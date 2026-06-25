@@ -1,6 +1,14 @@
 import path from 'path'
 import fs from 'fs/promises'
+import { constants } from 'fs'
 import { getSharp } from './imageProcessor'
+
+async function fileExists(filePath: string) {
+  return fs
+    .access(filePath, constants.F_OK)
+    .then(() => true)
+    .catch(() => false)
+}
 
 /**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
@@ -28,10 +36,12 @@ export async function saveImage(data: Buffer, dest: string) {
 /**
  * 处理图片，保存为webp格式
  * 如果sharp不可用，直接保存原始图片
+ * 若目标路径已存在文件则跳过处理，优先检查webp格式，再检查原始格式
  * @param data - 图片数据
  * @param dest - 保存路径
  * @param width - 图片宽度，用于缩放
  * @param rect - 截取区域
+ * @returns 实际文件路径（可能为已存在的webp或原始文件）
  */
 export async function processImage(
   data: Buffer,
@@ -40,14 +50,18 @@ export async function processImage(
   rect?: [number, number, number, number]
 ) {
   const parsed = path.parse(dest)
+  const webpPath = path.join(parsed.dir, `${parsed.name}.webp`)
+
+  // 已处理过则跳过：优先返回 webp，其次返回原始文件
+  if (await fileExists(webpPath)) return webpPath
+  if (await fileExists(dest)) return dest
+
   await fs.mkdir(parsed.dir, { recursive: true })
   const sharp = await getSharp()
   if (sharp) {
     const img = sharp(data)
     if (width) {
-      img.resize({
-        width
-      })
+      img.resize({ width })
     }
     if (rect) {
       img.extract({
@@ -57,16 +71,10 @@ export async function processImage(
         height: rect[3]
       })
     }
-    const webpPath = path.join(parsed.dir, `${parsed.name}.webp`)
-    await img
-      .webp({
-        quality: 90,
-        effort: 4
-      })
-      .toFile(webpPath)
+    await img.webp({ quality: 90, effort: 4 }).toFile(webpPath)
     return webpPath
-  } else {
-    await fs.writeFile(dest, data)
-    return dest
   }
+
+  await fs.writeFile(dest, data)
+  return dest
 }

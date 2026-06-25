@@ -9,7 +9,7 @@
 - **禁止自行解压**任何压缩文件！
 - 只能通过`mcp-sketch analyze`工具获取画板信息，**禁止直接读取设计稿文件**
 - 本阶段只允许使用 `mcp-sketch analyze`，严禁调用其他 `mcp-sketch` 子命令
-- **禁止**仅凭预览图直接写代码，**必须**先调用 `mcp-sketch analyze` 获取图层结构信息，返回的 `artboard` 数据是代码生成的核心依据
+- **禁止**仅凭预览图直接写代码，**必须**先调用 `mcp-sketch analyze` 获取图层结构信息，返回的图层数据是代码生成的核心依据
 - 组件的位置和大小完全**由父组件控制**，组件宽高撑满父级容器，位置为 `position: relative;`
 
 ## 执行步骤
@@ -54,15 +54,28 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 
 ### 步骤 6：解析返回结果
 
-工具返回 `{artboard: {...}, previewPath: "..."}`。
+工具返回 artboard JSON，结构如下：
 
-#### 6.1 解析 artboard 数据（逐图层完整提取）
+```json
+{
+  "pageName": "页面名称",
+  "name": "画板名称",
+  "width": 100,
+  "height": 200,
+  "layers": [{ "type": "text|shape|slice", "name": "...", "rect": [x,y,w,h], "assets": [...] }],
+  "previewPath": "预览图路径"
+}
+```
+
+#### 6.1 解析 layers 数据（逐图层完整提取）
 
 | 图层类型 | 用途                       |
 | -------- | -------------------------- |
 | `text`   | 文本元素的精确样式和内容   |
 | `shape`  | 盒模型、背景色、边框、圆角 |
 | `slice`  | 切图引用和尺寸             |
+
+**注意**：layers 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层。每个图层的 `rect` 为数组格式 `[x, y, width, height]`。
 
 提取所有 `type: "slice"` 的图层，验证切图文件存在性
 
@@ -76,7 +89,7 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 
 #### 6.3 过滤无效图层
 
-遍历 `artboard.layers`，按以下规则逐层判断：
+遍历 `layers`，按以下规则逐层判断：
 
 - **`type: "slice"` 的图层始终保留，不参与过滤**
 - **视觉叠加辅助层**：图层为纯色或渐变填充 → 对比预览图：
@@ -87,7 +100,7 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 
 ### 步骤 7：代码生成
 
-根据过滤后的 `artboard.layers` 生成组件代码
+根据过滤后的 `layers` 生成组件代码
 
 - **与项目现有代码风格一致**：生成的代码必须符合 `proj-init.md` 中的代码规范，包括命名规范、导入方式、CSS 方案等
 - **增量生成**：**必须**读取现有内容，如果组件文件内容不为空（如已存在子组件容器 div 和 import），在保留子容器 div 和 import 的基础上填充本组件自身的内容
