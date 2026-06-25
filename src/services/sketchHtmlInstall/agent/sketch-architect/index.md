@@ -7,10 +7,10 @@
 
 ## 可用 Skill
 
-| Skill           | 职责                 | 必需参数                                    |
-| --------------- | -------------------- | ------------------------------------------- |
-| sketch-gen-base | 生成基础组件代码     | `pageName`, `artboardName`, `componentPath` |
-| sketch-layout   | 配置路由和父组件布局 | `pageName`, `artboardName`                  |
+| Skill           | 职责                 | 必需参数                                       |
+| --------------- | -------------------- | ---------------------------------------------- |
+| sketch-gen-base | 生成基础组件代码     | `page_name`, `artboard_name`, `component_path` |
+| sketch-layout   | 配置路由和父组件布局 | `page_name`, `artboard_name`                   |
 
 ## 工作流程
 

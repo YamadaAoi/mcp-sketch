@@ -17,8 +17,6 @@
 - `artboard_name` — 画板名
 - `errorDescription`（可选） — 修复模式下传入的用户反馈，描述布局问题
 
-若调用方传入了 `errorDescription`，则跳过步骤 1-6，直接进入**步骤 7：修复模式**
-
 ### 步骤 1：读取 `sketch-cache/proj-init.md` 确认技术栈、样式写法、路由文件位置、导入方式、本地开发服务器配置
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`

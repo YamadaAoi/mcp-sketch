@@ -5,8 +5,7 @@
 1. **绝不写**：你没有`write/edit`权限，所有相关任务必须委托给对应的 subagent
 2. **状态驱动**：每阶段执行前读取 JSON 状态文件，已完成阶段直接跳过
 3. **参数显式传递**：委托 subagent 时，必须在 prompt 中显式写出所有必要参数值，禁止让 subagent 自行推断或读取
-4. **最多重试 3 次**：单个组件失败最多重试 3 次，超过则终止并提示用户
-5. **任务管理**：每次收到用户任务时，先列出完整的 todo 给用户看，执行过程中实时更新进度
+4. **任务管理**：每次收到用户任务时，先列出完整的 todo 给用户看，执行过程中实时更新进度
 
 ## 一、完整工作流
 
@@ -71,11 +70,21 @@
 2. 委托修复并附带 `errorDescription`
 3. **回到第 10 步**重新审核，审核通过后**回到第 11 步**重新预览确认
 
-### 审核失败（任意 check 阶段）
+### 失败处理
 
-1. 读取 check 返回的失败信息
-2. 根据失败的 check 阶段，从总表查找对应的 subagent 和 skill，委托修复并附带 `errorDescription`
-3. **回退到该 check 之前的步骤重新执行**（如 layout-check 失败 → 回退到 layout 步骤）
+所有非用户主动触发的失败都走此流程
+
+1. 读取失败信息，判断影响范围：
+   - **单个组件失败**（并行步骤：gen-base、gen-base-check、draw、draw-check）：部分组件成功、部分失败
+   - **整体失败**（check 审核不通过、skill 执行错误等）：整个步骤失败
+2. **Leader 尝试自动修复**：
+   - 从失败信息中定位问题（哪个组件、什么问题）
+   - 从总表查找对应 subagent 和 skill，委托修复并附带 `errorDescription`
+   - 回退到对应步骤重新执行
+3. **若修复后仍然失败**：告知用户失败原因，等待用户决定：
+   - **重做**：再次尝试修复
+   - **跳过**：委托 subagent: `sketch-recorder` 将失败组件 status 设为 `skipped`
+   - **终止**：停止当前画板流程
 
 ### 用户主动打断反馈问题
 
@@ -89,19 +98,15 @@
 5. 委托修复并附带 `errorDescription`
 6. **回到该问题类型对应的审核步骤重新执行**
 
-### 单个组件失败
-
-- retryCount < 3 → 委托 subagent: `sketch-recorder` 增加 retryCount，重新尝试当前步骤
-- retryCount >= 3 → 终止，提示用户检查该组件
-
 ### 流水线中断重启
 
 1. 扫描 `sketch-cache/artboards/*.json`
 2. 跳过 `stage: completed` 的已完成画板
-3. 对未完成的画板：
-   - 清零所有 `retryCount >= 3` 的组件的 retryCount
-   - 按 stage 升序、lastUpdateTime 降序选择画板继续
+3. 对未完成的画板：按 stage 升序、lastUpdateTime 降序选择画板继续
 4. 磁盘检查：组件文件或描述文件缺失 → 重置该组件状态为 `gen-base`
+5. 若存在 `skipped` 组件：列出组件清单，询问用户是否需要重新处理
+   - 用户选择重试 → 委托 recorder 执行 `unskip` 操作，将组件 status 重置为上次执行前的状态，重新加入流水线
+   - 用户选择忽略 → 保持 `skipped` 状态
 
 ## 三、参考信息
 
@@ -127,13 +132,23 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-gen
 
 ### 状态更新规则
 
-每个 subagent 返回成功后，立即委托 subagent: `sketch-recorder` 更新状态文件：
+每个 subagent 返回成功后，立即委托 subagent: `sketch-recorder` 更新状态文件。
 
-- **默认**：`action: 'update-state'`, `data: { components }`
-- **sketch-pick**：`action: 'create-state'`, `data: { filePath, pageName, artboardName }`
-- **sketch-split / sketch-layout**：额外传入 `stage`, `previewPath`（split 时）
-- **组件失败重试**：`action: 'update-retry'`, `data: { componentPath, retryCount }`
-- **sketch-split 重试时**：额外传入 `replaceComponents: true`
+**各步骤更新方式**：
+
+| 步骤                                                                         | action         | 关键参数                                                                                                                 |
+| ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| sketch-pick                                                                  | `create-state` | `filePath`, `pageName`, `artboardName`                                                                                   |
+| sketch-split                                                                 | `update-state` | `stage: 'sketch-split'`, `previewPath`, `components`, `replaceComponents`（重试或用户拒绝后重做时 `true`，否则 `false`） |
+| sketch-bound                                                                 | `update-state` | `stage: 'sketch-bound'`, `components`                                                                                    |
+| sketch-gen-base / gen-base-check / layout / layout-check / draw / draw-check | `update-state` | `stage: 对应阶段名`, `components`                                                                                        |
+| 完成                                                                         | `update-state` | `stage: 'completed'`                                                                                                     |
+
+**参数约定**：
+
+- `previewPath`：从 skill 返回值中获取，没有则传空字符串
+- `components`：从 skill 返回值或上一次状态中的 components 获取
+- 组件 `status` 的具体流转由 recorder 根据组件类型和 check 结果自动计算
 
 ### subagent 通信协议
 
@@ -163,7 +178,7 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-gen
 2. 直接执行的 agent → 解析 `XXX_SUCCESS/FAILED`
 3. 委托 skill 的 agent → 先检测 `XXX_OVER`，再解析 skill 的 `XXX_SUCCESS/FAILED`
 4. 并行调用时（gen-base、gen-base-check、draw、draw-check、layout-check），等待所有返回后统一处理
-5. 成功 → 调用 `sketch-recorder` 更新状态；失败 → 重试（< 3次）或终止
+5. 成功 → 调用 `sketch-recorder` 更新状态；失败 → 告知用户，等待用户决定
 
 ### 预览布局流程
 

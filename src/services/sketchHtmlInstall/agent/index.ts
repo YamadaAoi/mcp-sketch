@@ -62,7 +62,8 @@ export const AgentPool: InstallConfig[] = [
         meta: [
           { key: 'name' },
           { key: 'description' },
-          { key: 'tools', value: 'Read, Write, Edit' }
+          { key: 'tools', value: 'Read, Write, Edit' },
+          { key: 'disallowedTools', value: 'Bash' }
         ]
       },
       {
@@ -80,7 +81,8 @@ export const AgentPool: InstallConfig[] = [
             value: {
               read: 'allow',
               write: 'allow',
-              edit: 'allow'
+              edit: 'allow',
+              bash: 'deny'
             }
           }
         ]
@@ -224,7 +226,7 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill'
+            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion'
           }
         ]
       },
@@ -251,7 +253,8 @@ export const AgentPool: InstallConfig[] = [
                 '*': 'allow',
                 'npx -y mcp-sketch *': 'allow',
                 'unzip *': 'deny'
-              }
+              },
+              question: 'allow'
             }
           }
         ]
@@ -272,7 +275,7 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, Skill'
+            value: 'Read, Glob, Grep, Bash, Skill, AskUserQuestion'
           },
           { key: 'disallowedTools', value: 'Write, Edit' }
         ]
@@ -296,7 +299,8 @@ export const AgentPool: InstallConfig[] = [
               bash: 'allow',
               skill: 'allow',
               write: 'deny',
-              edit: 'deny'
+              edit: 'deny',
+              question: 'allow'
             }
           }
         ]

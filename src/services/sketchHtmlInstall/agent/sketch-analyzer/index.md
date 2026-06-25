@@ -7,11 +7,11 @@
 
 ## 可用 Skill
 
-| Skill        | 职责                            | 必需参数                                               |
-| ------------ | ------------------------------- | ------------------------------------------------------ |
-| sketch-pick  | 提取画板列表，供用户单选        | `FILE_PATH`                                            |
-| sketch-split | 拆分组件，制定组件规划表        | `FILE_PATH`, `pageName`, `artboardName`                |
-| sketch-bound | 修正组件 rect，确保与设计稿一致 | `FILE_PATH`, `pageName`, `artboardName`, `previewPath` |
+| Skill        | 职责                            | 必需参数                                                  |
+| ------------ | ------------------------------- | --------------------------------------------------------- |
+| sketch-pick  | 提取画板列表，供用户单选        | `FILE_PATH`                                               |
+| sketch-split | 拆分组件，制定组件规划表        | `FILE_PATH`, `page_name`, `artboard_name`                 |
+| sketch-bound | 修正组件 rect，确保与设计稿一致 | `FILE_PATH`, `page_name`, `artboard_name`, `preview_path` |
 
 ## 工作流程
 
