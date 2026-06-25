@@ -1,4 +1,5 @@
 import path from 'path'
+import { pinyin } from 'pinyin-pro'
 import {
   normalize,
   type HtmlArtboard,
@@ -9,6 +10,15 @@ import {
 import { processImage } from '@/utils/saveFile'
 import { getRect, roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
+
+function toPinyin(str: string): string {
+  const cleaned = str.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, ' ').trim()
+  const result = cleaned.replace(
+    /[\u4e00-\u9fa5]+/g,
+    m => ` ${pinyin(m, { toneType: 'none' })} `
+  )
+  return result.replace(/ +/g, '-').replace(/^-|-$/g, '').toLowerCase()
+}
 
 function filterLayers(lyr: HtmlLayer) {
   return (
@@ -134,8 +144,13 @@ async function compressAssets(
   layers: HtmlLayer[],
   sketchLayers: HtmlSketchLayer[],
   dest: string,
-  images?: Array<{ path: string; data: Buffer }>
+  images?: Array<{ path: string; data: Buffer }>,
+  pageName?: string,
+  artboardName?: string
 ) {
+  const pageDir = pageName ? toPinyin(pageName) : ''
+  const artboardDir = artboardName ? toPinyin(artboardName) : ''
+
   for (let i = 0; i < layers.length; i++) {
     const l = layers[i]
     if (!l.exportable?.length) continue
@@ -147,7 +162,14 @@ async function compressAssets(
         )?.data
         let imagePath = ''
         if (imageData) {
-          const destPath = path.join(dest, path.basename(normalizedPath))
+          const parsed = path.parse(normalizedPath)
+          const pinyinName = toPinyin(parsed.name)
+          const destPath = path.join(
+            dest,
+            pageDir,
+            artboardDir,
+            `${pinyinName}${parsed.ext}`
+          )
           imagePath = await processImage(imageData, destPath)
         }
         return {
@@ -226,7 +248,14 @@ export async function assembleArtboard(
     layers: filtered.map(toSketchLayer)
   }
 
-  await compressAssets(filtered, newArtboard.layers, dest, images)
+  await compressAssets(
+    filtered,
+    newArtboard.layers,
+    dest,
+    images,
+    artboard.pageName,
+    artboard.name
+  )
   await processPreview(
     newArtboard,
     args.file_path,

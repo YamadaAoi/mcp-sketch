@@ -24,7 +24,6 @@ interface ArtboardState {
 type Stage =
   | 'sketch-pick'
   | 'sketch-split'
-  | 'sketch-bound'
   | 'sketch-gen-base'
   | 'sketch-gen-base-check'
   | 'sketch-layout'

@@ -25,15 +25,14 @@
 | 3    | 选择画板                   | sketch-analyzer    | sketch-pick           | `FILE_PATH`                                                 | -                  | ❌   | 成功后创建状态文件        |
 | 4    | 组件拆分                   | sketch-analyzer    | sketch-split          | `FILE_PATH`, `page_name`, `artboard_name`                   | `errorDescription` | ❌   |                           |
 | 5    | 展示拆分结果，等待用户确认 | -                  | -                     | -                                                           | -                  | ❌   | 不满意 → 见第二部分       |
-| 6    | 边界修正                   | sketch-analyzer    | sketch-bound          | `FILE_PATH`, `page_name`, `artboard_name`, `preview_path`   | `errorDescription` | ❌   |                           |
-| 7    | 生成骨架                   | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`              | `errorDescription` | ✅   | 对每个组件并行            |
-| 8    | 骨架审核                   | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`              | -                  | ✅   | 对每个组件并行            |
-| 9    | 布局骨架                   | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                | `errorDescription` | ❌   |                           |
-| 10   | 布局审核                   | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                | -                  | ❌   |                           |
-| 11   | 预览布局，等待用户确认     | -                  | -                     | -                                                           | -                  | ❌   | 不满意 → 见第二部分       |
-| 12   | 绘制功能                   | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | `errorDescription` | ✅   | 对每个组件并行            |
-| 13   | 绘制审核                   | sketch-checker     | sketch-draw-check     | `component_path`                                            | -                  | ✅   | 对每个组件并行            |
-| 14   | 完成                       | sketch-recorder    | 直接执行              | -                                                           | -                  | ❌   | 更新 stage 为 completed   |
+| 6    | 生成骨架                   | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`              | `errorDescription` | ✅   | 对每个组件并行            |
+| 7    | 骨架审核                   | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`              | -                  | ✅   | 对每个组件并行            |
+| 8    | 布局骨架                   | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                | `errorDescription` | ❌   |                           |
+| 9    | 布局审核                   | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                | -                  | ❌   |                           |
+| 10   | 预览布局，等待用户确认     | -                  | -                     | -                                                           | -                  | ❌   | 不满意 → 见第二部分       |
+| 11   | 绘制功能                   | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | `errorDescription` | ✅   | 对每个组件并行            |
+| 12   | 绘制审核                   | sketch-checker     | sketch-draw-check     | `component_path`                                            | -                  | ✅   | 对每个组件并行            |
+| 13   | 完成                       | sketch-recorder    | 直接执行              | -                                                           | -                  | ❌   | 更新 stage 为 completed   |
 
 ## 二、异常处理
 
@@ -62,13 +61,13 @@
 3. 成功后委托 subagent: `sketch-recorder` 更新状态，传入 `replaceComponents: true`
 4. **回到第 5 步**重新展示给用户确认
 
-### 确认点 2：布局预览不满意（第 11 步）
+### 确认点 2：布局预览不满意（第 10 步）
 
 1. 分析用户反馈，判断是**组件间布局问题**还是**组件内布局问题**：
    - 问题代码在父组件的 `{child-name}-wrap` 容器 div 上 → 组件间，委托 `sketch-architect` 调用 `sketch-layout`
    - 问题代码在组件自身内部元素上 → 组件内，委托 `sketch-developer` 调用 `sketch-draw`
 2. 委托修复并附带 `errorDescription`
-3. **回到第 10 步**重新审核，审核通过后**回到第 11 步**重新预览确认
+3. **回到第 9 步**重新审核，审核通过后**回到第 10 步**重新预览确认
 
 ### 失败处理
 
@@ -92,7 +91,7 @@
 2. 根据用户描述，定位问题组件
 3. **亲自查看相关代码**：读取问题组件代码、父/子组件代码、状态文件中的组件规划
 4. **判断问题类型**：
-   - **拆分/边界问题**（组件划分、命名、位置/大小与设计稿不一致）→ 委托 `sketch-analyzer` 调用 `sketch-split` 或 `sketch-bound`
+   - **拆分问题**（组件划分、命名、位置/大小与设计稿不一致）→ 委托 `sketch-analyzer` 调用 `sketch-split`
    - **布局问题** → 看问题代码在父组件的 `{child-name}-wrap` 容器 div 上（组件间，委托 `sketch-architect` 调用 `sketch-layout`），还是在组件自身内部元素上（组件内，委托 `sketch-developer` 调用 `sketch-draw`）
    - **绘制问题**（样式、内容、交互、切图）→ 委托 `sketch-developer` 调用 `sketch-draw`
 5. 委托修复并附带 `errorDescription`
@@ -115,7 +114,7 @@
 #### 画板 stage（按顺序）
 
 ```
-sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-gen-base-check → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → completed
+sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → completed
 ```
 
 #### 组件 status（流转方向）
@@ -140,7 +139,6 @@ sketch-pick → sketch-split → sketch-bound → sketch-gen-base → sketch-gen
 | ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | sketch-pick                                                                  | `create-state` | `filePath`, `pageName`, `artboardName`                                                                                   |
 | sketch-split                                                                 | `update-state` | `stage: 'sketch-split'`, `previewPath`, `components`, `replaceComponents`（重试或用户拒绝后重做时 `true`，否则 `false`） |
-| sketch-bound                                                                 | `update-state` | `stage: 'sketch-bound'`, `components`                                                                                    |
 | sketch-gen-base / gen-base-check / layout / layout-check / draw / draw-check | `update-state` | `stage: 对应阶段名`, `components`                                                                                        |
 | 完成                                                                         | `update-state` | `stage: 'completed'`                                                                                                     |
 

@@ -38,23 +38,24 @@
 
 ### 步骤 5：调用 analyze 获取图层数据
 
-- `-p`：`file_path`
-- `--pn`：`page_name`
-- `--an`：`artboard_name`
-- `-r`：`rect`
-- `-e`：`exclude_rects`
-- `--ap`：从 `component_path` 按 `proj-init.md` 中的目录结构镜像映射到 `src/assets/` 下
-  - 例如页面特有组件：`component_path: src/views/pageName/componentName/ComponentName` → `--ap src/assets/views/pageName/componentName/`
-  - 例如公共组件：`component_path: src/components/Header/Header` → `--ap src/assets/components/Header/`
-  - 具体目录前缀以 `proj-init.md` 中的约定为准
-
 ```bash
-npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap {assets_path}
+npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap {assets_path} --limit {n} --offset {m}
 ```
 
-### 步骤 6：解析返回结果
+**参数说明**：
 
-工具返回 artboard JSON，结构如下：
+| 参数       | 说明                                                                                                           |
+| ---------- | -------------------------------------------------------------------------------------------------------------- |
+| `-p`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                    |
+| `--pn`     | 页面名称                                                                                                       |
+| `--an`     | 画板名称                                                                                                       |
+| `-r`       | 组件的矩形区域，格式 `[x, y, width, height]`，从状态文件的 `rect` 字段获取。传入后只返回该区域内的图层         |
+| `-e`       | 需要排除的矩形区域列表，格式 `[[x1,y1,w1,h1]]`，从状态文件的 `excludeRects` 字段获取。子组件占用的区域会被排除 |
+| `--ap`     | 切图存放路径，从 `proj-init.md` 约定的静态资源目录。切图会自动压缩为 webp 格式                                 |
+| `--limit`  | 返回的图层数量。根据画板复杂度自行估算，简单画板 10~15 个，复杂画板 20~30 个                                   |
+| `--offset` | 从第 m 个图层开始返回（默认 0）。排名靠前的图层通常是大面积布局容器，排名靠后的图层是细节元素                  |
+
+**返回结构**：
 
 ```json
 {
@@ -67,15 +68,11 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
 }
 ```
 
-#### 6.1 解析 layers 数据（逐图层完整提取）
+- `layers` 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层
+- 每个图层的 `rect` 为数组格式 `[x, y, width, height]`
+- `type: "slice"` 的图层包含 `assets` 数组，每个 asset 的 `path` 为切图文件的磁盘路径（已压缩为 webp）
 
-| 图层类型 | 用途                       |
-| -------- | -------------------------- |
-| `text`   | 文本元素的精确样式和内容   |
-| `shape`  | 盒模型、背景色、边框、圆角 |
-| `slice`  | 切图引用和尺寸             |
-
-**注意**：layers 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层。每个图层的 `rect` 为数组格式 `[x, y, width, height]`。
+### 步骤 6：解析返回结果
 
 提取所有 `type: "slice"` 的图层，验证切图文件存在性
 
@@ -83,11 +80,11 @@ npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -
   - 存在 → 记录完整路径，代码生成时引用
   - 缺失 → 降级为 CSS 模拟
 
-#### 6.2 读取预览图
+#### 6.1 读取预览图
 
 使用 `previewPath` 读取预览图，辅助理解组件的视觉层级关系，核对有无遗漏
 
-#### 6.3 过滤无效图层
+#### 6.2 过滤无效图层
 
 遍历 `layers`，按以下规则逐层判断：
 
