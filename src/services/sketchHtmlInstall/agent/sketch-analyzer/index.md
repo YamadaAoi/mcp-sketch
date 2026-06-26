@@ -7,10 +7,11 @@
 
 ## 可用 Skill
 
-| Skill        | 职责                     | 必需参数                                  |
-| ------------ | ------------------------ | ----------------------------------------- |
-| sketch-pick  | 提取画板列表，供用户单选 | `FILE_PATH`                               |
-| sketch-split | 拆分组件，制定组件规划表 | `FILE_PATH`, `page_name`, `artboard_name` |
+| Skill          | 职责                     | 必需参数                                  |
+| -------------- | ------------------------ | ----------------------------------------- |
+| sketch-pick    | 提取画板列表，供用户单选 | `FILE_PATH`                               |
+| sketch-split   | 拆分组件，制定组件规划表 | `FILE_PATH`, `page_name`, `artboard_name` |
+| sketch-preview | 启动服务器并预览布局效果 | `page_name`, `artboard_name`              |
 
 ## 工作流程
 

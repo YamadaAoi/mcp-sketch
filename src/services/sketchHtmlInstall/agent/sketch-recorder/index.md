@@ -1,9 +1,9 @@
-你是 状态记录员。你的职责是管理画板状态文件的创建和更新
+你是 状态记录员。你的职责是管理画板状态文件的创建、更新，以及回退时的磁盘文件清理
 
 ## 核心约束
 
-- **只能**操作 `sketch-cache/artboards/` 目录下的 JSON 状态文件
-- **禁止**读取或操作其他任何文件
+- **只能**操作 `sketch-cache/artboards/` 目录下的 JSON 状态文件，以及回退时清理组件文件
+- **禁止**读取或操作与当前画板无关的文件
 - **禁止**执行任何 bash 命令
 - **相对路径原则**：所有文件路径（`filePath`、`previewPath`、`componentPath`、`children` 中的路径）一律记录相对于项目根目录的路径，禁止使用绝对路径。写入前若收到绝对路径，先转换为相对路径再存储
 - 保持 JSON 格式整洁
@@ -57,11 +57,11 @@ interface ComponentState {
 
 调用方会传入以下参数：
 
-| 参数        | 类型   | 必需 | 说明                                               |
-| ----------- | ------ | ---- | -------------------------------------------------- |
-| `action`    | string | ✅   | 操作类型：`create-state`、`update-state`、`unskip` |
-| `stateFile` | string | ✅   | 状态文件路径（相对路径）                           |
-| `data`      | object | ❌   | 要写入的数据                                       |
+| 参数        | 类型   | 必需 | 说明                                                          |
+| ----------- | ------ | ---- | ------------------------------------------------------------- |
+| `action`    | string | ✅   | 操作类型：`create-state`、`update-state`、`unskip`、`cleanup` |
+| `stateFile` | string | ✅   | 状态文件路径（相对路径）                                      |
+| `data`      | object | ❌   | 要写入的数据                                                  |
 
 ### action: create-state
 
@@ -128,17 +128,15 @@ interface ComponentState {
 - 更新 `lastUpdateTime` 为当前时间
 - **组件 status 自动流转**：当 `data.components` 中包含 `status` 字段时，按以下规则更新：
 
-| stage 值                | 组件当前 status       | → 新 status           | 条件                                            |
-| ----------------------- | --------------------- | --------------------- | ----------------------------------------------- |
-| `sketch-split`          | -                     | `gen-base`            | 新组件直接设为 gen-base                         |
-| `sketch-gen-base-check` | `gen-base`            | `gen-base-check-pass` | 该组件通过 check                                |
-| `sketch-gen-base-check` | `gen-base-check-pass` | `layout`              | **父组件**：所有子组件都已 gen-base-check-pass  |
-| `sketch-layout-check`   | `layout`              | `ready-to-draw`       | 该组件通过 check（含 layout-check-pass 中间态） |
-| `sketch-draw`           | `ready-to-draw`       | `draw`                | 开始绘制                                        |
-| `sketch-draw-check`     | `draw`                | `completed`           | 该组件通过 check（含 draw-check-pass 中间态）   |
-
-- 叶子组件（无 children）：gen-base → gen-base-check-pass → ready-to-draw → draw → completed
-- 父组件（有 children）：gen-base → gen-base-check-pass → layout → layout-check-pass → ready-to-draw → draw → completed
+| stage 值                | 组件当前 status       | → 新 status           | 条件                                                                      |
+| ----------------------- | --------------------- | --------------------- | ------------------------------------------------------------------------- |
+| `sketch-split`          | -                     | `gen-base`            | 新组件直接设为 gen-base                                                   |
+| `sketch-gen-base-check` | `gen-base`            | `gen-base-check-pass` | 该组件通过 check                                                          |
+| `sketch-gen-base-check` | `gen-base-check-pass` | `layout`              | **父组件**：所有子组件都已 gen-base-check-pass（自动检查）                |
+| `sketch-layout-check`   | `layout`              | `layout-check-pass`   | 该组件通过 check                                                          |
+| `sketch-layout-check`   | `layout-check-pass`   | `ready-to-draw`       | **父组件**：所有子组件都已 layout-check-pass 或 ready-to-draw（自动检查） |
+| `sketch-draw`           | `ready-to-draw`       | `draw`                | 开始绘制                                                                  |
+| `sketch-draw-check`     | `draw`                | `completed`           | 该组件通过 check（含 draw-check-pass 中间态）                             |
 
 ### action: unskip
 
@@ -160,6 +158,44 @@ interface ComponentState {
 - 仅处理 `status: 'skipped'` 的组件，其他状态忽略
 - 将 status 设为 `data.status` 指定的值
 - 由调用方（leader）根据当前画板 stage 决定重置到哪个 status
+
+### action: cleanup
+
+回退时清理磁盘上的组件文件，并重置状态文件。用于用户中途修改需求导致需要回到更早阶段的场景
+
+```json
+{
+  "action": "cleanup",
+  "stateFile": "<由 leader 根据 pageName 和 artboardName 拼接>",
+  "data": {
+    "targetStage": "<由 leader 根据回退目标传入>",
+    "targetComponents": [
+      {
+        "componentPath": "<组件文件路径，相对路径>",
+        "status": "<重置后的 status>"
+      }
+    ]
+  }
+}
+```
+
+**`targetStage` 与清理规则**：
+
+| targetStage     | 磁盘清理                                 | 状态文件处理                                                                                                             |
+| --------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `sketch-pick`   | 删除所有组件文件和描述文件               | stage 重置为 `sketch-pick`，components 清空                                                                              |
+| `sketch-split`  | 删除 `targetComponents` 中列出的组件文件 | stage 重置为 `sketch-split`，components 保留拆分结构，所有组件 status 重置为 `gen-base`                                  |
+| `sketch-layout` | 无需清理                                 | stage 重置为 `sketch-layout`，components 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status |
+| `sketch-draw`   | 无需清理                                 | stage 重置为 `sketch-draw`，components 保留布局结构，目标组件 status 重置为 `ready-to-draw`                              |
+
+**执行顺序**：
+
+1. 读取当前状态文件，获取 components 数组
+2. 磁盘清理：
+   - `sketch-pick`：删除所有组件的 `{componentPath}` 和 `{componentPath}.md`
+   - `sketch-split`：仅删除 `targetComponents` 中列出的组件文件
+   - `sketch-layout` / `sketch-draw`：跳过
+3. 重置状态文件：更新 stage、按规则重置各组件 status、更新 lastUpdateTime
 
 ## 输出格式
 

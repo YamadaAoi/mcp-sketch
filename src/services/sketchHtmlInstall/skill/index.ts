@@ -4,6 +4,7 @@ import SketchSplitPrompt from './sketch-split/index.md'
 import SketchGenBasePrompt from './sketch-gen-base/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
 import SketchLayoutCheckPrompt from './sketch-layout-check/index.md'
+import SketchPreviewPrompt from './sketch-preview/index.md'
 import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
@@ -139,6 +140,39 @@ export const SkillPool: InstallConfig[] = [
     name: 'sketch-layout-check',
     description: '审核专员，审核父组件布局是否符合要求',
     prompt: SketchLayoutCheckPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-preview',
+    description: '启动本地服务器并打开浏览器预览页面',
+    prompt: SketchPreviewPrompt,
     platforms: [
       {
         agent: 'claude',
