@@ -40,8 +40,6 @@
    - 错误：`Loginpage`、`login_page`、`Login`
 2. **组件文件名**：PascalCase（两个单词以上，首字母大写）
    - 错误：`loginPage.vue`、`login_page.vue`、`Login.vue`
-3. **描述文件名**：camelCase + `.md`，与组件文件同目录
-   - 错误：`LoginPage.md`、`login_page.md`
 
 ### 步骤 5：检查父子层级关系
 

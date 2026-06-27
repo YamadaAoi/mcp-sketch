@@ -150,11 +150,10 @@ npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -
 
 命名规则：
 
-| 元素     | 格式       | 说明                                        |
-| -------- | ---------- | ------------------------------------------- |
-| 文件夹名 | camelCase  | 两个单词以上，首字母小写，如 `loginPage`    |
-| 组件文件 | PascalCase | 两个单词以上，首字母大写，如 `LoginPage`    |
-| 描述文件 | camelCase  | 与组件同名，扩展名 `.md`，如 `loginPage.md` |
+| 元素     | 格式       | 说明                                     |
+| -------- | ---------- | ---------------------------------------- |
+| 文件夹名 | camelCase  | 两个单词以上，首字母小写，如 `loginPage` |
+| 组件文件 | PascalCase | 两个单词以上，首字母大写，如 `LoginPage` |
 
 ## 输出格式
 

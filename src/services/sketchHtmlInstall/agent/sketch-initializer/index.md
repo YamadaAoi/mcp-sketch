@@ -145,8 +145,7 @@
 | -------- | ---------- | --------------------------------- |
 | 文件夹名 | camelCase  | `loginPage`                       |
 | 组件文件 | PascalCase | `LoginPage.vue`、 `LoginPage.tsx` |
-| 描述文件 | camelCase  | `loginPage.md`                    |
-| 组件类名 | PascalCase | `LoginPage`                       |
+| 描述文件 | PascalCase | `LoginPage.md`                    |
 | CSS 类名 | kebab-case | `login-page`                      |
 
 ## 4. 路由 (Routing)

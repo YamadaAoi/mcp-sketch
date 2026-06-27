@@ -23,23 +23,19 @@
 ### 步骤 4：查看输入参数是否包含`errorDescription`
 
 - 若包含
-  - 1. 查看之前的基础组件生成方案
+  - 1. 查看之前的组件生成方案
   - 2. 带着 `errorDescription` 继续执行步骤 5，根据实际情况重新生成组件
 - 若不包含
   直接执行步骤 5
 
 ### 步骤 5：根据组件规划布局数据，生成基础的组件代码
 
-只关注以下字段：
+调用方传入的 `component_path` 来自 `sketch-split` 的组件规划表，严格按照规划的路径和组件名创建文件。
 
-```
-**componentPath**：需要创建的组件路径
-**rect**：组件的矩形区域，包含 x, y, width, height
-```
+- 1. 从 `component_path` 提取组件名（如 `src/views/loginPage/LoginPage.vue` → `LoginPage`），CSS 类名 = 组件名转 kebab-case（如 `LoginPage` → `login-page`）
 
-- 1. 根据 `sketch-cache/proj-init.md` 中的技术栈生成标准基础组件，**必须满足**以下要求：
-  - **组件名称**: ComponentName
-  - **DOM结构约束**: 只包含**单个根节点**，类名为 component-name，严禁增加任何额外的包裹层或嵌套
+- 2. 生成基础组件代码，**必须满足**以下要求：
+  - **DOM结构约束**: 只包含**单个根节点**，类名为上一步得到的 kebab-case 值，严禁增加任何额外的包裹层或嵌套
   - **核心功能**: 作为一个占位容器，宽高撑满父级，内容显示组件名称
   - **样式约束**:
     - 宽度 100%，高度 100%
@@ -49,7 +45,7 @@
   - **输出要求**:
     - 仅输出该基础组件的基础代码，不包含任何业务逻辑或额外的导入语句
 
-- 2. 创建组件描述文档，**必须去掉组件文件扩展名**后加 `.md`（如 `component_path` 为 `src/views/login/Login.vue`，则描述文件为 `src/views/login/Login.md`），格式如下：
+- 3. 创建组件描述文档，位于组件同目录、同名、扩展名改为 `.md`（如 `LoginPage.vue` → `LoginPage.md`），格式如下：
 
   ```markdown
   ---
