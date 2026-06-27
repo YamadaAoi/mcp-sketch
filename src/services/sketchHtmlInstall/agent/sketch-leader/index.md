@@ -19,25 +19,26 @@
 参数：param1 = value1, param2 = value2
 ```
 
-| 步骤 | 做什么                              | subagent           | 调用 skill            | 必需参数                                                    | 可选参数           | 并行 | 备注                                  |
-| ---- | ----------------------------------- | ------------------ | --------------------- | ----------------------------------------------------------- | ------------------ | ---- | ------------------------------------- |
-| 1    | 初始化                              | sketch-initializer | -                     | -                                                           | `errorDescription` | ❌   | proj-init.md 已存在则跳过步骤1和步骤2 |
-| 2    | 初始化审核                          | sketch-checker     | sketch-init-check     | -                                                           | -                  | ❌   | 步骤1未跳过才执行                     |
-| 3    | 选择画板                            | sketch-analyzer    | sketch-pick           | `FILE_PATH`                                                 | -                  | ❌   |                                       |
-| 4    | 创建状态文件                        | sketch-recorder    | -                     | 见下方 recorder 调用                                        | -                  | ❌   |                                       |
-| 5    | 组件拆分                            | sketch-analyzer    | sketch-split          | `FILE_PATH`, `page_name`, `artboard_name`                   | `errorDescription` | ❌   |                                       |
-| 6    | 展示拆分结果，等待用户确认          | -                  | -                     | -                                                           | -                  | ❌   | 不满意 → 见第二部分                   |
-| 7    | 用户满意后记录拆分状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                        | -                  | ❌   |                                       |
-| 8    | 生成骨架                            | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`              | `errorDescription` | ✅   | 对每个组件并行                        |
-| 9    | 骨架审核                            | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`              | -                  | ✅   | 对每个组件并行                        |
-| 10   | 骨架审核通过后记录骨架状态          | sketch-recorder    | -                     | 见下方 recorder 调用                                        | -                  | ❌   |                                       |
-| 11   | 布局骨架                            | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                | `errorDescription` | ❌   |                                       |
-| 12   | 布局审核                            | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                | -                  | ❌   |                                       |
-| 13   | 预览布局，等待用户确认              | sketch-analyzer    | sketch-preview        | `page_name`, `artboard_name`                                | -                  | ❌   | 不满意 → 见第二部分                   |
-| 14   | 用户满意后记录布局状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                        | -                  | ❌   |                                       |
-| 15   | 绘制功能                            | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path` | `errorDescription` | ✅   | 对每个组件并行                        |
-| 16   | 绘制审核                            | sketch-checker     | sketch-draw-check     | `component_path`                                            | -                  | ✅   | 对每个组件并行                        |
-| 17   | 记录完成状态，更新 stage 和组件状态 | sketch-recorder    | -                     | 见下方 recorder 调用                                        | -                  | ❌   |                                       |
+| 步骤 | 做什么                              | subagent           | 调用 skill            | 必需参数                                                     | 可选参数           | 并行 | 备注                                  |
+| ---- | ----------------------------------- | ------------------ | --------------------- | ------------------------------------------------------------ | ------------------ | ---- | ------------------------------------- |
+| 1    | 初始化                              | sketch-initializer | -                     | -                                                            | `errorDescription` | ❌   | proj-init.md 已存在则跳过步骤1和步骤2 |
+| 2    | 初始化审核                          | sketch-checker     | sketch-init-check     | -                                                            | -                  | ❌   | 步骤1未跳过才执行                     |
+| 3    | 选择画板                            | sketch-analyzer    | sketch-pick           | `FILE_PATH`                                                  | -                  | ❌   |                                       |
+| 4    | 创建状态文件                        | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
+| 5    | 组件拆分                            | sketch-analyzer    | sketch-split          | `FILE_PATH`, `page_name`, `artboard_name`                    | `errorDescription` | ❌   |                                       |
+| 6    | 拆分审核                            | sketch-checker     | sketch-split-check    | `page_name`, `artboard_name`, `split_result`, `preview_path` | -                  | ❌   | split_result 来自步骤 5               |
+| 7    | 展示拆分结果，等待用户确认          | -                  | -                     | -                                                            | -                  | ❌   | 不满意 → 见第二部分                   |
+| 8    | 用户满意后记录拆分状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
+| 9    | 生成骨架                            | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`               | `errorDescription` | ✅   | 对每个组件并行                        |
+| 10   | 骨架审核                            | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`               | -                  | ✅   | 对每个组件并行                        |
+| 11   | 骨架审核通过后记录骨架状态          | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
+| 12   | 布局骨架                            | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                 | `errorDescription` | ❌   |                                       |
+| 13   | 布局审核                            | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                 | -                  | ❌   |                                       |
+| 14   | 预览布局，等待用户确认              | sketch-analyzer    | sketch-preview        | `page_name`, `artboard_name`                                 | -                  | ❌   | 不满意 → 见第二部分                   |
+| 15   | 用户满意后记录布局状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
+| 16   | 绘制功能                            | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path`  | `errorDescription` | ✅   | 对每个组件并行                        |
+| 17   | 绘制审核                            | sketch-checker     | sketch-draw-check     | `component_path`                                             | -                  | ✅   | 对每个组件并行                        |
+| 18   | 记录完成状态，更新 stage 和组件状态 | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
 
 ### Recorder 调用参数
 
@@ -57,7 +58,7 @@
 }
 ```
 
-**步骤 7** — `update-state`（记录拆分结果）：
+**步骤 8** — `update-state`（记录拆分结果）：
 
 ```json
 {
@@ -71,7 +72,7 @@
 }
 ```
 
-**步骤 10** — `update-state`（记录骨架审核结果）：
+**步骤 11** — `update-state`（记录骨架审核结果）：
 
 ```json
 {
@@ -88,7 +89,7 @@
 }
 ```
 
-**步骤 14** — `update-state`（记录布局审核结果）：
+**步骤 15** — `update-state`（记录布局审核结果）：
 
 ```json
 {
@@ -105,7 +106,7 @@
 }
 ```
 
-**步骤 17** — `update-state`（记录完成状态）：
+**步骤 18** — `update-state`（记录完成状态）：
 
 ```json
 {

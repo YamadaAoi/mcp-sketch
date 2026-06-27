@@ -9,6 +9,7 @@ import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
 import SketchInitCheckPrompt from './sketch-init-check/index.md'
+import SketchSplitCheckPrompt from './sketch-split-check/index.md'
 
 export const SkillPool: InstallConfig[] = [
   {
@@ -305,6 +306,39 @@ export const SkillPool: InstallConfig[] = [
     name: 'sketch-init-check',
     description: '质量保障工程师，审核项目初始化文档是否符合规范',
     prompt: SketchInitCheckPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-split-check',
+    description: '质量保障工程师，审核组件拆分结果，包括路径和命名规范',
+    prompt: SketchSplitCheckPrompt,
     platforms: [
       {
         agent: 'claude',

@@ -47,17 +47,15 @@
 ### 步骤 5：确定项目结构
 
 - 分析 `src` 目录结构
-  - 确定 API 目录，若不存在，则使用 `src/api/`（API 目录名）
-  - 确定 Assets 目录，若不存在，则使用 `src/assets/`（Assets 目录名）
+  - 确定 API 目录，若不存在，则使用 `src/api/`
+  - 确定 Assets 目录，若不存在，则使用 `src/assets/`
   - 确定公共组件目录
-    - 若存在，后续公共组件必须在该目录下创建，路径为`{已有目录}/{camelCase组件所在目录名}/{PascalCase组件名}`
-    - 若不存在，则使用 `src/components/{camelCase组件所在目录名}/{PascalCase组件名}`
+    - 若存在，记录为 `components_path`
+    - 若不存在，使用 `src/components` 作为 `components_path`
   - 确定入口页面组件目录
-    - 若存在，后续入口页面组件必须在该目录下创建，路径为`{已有目录}/{camelCase页面组件所在目录名}/{PascalCase页面组件名}`
-    - 若不存在，则使用 `src/views/{camelCase页面组件所在目录名}/{PascalCase页面组件名}`
-  - 确定业务组件目录
-    - 若存在，后续业务组件必须在该目录下创建，路径为`{已有目录}/{camelCase页面组件所在目录名}/{camelCase组件所在目录名}/{PascalCase组件名}`
-    - 若不存在，则使用 `src/views/{camelCase页面组件所在目录名}/{camelCase组件所在目录名}/{PascalCase组件名}`
+    - 若存在，记录为 `views_path`
+    - 若不存在，使用 `src/views` 作为 `views_path`
+  - 确定业务组件目录（在 `views_path` 下，按页面分文件夹）
 
 ### 步骤 6：确定路由配置方式
 
@@ -124,6 +122,32 @@
 | 业务组件 |          |          |      |
 | API 接口 |          |          |      |
 | 静态资源 |          |          |      |
+
+### 路径规范
+
+拆分阶段严格按以下规则生成组件路径：
+
+- **页面入口**：`{views_path}/{pageFolder}/{PageName}.{extension}`
+  - 例：`src/views/loginPage/LoginPage.vue`
+  - 例：`src/views/loginPage/LoginPage.tsx`
+- **页面私有组件**：`{views_path}/{pageFolder}/{privateFolder}/{PrivateName}.{extension}`
+  - 例：`src/views/loginPage/loginForm/LoginForm.vue`
+  - 例：`src/views/loginPage/loginForm/LoginForm.tsx`
+- **公共组件**：`{components_path}/{componentFolder}/{ComponentName}.{extension}`
+  - 例：`src/components/common/ModalDialog.vue`
+  - 例：`src/components/common/ModalDialog.tsx`
+- **描述文件**：与组件同名，扩展名为 `.md`
+  - 例：`LoginPage.md`、`LoginForm.md`
+
+命名规则：
+
+| 元素     | 格式       | 示例                              |
+| -------- | ---------- | --------------------------------- |
+| 文件夹名 | camelCase  | `loginPage`                       |
+| 组件文件 | PascalCase | `LoginPage.vue`、 `LoginPage.tsx` |
+| 描述文件 | camelCase  | `loginPage.md`                    |
+| 组件类名 | PascalCase | `LoginPage`                       |
+| CSS 类名 | kebab-case | `login-page`                      |
 
 ## 4. 路由 (Routing)
 

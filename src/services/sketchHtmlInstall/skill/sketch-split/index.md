@@ -29,7 +29,7 @@
 
 ### 第一步：环境校验
 
-- 1. 读取 `sketch-cache/proj-init.md` 获取项目目录结构、命名规范、技术栈和UI组件库
+- 1. 读取 `sketch-cache/proj-init.md` 获取：views_path、components_path、项目目录结构、命名规范、技术栈和UI组件库
 - 2. 若文件不存在，立即返回失败：proj-init.md 文件不存在
 
 ### 第二步：查看输入参数是否包含`errorDescription`
@@ -134,11 +134,27 @@ npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -
 | 字段         | 规则说明                                                |
 | ------------ | ------------------------------------------------------- |
 | 组件名称     | PascalCase 命名。页面组件以 Page 结尾，公共组件通用命名 |
-| 组件路径     | 严格遵循 `proj-init.md` 的目录规范                      |
+| 组件路径     | 严格遵循下方路径规则                                    |
 | 类型         | `page` / `common` / `page-specific`                     |
 | rect         | [x, y, width, height]，基于图层数据精确确定             |
 | excludeRects | 必须包含所有直接子组件的 rect，防止区域重叠             |
 | 直接子组件   | 列出直接子组件名称                                      |
+
+**路径生成规则**（从 `proj-init.md` 读取 `views_path` 和 `components_path`）：
+
+| 组件类型     | 路径格式                                                                      | 示例                                                      |
+| ------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 页面入口     | `{views_path}/{pageFolder}/{PageName}.{vue/tsx/other}`                        | `src/views/loginPage/LoginPage.{vue/tsx/other}`           |
+| 页面私有组件 | `{views_path}/{pageFolder}/{componentFolder}/{ComponentName}.{vue/tsx/other}` | `src/views/loginPage/loginForm/LoginForm.{vue/tsx/other}` |
+| 公共组件     | `{components_path}/{componentFolder}/{ComponentName}.{vue/tsx/other}`         | `src/components/modalDialog/ModalDialog.{vue/tsx/other}`  |
+
+命名规则：
+
+| 元素     | 格式       | 说明                                        |
+| -------- | ---------- | ------------------------------------------- |
+| 文件夹名 | camelCase  | 两个单词以上，首字母小写，如 `loginPage`    |
+| 组件文件 | PascalCase | 两个单词以上，首字母大写，如 `LoginPage`    |
+| 描述文件 | camelCase  | 与组件同名，扩展名 `.md`，如 `loginPage.md` |
 
 ## 输出格式
 
