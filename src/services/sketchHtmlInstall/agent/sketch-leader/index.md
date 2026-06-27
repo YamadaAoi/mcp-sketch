@@ -137,9 +137,9 @@ Leader 根据问题类型查表，先委托 `sketch-recorder` 执行 `cleanup`�
 | 问题类型         | 触发条件                                  | 回退步骤         | targetStage     | 磁盘清理                   | targetComponents 处理                                                                | errorDescription 来源            |
 | ---------------- | ----------------------------------------- | ---------------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------ | -------------------------------- |
 | 拆分问题         | 组件划分、命名、位置/大小与设计稿不一致   | 第 6 步          | `sketch-split`  | 删除所有组件文件和描述文件 | 保留拆分结构，所有组件 status 重置为 `gen-base`                                      | 用户反馈：哪些组件拆分不合理     |
-| 骨架问题         | 基础组件代码不规范（DOM/样式/导入）       | 第 8 步          | `sketch-split`  | 删除目标组件文件和描述文件 | 保留拆分结构，目标组件 status 重置为 `gen-base`，其他组件 status 不变                | gen-base-check 失败信息          |
-| 布局问题(组件间) | 父组件的 `{child-name}-wrap` 容器布局不对 | 第 11 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status 不变 | 用户反馈或 layout-check 失败信息 |
-| 布局问题(组件内) | 组件自身内部元素布局不对                  | 第 11 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，目标组件 status 重置为 `gen-base-check-pass`，其他组件保留当前 status  | 用户反馈或 layout-check 失败信息 |
+| 骨架问题         | 基础组件代码不规范（DOM/样式/导入）       | 第 9 步          | `sketch-split`  | 删除目标组件文件和描述文件 | 保留拆分结构，目标组件 status 重置为 `gen-base`，其他组件 status 不变                | gen-base-check 失败信息          |
+| 布局问题(组件间) | 父组件的 `{child-name}-wrap` 容器布局不对 | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status 不变 | 用户反馈或 layout-check 失败信息 |
+| 布局问题(组件内) | 组件自身内部元素布局不对                  | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，目标组件 status 重置为 `gen-base-check-pass`，其他组件保留当前 status  | 用户反馈或 layout-check 失败信息 |
 | 绘制问题         | 样式、内容、交互、切图不符合设计稿        | 第 15 步         | `sketch-draw`   | 无需清理                   | 保留布局结构，目标组件 status 重置为 `ready-to-draw`                                 | 用户反馈或 draw-check 失败信息   |
 | 审核失败         | check 审核不通过，审核信息中包含修复建议  | 对应审核步骤 - 1 | -               | -                          | -                                                                                    | check 返回的失败信息             |
 | skill 执行错误   | skill 返回 FAILED，错误信息中包含问题描述 | 对应执行步骤     | -               | -                          | -                                                                                    | skill 返回的失败信息             |
@@ -165,7 +165,7 @@ sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → s
 ### 状态文件
 
 - 项目配置：`sketch-cache/proj-init.md`
-- 画板状态：`sketch-cache/artboards/{pageName}-{artboardName}.json`
+- 画板状态：`sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
 ### subagent 通信协议
 
@@ -194,5 +194,5 @@ sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → s
 1. 委托 subagent 并传入参数，等待返回
 2. 直接执行的 agent → 解析 `XXX_SUCCESS/FAILED`
 3. 委托 skill 的 agent → 先检测 `XXX_OVER`，再解析 skill 的 `XXX_SUCCESS/FAILED`
-4. 并行调用时（gen-base、gen-base-check、draw、draw-check、layout-check），等待所有返回后统一处理
+4. 并行调用时（gen-base、gen-base-check、draw、draw-check），等待所有返回后统一处理
 5. 成功 → Leader 在内存中收集结果，到里程碑时批量委托 `sketch-recorder` 更新状态文件；失败 → 告知用户，等待用户决定
