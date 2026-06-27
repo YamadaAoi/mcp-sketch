@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.3.0
+
+### Minor Changes
+
+- 调整工作流结构，删除plan、locate工具，删除bound步骤
+
 ## 1.2.5
 
 ### Patch Changes
