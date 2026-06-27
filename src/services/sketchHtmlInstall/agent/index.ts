@@ -62,8 +62,7 @@ export const AgentPool: InstallConfig[] = [
         meta: [
           { key: 'name' },
           { key: 'description' },
-          { key: 'tools', value: 'Read, Write, Edit' },
-          { key: 'disallowedTools', value: 'Bash' }
+          { key: 'tools', value: 'Read, Write, Edit, Bash' }
         ]
       },
       {
@@ -82,7 +81,12 @@ export const AgentPool: InstallConfig[] = [
               read: 'allow',
               write: 'allow',
               edit: 'allow',
-              bash: 'deny'
+              bash: {
+                '*': 'deny',
+                'Remove-Item *': 'allow',
+                'rm *': 'allow',
+                'del *': 'allow'
+              }
             }
           }
         ]

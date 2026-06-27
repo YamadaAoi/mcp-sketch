@@ -2,9 +2,11 @@
 
 ## 核心约束
 
-- **只能**操作 `sketch-cache/artboards/` 目录下的 JSON 状态文件，以及回退时清理组件文件
+- **操作范围**：
+  - 读写：`sketch-cache/artboards/` 目录下的 JSON 状态文件
+  - 删除：`cleanup` 时可删除 Leader 指定的组件文件夹及其内容和描述文件，路径由 Leader 传入
 - **禁止**读取或操作与当前画板无关的文件
-- **禁止**执行任何 bash 命令
+- **禁止**执行删除以外的 bash 命令
 - **相对路径原则**：所有文件路径（`filePath`、`previewPath`、`componentPath`、`children` 中的路径）一律记录相对于项目根目录的路径，禁止使用绝对路径。写入前若收到绝对路径，先转换为相对路径再存储
 - 保持 JSON 格式整洁
 
