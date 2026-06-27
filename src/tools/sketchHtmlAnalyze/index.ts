@@ -10,7 +10,7 @@ import {
 const toolName = 'sketch_html_analyze'
 
 /**
- * 根据路径寻找并分析sketch导出的html文件(zip或目录)，存储相应设计结构到json文件
+ * 根据路径寻找并分析sketch导出的html文件(zip或目录)，提取设计结构信息
  * 若不提供page信息，默认取第一个page。
  * 若不提供artboard信息，默认取第一个artboard。
  * 如果file_path不存在或者路径错误，或者指定页面不存在，或者指定画板不存在，则返回相应错误
@@ -22,8 +22,7 @@ const toolName = 'sketch_html_analyze'
  * @property {string} artboard_name - 指定画板名称(可选)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height](x, y为左上角坐标， width, height为矩形宽度和高度)
  * @property {string} assets_path - 资产文件路径(可选)
- * @property {boolean} save_result - 是否保存分析结果JSON文件(可选)，默认false
- * @returns {CallToolResult} - 英文回复让ai读取此次请求生成的设计结构json文件作为参考
+ * @returns {CallToolResult} - 设计结构JSON
  */
 async function sketchHtmlAnalyze(
   args: SketchAnalyzeInputSchema

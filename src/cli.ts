@@ -1,8 +1,6 @@
 import { Command } from 'commander'
 import { install } from '@/commands/install'
 import { list } from './commands/list'
-import { plan } from '@/commands/plan'
-import { locate } from '@/commands/locate'
 import { analyze } from '@/commands/analyze'
 
 export function startCli() {
@@ -15,8 +13,6 @@ export function startCli() {
 
   program.addCommand(install)
   program.addCommand(list)
-  program.addCommand(plan)
-  program.addCommand(locate)
   program.addCommand(analyze)
 
   program.parse()

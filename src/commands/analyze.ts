@@ -12,8 +12,11 @@ async function handleAnalyze(opts: Record<string, unknown>) {
   if (typeof opts.exclude_rects === 'string') {
     opts.exclude_rects = JSON.parse(opts.exclude_rects)
   }
-  if (typeof opts.save_result === 'string') {
-    opts.save_result = opts.save_result === 'true'
+  if (typeof opts.offset === 'string') {
+    opts.offset = Number(opts.offset)
+  }
+  if (typeof opts.limit === 'string') {
+    opts.limit = Number(opts.limit)
   }
   const args = sketchAnalyzeInputSchema.parse(opts)
   const text = await handleSketchHtmlAnalyze(args)
@@ -41,9 +44,12 @@ export const analyze = new Command()
     'Assets output path, default: `src/assets/sketch`'
   )
   .option(
-    '--sr, --save_result [SAVERESULT]',
-    'Whether to save analysis result to local file, default: `false`',
-    false
+    '-l, --limit [LIMIT]',
+    'Number of top-scored layers to return (optional)'
+  )
+  .option(
+    '-o, --offset [OFFSET]',
+    'Starting index in sorted layers (optional, default 0)'
   )
   .action((opts: Record<string, unknown>) => {
     handleAnalyze(opts).catch(err => {

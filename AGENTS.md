@@ -27,10 +27,10 @@ Package bin: `mcp-sketch` (from `"bin": "dist/index.js"`).
 
 - **Entry** (`src/index.ts`): loads `.env` via `dotenv/config`, then checks `MCP_MODE` env var to dispatch between CLI (`src/cli.ts`) and MCP (`src/mcp.ts`)
 - **CLI** (`src/cli.ts`): commander-based, 3 subcommands via `src/commands/` (thin wrappers, delegate to services)
-- **MCP tools** (`src/tools/index.ts`): `sketch_html_list`, `sketch_html_plan`, `sketch_html_analyze`
-- **Services** (`src/services/`): `sketchHtmlList/`, `sketchHtmlPlan/`, `sketchHtmlAnalyze/` — real logic. `filterArtboards` shared from `sketchHtmlAnalyze/filterArtboards`.
+- **MCP tools** (`src/tools/index.ts`): `sketch_html_list`, `sketch_html_analyze`
+- **Services** (`src/services/`): `sketchHtmlList/`, `sketchHtmlAnalyze/` — real logic. `filterArtboards` shared from `sketchHtmlAnalyze/filterArtboards`.
 - **Utils** (`src/utils/`): zip/folder handling (`unzipper` for zip, `fs` for folders, `@babel/parser` for AST extraction), image processing (`sharp` optional), pino logger, file saving
-- **Skills** (`skills/`): 4 bundled skills (`sketch-init`, `sketch-split`, `sketch-draw`, `sketch-workflow`) for AI workflow orchestration via `npx skills@latest`
+- **Skills** (`skills/`): 11 bundled skills (`sketch-pick`, `sketch-split`, `sketch-split-check`, `sketch-gen-base`, `sketch-gen-base-check`, `sketch-layout`, `sketch-layout-check`, `sketch-preview`, `sketch-draw`, `sketch-draw-check`, `sketch-init-check`) for AI workflow orchestration via `npx skills@latest`
 - **opencode.json**: `webfetch` allowed, watcher ignores `node_modules/**`, `dist/**`, `.git/**`, `mock/**`
 
 ## Conventions
