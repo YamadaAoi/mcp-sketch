@@ -127,15 +127,15 @@
 
 拆分阶段严格按以下规则生成组件路径：
 
-- **页面入口**：`{views_path}/{pageFolder}/{PageName}.{extension}`
+- **页面入口**：`{views_path}/{pageName}/{PageName}.{extension}`
   - 例：`src/views/loginPage/LoginPage.vue`
   - 例：`src/views/loginPage/LoginPage.tsx`
-- **页面私有组件**：`{views_path}/{pageFolder}/{privateFolder}/{PrivateName}.{extension}`
+- **页面私有组件**：`{views_path}/{pageName}/{componentName}/{ComponentName}.{extension}`
   - 例：`src/views/loginPage/loginForm/LoginForm.vue`
   - 例：`src/views/loginPage/loginForm/LoginForm.tsx`
-- **公共组件**：`{components_path}/{componentFolder}/{ComponentName}.{extension}`
-  - 例：`src/components/common/ModalDialog.vue`
-  - 例：`src/components/common/ModalDialog.tsx`
+- **公共组件**：`{components_path}/{componentName}/{ComponentName}.{extension}`
+  - 例：`src/components/modalDialog/ModalDialog.vue`
+  - 例：`src/components/modalDialog/ModalDialog.tsx`
 - **描述文件**：与组件同名，扩展名为 `.md`
   - 例：`LoginPage.md`、`LoginForm.md`
 

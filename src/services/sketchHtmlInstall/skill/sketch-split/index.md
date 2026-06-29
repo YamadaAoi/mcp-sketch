@@ -140,11 +140,11 @@ npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -
 
 **路径生成规则**（从 `proj-init.md` 读取 `views_path` 和 `components_path`）：
 
-| 组件类型     | 路径格式                                                                      | 示例                                                      |
-| ------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 页面入口     | `{views_path}/{pageFolder}/{PageName}.{vue/tsx/other}`                        | `src/views/loginPage/LoginPage.{vue/tsx/other}`           |
-| 页面私有组件 | `{views_path}/{pageFolder}/{componentFolder}/{ComponentName}.{vue/tsx/other}` | `src/views/loginPage/loginForm/LoginForm.{vue/tsx/other}` |
-| 公共组件     | `{components_path}/{componentFolder}/{ComponentName}.{vue/tsx/other}`         | `src/components/modalDialog/ModalDialog.{vue/tsx/other}`  |
+| 组件类型     | 路径格式                                                                  | 示例                                                      |
+| ------------ | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 页面入口     | `{views_path}/{pageName}/{PageName}.{vue/tsx/other}`                      | `src/views/loginPage/LoginPage.{vue/tsx/other}`           |
+| 页面私有组件 | `{views_path}/{pageName}/{componentName}/{ComponentName}.{vue/tsx/other}` | `src/views/loginPage/loginForm/LoginForm.{vue/tsx/other}` |
+| 公共组件     | `{components_path}/{componentName}/{ComponentName}.{vue/tsx/other}`       | `src/components/modalDialog/ModalDialog.{vue/tsx/other}`  |
 
 命名规则：
 
