@@ -43,7 +43,7 @@
 ### 第三步：画板分析（核心逻辑）
 
 ```bash
-npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap {assets_path} --limit {n} --offset {m}
+npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} --ap {assets_path} --limit {n} --offset {m}
 ```
 
 **参数说明**：
@@ -53,8 +53,6 @@ npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -
 | `-p`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                                              |
 | `--pn`     | 页面名称，不传则取第一个 page                                                                                                            |
 | `--an`     | 画板名称，不传则取第一个 artboard                                                                                                        |
-| `-r`       | 组件的矩形区域，格式 `[x, y, width, height]`，从状态文件的 `rect` 字段获取。传入后只返回该区域内的图层                                   |
-| `-e`       | 需要排除的矩形区域列表，格式 `[[x1,y1,w1,h1]]`，从状态文件的 `excludeRects` 字段获取。子组件占用的区域会被排除                           |
 | `--ap`     | 切图存放路径，从 `proj-init.md` 约定的静态资源目录。切图会自动压缩为 webp 格式。**必须传入**，与 draw 阶段使用同一路径，避免生成重复切图 |
 | `--limit`  | 返回的图层数量。根据画板复杂度自行估算，简单画板 10~15 个，复杂画板 20~30 个                                                             |
 | `--offset` | 从第 m 个图层开始返回（默认 0）。排名靠前的图层通常是大面积布局容器，排名靠后的图层是细节元素                                            |
