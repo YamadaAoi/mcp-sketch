@@ -144,6 +144,17 @@ Leader 根据问题类型查表，先委托 `sketch-recorder` 执行 `cleanup`�
 | 审核失败         | check 审核不通过，审核信息中包含修复建议  | 对应审核步骤 - 1 | -               | -                          | -                                                                                    | check 返回的失败信息             |
 | skill 执行错误   | skill 返回 FAILED，错误信息中包含问题描述 | 对应执行步骤     | -               | -                          | -                                                                                    | skill 返回的失败信息             |
 
+### 修复代理对照表
+
+遇到问题时，按以下规则选择修复代理，**不要**一律交给 sketch-developer：
+
+| 问题来源阶段 | 谁引入的问题     | 修复代理         | 原因                           |
+| ------------ | ---------------- | ---------------- | ------------------------------ |
+| split        | sketch-analyzer  | sketch-analyzer  | 拆分逻辑只有拆分者最清楚       |
+| gen-base     | sketch-architect | sketch-architect | 骨架代码是架构师写的，他最了解 |
+| layout       | sketch-architect | sketch-architect | 布局方案是架构师设计的         |
+| draw         | sketch-developer | sketch-developer | 绘制代码是开发者写的           |
+
 ### 流水线中断重启
 
 1. 扫描 `sketch-cache/artboards/*.json`
