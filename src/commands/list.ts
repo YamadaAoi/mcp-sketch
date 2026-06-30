@@ -1,13 +1,10 @@
 import { Command } from 'commander'
-import {
-  handleSketchHtmlList,
-  sketchListInputSchema
-} from '@/services/sketchHtmlList'
+import { sketchList, sketchListInputSchema } from '@/services/list'
 import { logger } from '@/utils/logger'
 
 async function handleList(opts: Record<string, unknown>) {
   const args = sketchListInputSchema.parse(opts)
-  const text = await handleSketchHtmlList(args)
+  const text = await sketchList(args)
   console.log(text)
 }
 

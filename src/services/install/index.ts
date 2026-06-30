@@ -16,7 +16,7 @@ export type SketchInstallInputSchema = SchemaOutput<
   typeof sketchInstallInputSchema
 >
 
-export async function handleSketchHtmlInstall(args: SketchInstallInputSchema) {
+export async function sketchInstall(args: SketchInstallInputSchema) {
   const result = await prompts({
     type: 'select',
     name: 'agent',

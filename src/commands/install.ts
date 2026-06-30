@@ -1,13 +1,10 @@
 import { Command } from 'commander'
-import {
-  handleSketchHtmlInstall,
-  sketchInstallInputSchema
-} from '@/services/sketchHtmlInstall'
+import { sketchInstall, sketchInstallInputSchema } from '@/services/install'
 import { logger } from '@/utils/logger'
 
 async function handleInstall(opts: Record<string, unknown>) {
   const args = sketchInstallInputSchema.parse(opts)
-  await handleSketchHtmlInstall(args)
+  await sketchInstall(args)
 }
 
 export const install = new Command()

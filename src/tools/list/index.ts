@@ -2,10 +2,10 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import type { RegisterToolParams } from '@/types'
 import { logger } from '@/utils/logger'
 import {
-  handleSketchHtmlList,
+  sketchList,
   sketchListInputSchema,
   type SketchListInputSchema
-} from '@/services/sketchHtmlList'
+} from '@/services/list'
 
 const toolName = 'sketch_html_list'
 
@@ -24,7 +24,7 @@ async function sketchHtmlList(
   args: SketchListInputSchema
 ): Promise<CallToolResult> {
   logger.debug(args, 'sketchHtmlList')
-  const text = await handleSketchHtmlList(args)
+  const text = await sketchList(args)
   return {
     content: [
       {
@@ -35,7 +35,7 @@ async function sketchHtmlList(
   }
 }
 
-export function toolSketchHtmlList(): RegisterToolParams {
+export function toolSketchList(): RegisterToolParams {
   return [
     toolName,
     {

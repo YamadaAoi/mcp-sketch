@@ -53,7 +53,7 @@ export type SketchAnalyzeInputSchema = SchemaOutput<
  * @param args 分析参数
  * @returns artboard JSON字符串
  */
-export async function handleSketchHtmlAnalyze(args: SketchAnalyzeInputSchema) {
+export async function sketchAnalyze(args: SketchAnalyzeInputSchema) {
   let response = 'Sketch Exception'
 
   try {

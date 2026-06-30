@@ -2,10 +2,10 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import type { RegisterToolParams } from '@/types'
 import { logger } from '@/utils/logger'
 import {
-  handleSketchHtmlAnalyze,
+  sketchAnalyze,
   sketchAnalyzeInputSchema,
   type SketchAnalyzeInputSchema
-} from '@/services/sketchHtmlAnalyze'
+} from '@/services/analyze'
 
 const toolName = 'sketch_html_analyze'
 
@@ -28,7 +28,7 @@ async function sketchHtmlAnalyze(
   args: SketchAnalyzeInputSchema
 ): Promise<CallToolResult> {
   logger.debug(args, 'sketchHtmlAnalyze')
-  const text = await handleSketchHtmlAnalyze(args)
+  const text = await sketchAnalyze(args)
   return {
     content: [
       {
@@ -39,7 +39,7 @@ async function sketchHtmlAnalyze(
   }
 }
 
-export function toolSketchHtmlAnalyze(): RegisterToolParams {
+export function toolSketchAnalyze(): RegisterToolParams {
   return [
     toolName,
     {

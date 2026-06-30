@@ -1,8 +1,5 @@
 import { Command } from 'commander'
-import {
-  handleSketchHtmlAnalyze,
-  sketchAnalyzeInputSchema
-} from '@/services/sketchHtmlAnalyze'
+import { sketchAnalyze, sketchAnalyzeInputSchema } from '@/services/analyze'
 import { logger } from '@/utils/logger'
 
 async function handleAnalyze(opts: Record<string, unknown>) {
@@ -19,7 +16,7 @@ async function handleAnalyze(opts: Record<string, unknown>) {
     opts.limit = Number(opts.limit)
   }
   const args = sketchAnalyzeInputSchema.parse(opts)
-  const text = await handleSketchHtmlAnalyze(args)
+  const text = await sketchAnalyze(args)
   console.log(text)
 }
 

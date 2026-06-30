@@ -16,7 +16,7 @@ export type SketchListInputSchema = SchemaOutput<typeof sketchListInputSchema>
  * @param args.file_path sketch html文件路径
  * @returns 输出参数，包含所有artboard的列表
  */
-export async function handleSketchHtmlList(args: SketchListInputSchema) {
+export async function sketchList(args: SketchListInputSchema) {
   let response = 'Sketch Exception'
 
   try {
