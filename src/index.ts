@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import { startCli } from '@/cli'
 import { startMcp } from '@/mcp'
 
+dotenv.config({ path: '.sketch.env', encoding: 'utf-8' })
 process.on('SIGINT', () => process.exit(0))
 process.on('SIGTERM', () => process.exit(0))
 
