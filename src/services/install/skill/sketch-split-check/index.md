@@ -18,7 +18,7 @@
 
 ### 步骤 1：读取项目配置
 
-读取 `sketch-cache/proj-init.md`，获取 `views_path`、`components_path` 和 UI 组件库信息
+读取 `.sketch-cache/proj-init.md`，获取 `views_path`、`components_path` 和 UI 组件库信息
 
 ### 步骤 2：解析 split_result
 

@@ -3,7 +3,7 @@
 ## 核心约束
 
 - **操作范围**：
-  - 读写：`sketch-cache/artboards/` 目录下的 JSON 状态文件
+  - 读写：`.sketch-cache/artboards/` 目录下的 JSON 状态文件
   - 删除：`cleanup` 时可删除 Leader 指定的组件文件夹及其内容和描述文件，路径由 Leader 传入
 - **禁止**读取或操作与当前画板无关的文件
 - **禁止**执行删除以外的 bash 命令

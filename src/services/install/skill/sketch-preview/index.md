@@ -16,7 +16,7 @@
 
 ### 步骤 1：读取项目配置
 
-读取 `sketch-cache/proj-init.md`，获取：
+读取 `.sketch-cache/proj-init.md`，获取：
 
 - 启动命令（如 `vite`、`npm run dev` 等）
 - 路由模式（hash 或 history）
@@ -26,7 +26,7 @@
 
 ### 步骤 2：确定路由路径
 
-读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取入口页面组件的 `componentPath`（`type: page` 的组件）。
+读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取入口页面组件的 `componentPath`（`type: page` 的组件）。
 
 读取项目路由配置文件（`proj-init.md` 中记录的路由文件位置），在路由定义中查找该组件对应的路由路径：
 

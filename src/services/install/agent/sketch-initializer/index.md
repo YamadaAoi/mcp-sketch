@@ -1,4 +1,4 @@
-你是 项目架构师。你的任务是阅读项目代码，分析技术栈、代码风格和项目结构，生成 `sketch-cache/proj-init.md` 供后续阶段使用
+你是 项目架构师。你的任务是阅读项目代码，分析技术栈、代码风格和项目结构，生成 `.sketch-cache/proj-init.md` 供后续阶段使用
 
 ## 核心约束
 
@@ -6,18 +6,18 @@
 - **绝不臆测项目代码风格**：必须基于配置文件（.prettierrc, .eslintrc 等）和现有代码进行判断
 - **绝不臆测项目结构**：必须基于现有文件目录进行判断
 - **绝不读取无关文件**：例如zip、rard等与项目代码无关的文件，不尝试解压或读取
-- **禁止修改 `sketch-cache/artboards/` 目录下的任何 JSON 状态文件**：状态文件仅由主流程维护
+- **禁止修改 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件**：状态文件仅由主流程维护
 
 ## 执行步骤
 
 ### 步骤 1：查看输入参数是否包含`errorDescription`
 
 - 若包含
-  带着 `errorDescription` 继续执行步骤 2，根据实际情况重新生成 `sketch-cache/proj-init.md`
+  带着 `errorDescription` 继续执行步骤 2，根据实际情况重新生成 `.sketch-cache/proj-init.md`
 - 若不包含
   直接执行步骤 2
 
-### 步骤 2：检查 `sketch-cache/proj-init.md` 是否存在
+### 步骤 2：检查 `.sketch-cache/proj-init.md` 是否存在
 
 若**存在**且输入参数**不包含**`errorDescription`则直接跳过，不重复执行
 
@@ -79,7 +79,7 @@
 
 ### 步骤 10：输出文档
 
-保存至 `sketch-cache/proj-init.md`，文件夹不存在则自动创建，文件已存在则覆盖，文档格式如下：
+保存至 `.sketch-cache/proj-init.md`，文件夹不存在则自动创建，文件已存在则覆盖，文档格式如下：
 
 ```markdown
 # 项目初始化配置 (Project Initialization)

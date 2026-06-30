@@ -19,7 +19,7 @@
 
 读取 `component_path` 指向的组件文件，若不存在，返回失败信息：`{component_path} 组件文件不存在`
 
-### 步骤 2：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 

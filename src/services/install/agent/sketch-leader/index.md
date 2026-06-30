@@ -42,14 +42,14 @@
 
 ### Recorder 调用参数
 
-状态文件路径统一为 `sketch-cache/artboards/{page_name}-{artboard_name}.json`
+状态文件路径统一为 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
 **步骤 4** — `create-state`：
 
 ```json
 {
   "action": "create-state",
-  "stateFile": "sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "filePath": "<FILE_PATH>",
     "pageName": "<page_name>",
@@ -63,7 +63,7 @@
 ```json
 {
   "action": "update-state",
-  "stateFile": "sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "stage": "sketch-split",
     "components": [ { "componentPath": "...", "type": "page|component", "status": "gen-base", "children": [...], "rect": [...], "excludeRects": [...] } ],
@@ -77,7 +77,7 @@
 ```json
 {
   "action": "update-state",
-  "stateFile": "sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "stage": "sketch-gen-base-check",
     "previewPath": "<由 sketch-gen-base 返回，无则空字符串>",
@@ -94,7 +94,7 @@
 ```json
 {
   "action": "update-state",
-  "stateFile": "sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "stage": "sketch-layout-check",
     "previewPath": "<由 sketch-layout 返回，无则空字符串>",
@@ -111,7 +111,7 @@
 ```json
 {
   "action": "update-state",
-  "stateFile": "sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "stage": "completed",
     "components": [{ "componentPath": "...", "status": "completed" }],
@@ -157,7 +157,7 @@ Leader 根据问题类型查表，先委托 `sketch-recorder` 执行 `cleanup`�
 
 ### 流水线中断重启
 
-1. 扫描 `sketch-cache/artboards/*.json`
+1. 扫描 `.sketch-cache/artboards/*.json`
 2. 跳过 `stage: completed` 的已完成画板
 3. 对未完成的画板：按 stage 升序、lastUpdateTime 降序选择画板继续
 4. 磁盘检查：组件文件或描述文件缺失 → 重置该组件状态为 `gen-base`
@@ -175,8 +175,8 @@ sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → s
 
 ### 状态文件
 
-- 项目配置：`sketch-cache/proj-init.md`
-- 画板状态：`sketch-cache/artboards/{page_name}-{artboard_name}.json`
+- 项目配置：`.sketch-cache/proj-init.md`
+- 画板状态：`.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
 ### subagent 通信协议
 

@@ -2,7 +2,7 @@
 
 审核父组件的布局是否符合要求：子组件容器包裹、lint/typecheck
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
+> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
 ## 核心约束
 
@@ -18,7 +18,7 @@
 
 ### 步骤 1：读取状态文件
 
-读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `components` 数组。
+读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `components` 数组。
 
 ### 步骤 2：遍历有子组件的父组件，逐项检查
 

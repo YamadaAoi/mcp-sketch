@@ -1,6 +1,6 @@
 # Sketch Init Check Skill
 
-审核 `sketch-initializer` 生成的项目初始化文档 `sketch-cache/proj-init.md` 是否符合规范
+审核 `sketch-initializer` 生成的项目初始化文档 `.sketch-cache/proj-init.md` 是否符合规范
 
 ## 核心约束
 
@@ -11,7 +11,7 @@
 
 ### 步骤 1：检查文件是否存在
 
-读取 `sketch-cache/proj-init.md`，若不存在，返回失败信息：`proj-init.md 文件不存在`
+读取 `.sketch-cache/proj-init.md`，若不存在，返回失败信息：`proj-init.md 文件不存在`
 
 ### 步骤 2：检查文件格式
 

@@ -2,7 +2,7 @@
 
 配置画板对应页面的路由，为父组件编写子组件的 import 语句和 div 容器，搭建组件层级骨架。具体的组件细节绘制由后续 高级前端开发 负责
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
+> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
 ## 核心约束
 
@@ -17,11 +17,11 @@
 - `artboard_name` — 画板名
 - `errorDescription`（可选） — 修复模式下传入的用户反馈，描述布局问题
 
-### 步骤 1：读取 `sketch-cache/proj-init.md` 确认技术栈、样式写法、路由文件位置、导入方式、本地开发服务器配置
+### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、样式写法、路由文件位置、导入方式、本地开发服务器配置
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
@@ -45,11 +45,11 @@
 
 - 检查是否已配置当前画板对应入口页面组件的路由：
   - 已配置 → 直接跳过
-  - 未配置 → 按 `sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
+  - 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
 
 ### 步骤 7：组件布局
 
-- 1. 根据 `sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
+- 1. 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
 - 2. 读取预览图，判断当前页面属于哪种布局模式（参照下方「布局模式参考」）
 - 3. 从入口页面组件（`type: page`）开始，按组件依赖树**深度优先遍历** `components` 中的每个组件：
   - `children` 为空 → 直接跳过

@@ -25,7 +25,7 @@
 
 ### 步骤 2：代码质量检查
 
-读取 `sketch-cache/proj-init.md` 获取格式化、代码检查、类型检查的完整命令并执行：
+读取 `.sketch-cache/proj-init.md` 获取格式化、代码检查、类型检查的完整命令并执行：
 
 - 若项目没有对应的检查工具，跳过即可
 - 执行时精确到 `component_path` 组件文件（如 `eslint <component_path>`），无需全量扫描

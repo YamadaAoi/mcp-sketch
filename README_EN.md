@@ -112,8 +112,8 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 
 ### State Files
 
-- Project config: `sketch-cache/proj-init.md`
-- Artboard state: `sketch-cache/artboards/{page_name}-{artboard_name}.json`
+- Project config: `.sketch-cache/proj-init.md`
+- Artboard state: `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
 Leader can only read state files; all write operations are delegated to sketch-recorder. Resume from where you left off if interrupted. All file paths use relative paths.
 

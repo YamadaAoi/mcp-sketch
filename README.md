@@ -110,8 +110,8 @@ claude --agent sketch-leader
 
 ### 状态文件
 
-- 项目配置：`sketch-cache/proj-init.md`
-- 画板状态：`sketch-cache/artboards/{page_name}-{artboard_name}.json`
+- 项目配置：`.sketch-cache/proj-init.md`
+- 画板状态：`.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
 Leader 只能读取状态文件，所有写入操作委托给 sketch-recorder。中断后可恢复进度。所有文件路径使用相对路径。
 

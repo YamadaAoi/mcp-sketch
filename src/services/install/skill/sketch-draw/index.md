@@ -2,7 +2,7 @@
 
 基于 `mcp-sketch analyze` 提供的图层数据，结合预览图视觉参考，生成符合项目技术栈的组件功能代码
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
+> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
 ## 核心约束
 
@@ -17,11 +17,11 @@
 
 以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
 
-### 步骤 1：读取 `sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法、assets_path
+### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法、assets_path
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：读取 `sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
