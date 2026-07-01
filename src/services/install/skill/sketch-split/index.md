@@ -160,6 +160,7 @@ npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} -
 ```
 已完成【{pageName}】-【{artboardName}】画板组件拆解
 预览图路径：<{previewPath}>
+画板尺寸：{width} x {height}
 组件规划如下：
 | 组件名称 | 组件路径 | 组件描述 | 类型 | rect | excludeRects | 直接子组件 | 归属Artboard | 归属Page |
 | -------- | -------- | -------- | ---- | ---- | ------------- | ---------- | ------------ | -------- |

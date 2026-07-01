@@ -18,6 +18,8 @@ interface ArtboardState {
   previewPath: string // 预览截图路径
   pageName: string // 页面名称
   artboardName: string // 画板名称
+  width: number // 画板宽度
+  height: number // 画板高度
   stage: Stage // 当前阶段（见下方 stage 枚举）
   components: ComponentState[]
   lastUpdateTime: string // ISO 格式时间戳
@@ -89,6 +91,8 @@ interface ComponentState {
   "previewPath": "",
   "pageName": "<data.pageName>",
   "artboardName": "<data.artboardName>",
+  "width": 0,
+  "height": 0,
   "stage": "sketch-pick",
   "components": [],
   "lastUpdateTime": "<当前时间 ISO 格式>"
@@ -97,7 +101,7 @@ interface ComponentState {
 
 ### action: update-state
 
-更新状态文件的 `stage`、`previewPath`、`components` 字段。
+更新状态文件的 `stage`、`previewPath`、`width`、`height`、`components` 字段。
 
 ```json
 {
@@ -105,7 +109,9 @@ interface ComponentState {
   "stateFile": "<由 leader 根据 pageName 和 artboardName 拼接>",
   "data": {
     "stage": "<由 leader 根据当前步骤确定>",
-    "previewPath": "<由 leader 从 skill 返回值获取，没有则传空字符串>",
+    "previewPath": "<画板预览图相对路径，没有则不更新>",
+    "width": "<画板宽度，没有则不更新>",
+    "height": "<画板高度，没有则不更新>",
     "components": [
       {
         "componentPath": "<由 leader 传入，相对路径>",

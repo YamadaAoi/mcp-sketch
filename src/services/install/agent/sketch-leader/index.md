@@ -60,12 +60,17 @@
 
 **步骤 8** — `update-state`（记录拆分结果）：
 
+从 `sketch-split` 返回结果中提取 `previewPath`、`width`、`height`（来自 analyze 的画板尺寸），一并写入状态文件
+
 ```json
 {
   "action": "update-state",
   "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
   "data": {
     "stage": "sketch-split",
+    "previewPath": "<previewPath from split result>",
+    "width": <width from split result>,
+    "height": <height from split result>,
     "components": [ { "componentPath": "...", "type": "page|component", "status": "gen-base", "children": [...], "rect": [...], "excludeRects": [...] } ],
     "replaceComponents": true
   }
