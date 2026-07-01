@@ -46,15 +46,11 @@
 ### 步骤 4：检测端口是否已启动
 
 ```bash
-# Windows
-netstat -ano | findstr :{端口}
-
-# Mac/Linux/WSL
-lsof -i :{端口} 或 ss -tlnp | grep :{端口}
+npx -y mcp-sketch check-port -p {端口}
 ```
 
-- 若端口已被占用 → 跳到步骤 6（直接打开浏览器）
-- 若端口未被占用 → 继续步骤 5
+- 若返回 `open`（端口已被占用）→ 跳到步骤 6（直接打开浏览器）
+- 若返回 `closed`（端口未被占用）→ 继续步骤 5
 
 ### 步骤 5：在新终端窗口启动开发服务器
 
@@ -93,14 +89,7 @@ xterm -e "cd {项目根目录} && {启动命令}"
 ### 步骤 6：打开浏览器访问预览 URL
 
 ```bash
-# Windows
-Start-Process "{预览URL}"
-
-# macOS
-open "{预览URL}"
-
-# Linux
-xdg-open "{预览URL}"
+npx -y mcp-sketch preview -u {预览URL}
 ```
 
 ## 输出格式
