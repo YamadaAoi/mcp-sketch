@@ -14,6 +14,25 @@ export type SketchPreviewInputSchema = SchemaOutput<
   typeof sketchPreviewInputSchema
 >
 
+function isRecyclableBlankPage(page: Page): boolean {
+  const url = page.url()
+
+  if (url === 'about:blank') return true
+
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'chrome:') {
+      // 匹配 newtab, new-tab-page, new_tab 等所有变体
+      const isNewTab = /new[-_]?tab/i.test(parsed.host)
+      if (isNewTab) return true
+    }
+  } catch {
+    return false
+  }
+
+  return false
+}
+
 export async function openBrowser(url: string) {
   const chromePath = getEnv('CHROME_PATH')
   const debugPort = getEnv('DEBUG_PORT')
@@ -30,7 +49,7 @@ export async function openBrowser(url: string) {
   const isPortOpen = await checkPort(debugPort)
   if (!isPortOpen) {
     exec(
-      `"${chromePath}" --remote-debugging-port=${debugPort} --user-data-dir="${userDataDir}"`
+      `"${chromePath}" --start-maximized --remote-debugging-port=${debugPort} --user-data-dir="${userDataDir}"`
     )
 
     let waitTime = 0
@@ -55,7 +74,9 @@ export async function openBrowser(url: string) {
     targetRoot = url
   }
 
-  const existingPage = context.pages().find(p => {
+  const pages = context.pages()
+
+  const existingPage = pages.find(p => {
     try {
       const pageUrl = new URL(p.url())
       const pageRoot = pageUrl.origin + pageUrl.pathname
@@ -65,15 +86,22 @@ export async function openBrowser(url: string) {
     }
   })
 
-  let page: Page
   if (existingPage) {
     await existingPage.bringToFront()
-    page = existingPage
-  } else {
-    page = await context.newPage()
-    await page.goto(url, { waitUntil: 'networkidle' })
+    return existingPage
   }
 
+  const blankPage = pages.find(p => isRecyclableBlankPage(p))
+
+  let page: Page
+  if (blankPage) {
+    page = blankPage
+    await page.bringToFront()
+  } else {
+    page = await context.newPage()
+  }
+
+  await page.goto(url, { waitUntil: 'load' })
   return page
 }
 
