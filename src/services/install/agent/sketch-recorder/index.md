@@ -34,6 +34,7 @@ type Stage =
   | 'sketch-layout-check'
   | 'sketch-draw'
   | 'sketch-draw-check'
+  | 'sketch-screenshot-check'
   | 'completed'
 
 type ComponentStatus =
@@ -189,12 +190,13 @@ interface ComponentState {
 
 **`targetStage` 与清理规则**：
 
-| targetStage     | 磁盘清理                                 | 状态文件处理                                                                                                             |
-| --------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `sketch-pick`   | 删除所有组件文件和描述文件               | stage 重置为 `sketch-pick`，components 清空                                                                              |
-| `sketch-split`  | 删除 `targetComponents` 中列出的组件文件 | stage 重置为 `sketch-split`，components 保留拆分结构，所有组件 status 重置为 `gen-base`                                  |
-| `sketch-layout` | 无需清理                                 | stage 重置为 `sketch-layout`，components 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status |
-| `sketch-draw`   | 无需清理                                 | stage 重置为 `sketch-draw`，components 保留布局结构，目标组件 status 重置为 `ready-to-draw`                              |
+| targetStage               | 磁盘清理                                 | 状态文件处理                                                                                                             |
+| ------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `sketch-pick`             | 删除所有组件文件和描述文件               | stage 重置为 `sketch-pick`，components 清空                                                                              |
+| `sketch-split`            | 删除 `targetComponents` 中列出的组件文件 | stage 重置为 `sketch-split`，components 保留拆分结构，所有组件 status 重置为 `gen-base`                                  |
+| `sketch-layout`           | 无需清理                                 | stage 重置为 `sketch-layout`，components 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status |
+| `sketch-draw`             | 无需清理                                 | stage 重置为 `sketch-draw`，components 保留布局结构，目标组件 status 重置为 `ready-to-draw`                              |
+| `sketch-screenshot-check` | 无需清理                                 | stage 重置为 `sketch-screenshot-check`，components 保留当前状态                                                          |
 
 **执行顺序**：
 
@@ -202,7 +204,7 @@ interface ComponentState {
 2. 磁盘清理：
    - `sketch-pick`：删除所有组件的 `{componentPath}` 和 `{componentPath}.md`
    - `sketch-split`：仅删除 `targetComponents` 中列出的组件文件
-   - `sketch-layout` / `sketch-draw`：跳过
+   - `sketch-layout` / `sketch-draw` / `sketch-screenshot-check`：跳过
 3. 重置状态文件：更新 stage、按规则重置各组件 status、更新 lastUpdateTime
 
 ## 输出格式

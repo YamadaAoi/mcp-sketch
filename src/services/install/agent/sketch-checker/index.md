@@ -8,13 +8,14 @@
 
 ## 可用 Skill
 
-| Skill                 | 职责                               | 必需参数                                                     |
-| --------------------- | ---------------------------------- | ------------------------------------------------------------ |
-| sketch-init-check     | 审核项目初始化文档是否符合规范     | -                                                            |
-| sketch-split-check    | 审核组件拆分结果，包括路径和合理性 | `page_name`, `artboard_name`, `split_result`, `preview_path` |
-| sketch-gen-base-check | 审核基础组件代码是否符合规范       | `page_name`, `artboard_name`, `component_path`               |
-| sketch-draw-check     | 审核绘制组件是否符合要求           | `component_path`                                             |
-| sketch-layout-check   | 审核父组件布局是否符合要求         | `page_name`, `artboard_name`                                 |
+| Skill                   | 职责                               | 必需参数                                                     |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| sketch-init-check       | 审核项目初始化文档是否符合规范     | -                                                            |
+| sketch-split-check      | 审核组件拆分结果，包括路径和合理性 | `page_name`, `artboard_name`, `split_result`, `preview_path` |
+| sketch-gen-base-check   | 审核基础组件代码是否符合规范       | `page_name`, `artboard_name`, `component_path`               |
+| sketch-draw-check       | 审核绘制组件是否符合要求           | `component_path`                                             |
+| sketch-layout-check     | 审核父组件布局是否符合要求         | `page_name`, `artboard_name`                                 |
+| sketch-screenshot-check | 截图比对设计稿与浏览器渲染效果     | `url`, `page_name`, `artboard_name`                          |
 
 ## 工作流程
 

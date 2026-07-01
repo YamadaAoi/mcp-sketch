@@ -19,26 +19,27 @@
 参数：param1 = value1, param2 = value2
 ```
 
-| 步骤 | 做什么                              | subagent           | 调用 skill            | 必需参数                                                     | 可选参数           | 并行 | 备注                                  |
-| ---- | ----------------------------------- | ------------------ | --------------------- | ------------------------------------------------------------ | ------------------ | ---- | ------------------------------------- |
-| 1    | 初始化                              | sketch-initializer | -                     | -                                                            | `errorDescription` | ❌   | proj-init.md 已存在则跳过步骤1和步骤2 |
-| 2    | 初始化审核                          | sketch-checker     | sketch-init-check     | -                                                            | -                  | ❌   | 步骤1未跳过才执行                     |
-| 3    | 选择画板                            | sketch-analyzer    | sketch-pick           | `FILE_PATH`                                                  | -                  | ❌   |                                       |
-| 4    | 创建状态文件                        | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
-| 5    | 组件拆分                            | sketch-analyzer    | sketch-split          | `FILE_PATH`, `page_name`, `artboard_name`                    | `errorDescription` | ❌   |                                       |
-| 6    | 拆分审核                            | sketch-checker     | sketch-split-check    | `page_name`, `artboard_name`, `split_result`, `preview_path` | -                  | ❌   | split_result 来自步骤 5               |
-| 7    | 展示拆分结果，等待用户确认          | -                  | -                     | -                                                            | -                  | ❌   | 不满意 → 见第二部分                   |
-| 8    | 用户满意后记录拆分状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
-| 9    | 生成骨架                            | sketch-architect   | sketch-gen-base       | `page_name`, `artboard_name`, `component_path`               | `errorDescription` | ✅   | 对每个组件并行                        |
-| 10   | 骨架审核                            | sketch-checker     | sketch-gen-base-check | `page_name`, `artboard_name`, `component_path`               | -                  | ✅   | 对每个组件并行                        |
-| 11   | 骨架审核通过后记录骨架状态          | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
-| 12   | 布局骨架                            | sketch-architect   | sketch-layout         | `page_name`, `artboard_name`                                 | `errorDescription` | ❌   |                                       |
-| 13   | 布局审核                            | sketch-checker     | sketch-layout-check   | `page_name`, `artboard_name`                                 | -                  | ❌   |                                       |
-| 14   | 预览布局，等待用户确认              | sketch-analyzer    | sketch-preview        | `page_name`, `artboard_name`                                 | -                  | ❌   | 不满意 → 见第二部分                   |
-| 15   | 用户满意后记录布局状态              | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
-| 16   | 绘制功能                            | sketch-developer   | sketch-draw           | `FILE_PATH`, `page_name`, `artboard_name`, `component_path`  | `errorDescription` | ✅   | 对每个组件并行                        |
-| 17   | 绘制审核                            | sketch-checker     | sketch-draw-check     | `component_path`                                             | -                  | ✅   | 对每个组件并行                        |
-| 18   | 记录完成状态，更新 stage 和组件状态 | sketch-recorder    | -                     | 见下方 recorder 调用                                         | -                  | ❌   |                                       |
+| 步骤 | 做什么                              | subagent           | 调用 skill              | 必需参数                                                     | 可选参数           | 并行 | 备注                                             |
+| ---- | ----------------------------------- | ------------------ | ----------------------- | ------------------------------------------------------------ | ------------------ | ---- | ------------------------------------------------ |
+| 1    | 初始化                              | sketch-initializer | -                       | -                                                            | `errorDescription` | ❌   | proj-init.md 已存在则跳过步骤1和步骤2            |
+| 2    | 初始化审核                          | sketch-checker     | sketch-init-check       | -                                                            | -                  | ❌   | 步骤1未跳过才执行                                |
+| 3    | 选择画板                            | sketch-analyzer    | sketch-pick             | `FILE_PATH`                                                  | -                  | ❌   |                                                  |
+| 4    | 创建状态文件                        | sketch-recorder    | -                       | 见下方 recorder 调用                                         | -                  | ❌   |                                                  |
+| 5    | 组件拆分                            | sketch-analyzer    | sketch-split            | `FILE_PATH`, `page_name`, `artboard_name`                    | `errorDescription` | ❌   |                                                  |
+| 6    | 拆分审核                            | sketch-checker     | sketch-split-check      | `page_name`, `artboard_name`, `split_result`, `preview_path` | -                  | ❌   | split_result 来自步骤 5                          |
+| 7    | 展示拆分结果，等待用户确认          | -                  | -                       | -                                                            | -                  | ❌   | 不满意 → 见第二部分                              |
+| 8    | 用户满意后记录拆分状态              | sketch-recorder    | -                       | 见下方 recorder 调用                                         | -                  | ❌   |                                                  |
+| 9    | 并行委托subagent生成骨架            | sketch-architect   | sketch-gen-base         | `page_name`, `artboard_name`, `component_path`               | `errorDescription` | ✅   |                                                  |
+| 10   | 并行委托subagent骨架审核            | sketch-checker     | sketch-gen-base-check   | `page_name`, `artboard_name`, `component_path`               | -                  | ✅   |                                                  |
+| 11   | 骨架审核通过后记录骨架状态          | sketch-recorder    | -                       | 见下方 recorder 调用                                         | -                  | ❌   |                                                  |
+| 12   | 布局骨架                            | sketch-architect   | sketch-layout           | `page_name`, `artboard_name`                                 | `errorDescription` | ❌   |                                                  |
+| 13   | 布局审核                            | sketch-checker     | sketch-layout-check     | `page_name`, `artboard_name`                                 | -                  | ❌   |                                                  |
+| 14   | 预览布局，等待用户确认              | sketch-analyzer    | sketch-preview          | `page_name`, `artboard_name`                                 | -                  | ❌   | 不满意 → 见第二部分                              |
+| 15   | 用户满意后记录布局状态              | sketch-recorder    | -                       | 见下方 recorder 调用                                         | -                  | ❌   |                                                  |
+| 16   | 并行委托subagent绘制组件            | sketch-developer   | sketch-draw             | `FILE_PATH`, `page_name`, `artboard_name`, `component_path`  | `errorDescription` | ✅   |                                                  |
+| 17   | 并行委托subagent审核绘制完成的组件  | sketch-checker     | sketch-draw-check       | `component_path`                                             | -                  | ✅   |                                                  |
+| 18   | 截图比对                            | sketch-checker     | sketch-screenshot-check | `url`, `page_name`, `artboard_name`                          | -                  | ❌   | skill 自行从状态文件读取 filePath 和 previewPath |
+| 19   | 记录完成状态，更新 stage 和组件状态 | sketch-recorder    | -                       | 见下方 recorder 调用                                         | -                  | ❌   |                                                  |
 
 ### Recorder 调用参数
 
@@ -111,7 +112,22 @@
 }
 ```
 
-**步骤 18** — `update-state`（记录完成状态）：
+**步骤 18** — `update-state`（记录截图比对阶段）：
+
+所有组件 draw-check 通过后，先将 stage 推进到 `sketch-screenshot-check`：
+
+```json
+{
+  "action": "update-state",
+  "stateFile": ".sketch-cache/artboards/{page_name}-{artboard_name}.json",
+  "data": {
+    "stage": "sketch-screenshot-check",
+    "replaceComponents": false
+  }
+}
+```
+
+**步骤 19** — `update-state`（记录完成状态）：
 
 ```json
 {
@@ -139,15 +155,16 @@ Leader 根据问题类型查表，先委托 `sketch-recorder` 执行 `cleanup`�
 - 整体步骤失败（skill 执行错误、check 审核不通过等）：回退到该步骤起始位置重新执行
 - 修复后仍然失败：告知用户，等待用户决定重做、跳过（标记 skipped）或终止
 
-| 问题类型         | 触发条件                                  | 回退步骤         | targetStage     | 磁盘清理                   | targetComponents 处理                                                                | errorDescription 来源            |
-| ---------------- | ----------------------------------------- | ---------------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------ | -------------------------------- |
-| 拆分问题         | 组件划分、命名、位置/大小与设计稿不一致   | 第 6 步          | `sketch-split`  | 删除所有组件文件和描述文件 | 保留拆分结构，所有组件 status 重置为 `gen-base`                                      | 用户反馈：哪些组件拆分不合理     |
-| 骨架问题         | 基础组件代码不规范（DOM/样式/导入）       | 第 9 步          | `sketch-split`  | 删除目标组件文件和描述文件 | 保留拆分结构，目标组件 status 重置为 `gen-base`，其他组件 status 不变                | gen-base-check 失败信息          |
-| 布局问题(组件间) | 父组件的 `{child-name}-wrap` 容器布局不对 | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status 不变 | 用户反馈或 layout-check 失败信息 |
-| 布局问题(组件内) | 组件自身内部元素布局不对                  | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，目标组件 status 重置为 `gen-base-check-pass`，其他组件保留当前 status  | 用户反馈或 layout-check 失败信息 |
-| 绘制问题         | 样式、内容、交互、切图不符合设计稿        | 第 15 步         | `sketch-draw`   | 无需清理                   | 保留布局结构，目标组件 status 重置为 `ready-to-draw`                                 | 用户反馈或 draw-check 失败信息   |
-| 审核失败         | check 审核不通过，审核信息中包含修复建议  | 对应审核步骤 - 1 | -               | -                          | -                                                                                    | check 返回的失败信息             |
-| skill 执行错误   | skill 返回 FAILED，错误信息中包含问题描述 | 对应执行步骤     | -               | -                          | -                                                                                    | skill 返回的失败信息             |
+| 问题类型         | 触发条件                                  | 回退步骤         | targetStage     | 磁盘清理                   | targetComponents 处理                                                                | errorDescription 来源               |
+| ---------------- | ----------------------------------------- | ---------------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------- |
+| 拆分问题         | 组件划分、命名、位置/大小与设计稿不一致   | 第 6 步          | `sketch-split`  | 删除所有组件文件和描述文件 | 保留拆分结构，所有组件 status 重置为 `gen-base`                                      | 用户反馈：哪些组件拆分不合理        |
+| 骨架问题         | 基础组件代码不规范（DOM/样式/导入）       | 第 9 步          | `sketch-split`  | 删除目标组件文件和描述文件 | 保留拆分结构，目标组件 status 重置为 `gen-base`，其他组件 status 不变                | gen-base-check 失败信息             |
+| 布局问题(组件间) | 父组件的 `{child-name}-wrap` 容器布局不对 | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，父组件 status 重置为 `gen-base-check-pass`，子组件保留当前 status 不变 | 用户反馈或 layout-check 失败信息    |
+| 布局问题(组件内) | 组件自身内部元素布局不对                  | 第 12 步         | `sketch-layout` | 无需清理                   | 保留骨架结构，目标组件 status 重置为 `gen-base-check-pass`，其他组件保留当前 status  | 用户反馈或 layout-check 失败信息    |
+| 绘制问题         | 样式、内容、交互、切图不符合设计稿        | 第 15 步         | `sketch-draw`   | 无需清理                   | 保留布局结构，目标组件 status 重置为 `ready-to-draw`                                 | 用户反馈或 draw-check 失败信息      |
+| 视觉差异         | 截图比对发现 P0 - 严重视觉差异            | 第 16 步         | `sketch-draw`   | 无需清理                   | 保留布局结构，目标组件 status 重置为 `ready-to-draw`                                 | screenshot-check 返回的 P0 问题列表 |
+| 审核失败         | check 审核不通过，审核信息中包含修复建议  | 对应审核步骤 - 1 | -               | -                          | -                                                                                    | check 返回的失败信息                |
+| skill 执行错误   | skill 返回 FAILED，错误信息中包含问题描述 | 对应执行步骤     | -               | -                          | -                                                                                    | skill 返回的失败信息                |
 
 ### 修复代理对照表
 
@@ -175,7 +192,7 @@ Leader 根据问题类型查表，先委托 `sketch-recorder` 执行 `cleanup`�
 ### 画板 stage（按顺序）
 
 ```
-sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → completed
+sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → sketch-layout → sketch-layout-check → sketch-draw → sketch-draw-check → sketch-screenshot-check → completed
 ```
 
 ### 状态文件
@@ -198,12 +215,12 @@ sketch-pick → sketch-split → sketch-gen-base → sketch-gen-base-check → s
 
 先检测 `XXX_OVER` 确认完成，再从输出中解析 skill 的成功/失败标记：
 
-| subagent         | agent 完成标记 | skill 成功标记          | skill 失败标记         |
-| ---------------- | -------------- | ----------------------- | ---------------------- |
-| sketch-analyzer  | `ANALYZE_OVER` | `PICK_SUCCESS` 等       | `PICK_FAILED` 等       |
-| sketch-architect | `BUILD_OVER`   | `GEN_BASE_SUCCESS` 等   | `GEN_BASE_FAILED` 等   |
-| sketch-developer | `DEVELOP_OVER` | `DRAW_SUCCESS` 等       | `DRAW_FAILED` 等       |
-| sketch-checker   | `CHECK_OVER`   | `INIT_CHECK_SUCCESS` 等 | `INIT_CHECK_FAILED` 等 |
+| subagent         | agent 完成标记 | skill 成功标记                                      | skill 失败标记                                    |
+| ---------------- | -------------- | --------------------------------------------------- | ------------------------------------------------- |
+| sketch-analyzer  | `ANALYZE_OVER` | `PICK_SUCCESS` 等                                   | `PICK_FAILED` 等                                  |
+| sketch-architect | `BUILD_OVER`   | `GEN_BASE_SUCCESS` 等                               | `GEN_BASE_FAILED` 等                              |
+| sketch-developer | `DEVELOP_OVER` | `DRAW_SUCCESS` 等                                   | `DRAW_FAILED` 等                                  |
+| sketch-checker   | `CHECK_OVER`   | `INIT_CHECK_SUCCESS`、`SCREENSHOT_CHECK_SUCCESS` 等 | `INIT_CHECK_FAILED`、`SCREENSHOT_CHECK_FAILED` 等 |
 
 #### 通信流程
 

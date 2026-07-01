@@ -101,7 +101,7 @@ export async function openBrowser(url: string) {
     page = await context.newPage()
   }
 
-  await page.goto(url, { waitUntil: 'load' })
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
   return page
 }
 
