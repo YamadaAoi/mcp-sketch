@@ -10,7 +10,9 @@ export const sketchScreenshotInputSchema = z.object({
     .describe('sketch html export path (zip or folder, required)'),
   page_name: z.string().describe('page name (optional)'),
   artboard_name: z.string().describe('artboard name (optional)'),
-  url: z.string().describe('Screenshot URL')
+  command: z.string().describe('command to start local server'),
+  url: z.string().describe('Preview URL'),
+  projectPath: z.string().describe('Project path').optional()
 })
 
 export type SketchScreenshotInputSchema = SchemaOutput<
@@ -30,7 +32,7 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
   let response = 'Sketch Exception'
 
   try {
-    const page = await openBrowser(args.url)
+    const page = await openBrowser(args.command, args.url, args.projectPath)
     await page.bringToFront()
     const screenshot = await page.screenshot()
 

@@ -15,7 +15,8 @@
 ```typescript
 interface ArtboardState {
   filePath: string // Sketch 导出文件路径
-  previewPath: string // 预览截图路径
+  previewPath: string // 设计稿预览截图路径
+  previewUrl: string // 浏览器预览 URL（layout 阶段推断后记录）
   pageName: string // 页面名称
   artboardName: string // 画板名称
   width: number // 画板宽度
@@ -90,6 +91,7 @@ interface ComponentState {
 {
   "filePath": "<data.filePath>",
   "previewPath": "",
+  "previewUrl": "",
   "pageName": "<data.pageName>",
   "artboardName": "<data.artboardName>",
   "width": 0,
@@ -102,7 +104,7 @@ interface ComponentState {
 
 ### action: update-state
 
-更新状态文件的 `stage`、`previewPath`、`width`、`height`、`components` 字段。
+更新状态文件的 `stage`、`previewPath`、`previewUrl`、`width`、`height`、`components` 字段。
 
 ```json
 {
@@ -111,6 +113,7 @@ interface ComponentState {
   "data": {
     "stage": "<由 leader 根据当前步骤确定>",
     "previewPath": "<画板预览图相对路径，没有则不更新>",
+    "previewUrl": "<浏览器预览 URL，没有则不更新>",
     "width": "<画板宽度，没有则不更新>",
     "height": "<画板高度，没有则不更新>",
     "components": [

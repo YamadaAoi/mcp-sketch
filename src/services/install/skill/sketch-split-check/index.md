@@ -14,7 +14,6 @@
 - `page_name` — 页面名
 - `artboard_name` — 画板名
 - `split_result` — sketch-split 的完整输出结果（组件规划表）
-- `preview_path` — 画板预览图路径（用于合理性判断）
 
 ### 步骤 1：读取项目配置
 
@@ -84,7 +83,7 @@ SPLIT_CHECK_SUCCESS
 ```
 组件拆分审核失败：
 - 画板：{page_name}-{artboard_name}
-- 问题类型：{路径错误 | 命名错误 | 层级错误 | 描述文件缺失 | 基础元素误拆 | 公共组件误判}
+- 问题类型：{路径错误 | 命名错误 | 层级错误 | 基础元素误拆 | 公共组件误判}
 - 问题描述：{具体问题，列出错误组件及原因}
 - 修复建议：{建议如何修复}
 SPLIT_CHECK_FAILED

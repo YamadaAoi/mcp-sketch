@@ -18,7 +18,7 @@
 
 ### 步骤 3：检查`components`数组是否存在`component_path`组件
 
-- 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 {component_path} 组件`
+- 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中未找到 {component_path} 组件`
 
 ### 步骤 4：查看输入参数是否包含`errorDescription`
 

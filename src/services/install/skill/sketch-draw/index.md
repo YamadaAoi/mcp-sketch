@@ -15,7 +15,7 @@
 
 ## 执行步骤
 
-以下步骤中的 `FILE_PATH`、`page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
+以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
 
 ### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法、assets_path
 
@@ -24,10 +24,11 @@
 ### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
+- 从状态文件中提取 `filePath`（Sketch 文件路径），后续 analyze 调用使用
 
 ### 步骤 3：检查`components`数组是否存在`component_path`组件
 
-- 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 {component_path} 组件`
+- 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中未找到 {component_path} 组件`
 
 ### 步骤 4：查看输入参数是否包含`errorDescription`
 
@@ -40,14 +41,14 @@
 ### 步骤 5：调用 analyze 获取图层数据
 
 ```bash
-npx -y mcp-sketch analyze -p {file_path} --pn {page_name} --an {artboard_name} -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap {assets_path} --limit {n} --offset {m}
+npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" --ap "{assets_path}" --limit {n} --offset {m}
 ```
 
 **参数说明**：
 
 | 参数       | 说明                                                                                                                                      |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `-p`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                                               |
+| `-f`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                                               |
 | `--pn`     | 页面名称                                                                                                                                  |
 | `--an`     | 画板名称                                                                                                                                  |
 | `-r`       | 组件的矩形区域，格式 `[x, y, width, height]`，从状态文件的 `rect` 字段获取。传入后只返回该区域内的图层                                    |

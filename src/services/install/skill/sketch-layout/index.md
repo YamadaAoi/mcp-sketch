@@ -47,7 +47,14 @@
   - 已配置 → 直接跳过
   - 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
 
-### 步骤 7：组件布局
+### 步骤 7：推断预览 URL
+
+读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式，从步骤 6 确定的路由路径，拼接预览 URL：
+
+- hash 模式：`http://localhost:{端口}/#/{路由路径}`
+- history 模式：`http://localhost:{端口}/{路由路径}`
+
+### 步骤 8：组件布局
 
 - 1. 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
 - 2. 读取预览图，判断当前页面属于哪种布局模式（参照下方「布局模式参考」）
@@ -337,6 +344,7 @@
 
 ```
 路由和父组件布局已完成
+previewUrl：{previewUrl}
 LAYOUT_SUCCESS
 ```
 

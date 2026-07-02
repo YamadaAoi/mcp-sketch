@@ -13,7 +13,7 @@ export const list = new Command()
   .description(
     'List the artboards from the Sketch Meaxure export archive (zip or folder).'
   )
-  .option('-p, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
+  .option('-f, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
   .action((opts: Record<string, unknown>) => {
     handleList(opts).catch(err => {
       logger.error(err, 'sketch-cli list')

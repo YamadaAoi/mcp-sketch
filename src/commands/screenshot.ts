@@ -15,10 +15,12 @@ async function handleScreenshot(opts: Record<string, unknown>) {
 export const screenshot = new Command()
   .name('screenshot')
   .description('Take a screenshot of a URL and save it')
-  .option('-p, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
+  .option('-f, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
   .option('--pn, --page_name [PAGENAME]', 'Page name')
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .option('-u, --url <URL>', 'Screenshot URL')
+  .option('-p, --projectPath <ProjectPath>', 'Project path')
+  .option('-c, --command <Command>', 'command to start local server')
   .action((opts: Record<string, unknown>) => {
     handleScreenshot(opts).catch(err => {
       logger.error(err, 'sketch-cli screenshot')

@@ -2,7 +2,6 @@ import { Command } from 'commander'
 import { install } from '@/commands/install'
 import { list } from './commands/list'
 import { analyze } from '@/commands/analyze'
-import { checkPort } from '@/commands/checkPort'
 import { preview } from '@/commands/preview'
 import { screenshot } from '@/commands/screenshot'
 
@@ -17,7 +16,6 @@ export function startCli() {
   program.addCommand(install)
   program.addCommand(list)
   program.addCommand(analyze)
-  program.addCommand(checkPort)
   program.addCommand(preview)
   program.addCommand(screenshot)
 

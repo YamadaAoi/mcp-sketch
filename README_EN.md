@@ -130,9 +130,9 @@ MCP: `sketch_html_list`
 
 | Parameter | CLI Flag                 | MCP Parameter | Required | Description   |
 | --------- | ------------------------ | ------------- | -------- | ------------- |
-| file path | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder |
+| file path | `-f, --file_path <PATH>` | file_path     | yes      | zip or folder |
 
-Example: `npx -y mcp-sketch list -p /path/to/export.zip`
+Example: `npx -y mcp-sketch list -f /path/to/export.zip`
 
 Returns: `[{ pageName, artboardName, previewPath }]`
 
@@ -145,7 +145,7 @@ MCP: `sketch_html_analyze`
 
 | Parameter     | CLI Flag                 | MCP Parameter | Required | Description                                          |
 | ------------- | ------------------------ | ------------- | -------- | ---------------------------------------------------- |
-| file path     | `-p, --file_path <PATH>` | file_path     | yes      | zip or folder                                        |
+| file path     | `-f, --file_path <PATH>` | file_path     | yes      | zip or folder                                        |
 | page name     | `--pn, --page_name`      | page_name     | no       |                                                      |
 | artboard name | `--an, --artboard_name`  | artboard_name | no       |                                                      |
 | rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                              |
@@ -155,7 +155,7 @@ MCP: `sketch_html_analyze`
 | offset        | `-o, --offset`           | offset        | no       | starting index (default 0)                           |
 | save result   | `--sr, --save_result`    | save_result   | no       | save JSON into `{input}.cache/` dir, default `false` |
 
-Example: `npx -y mcp-sketch analyze -p /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]" --limit 20`
+Example: `npx -y mcp-sketch analyze -f /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]" --limit 20`
 
 Returns: `{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
 

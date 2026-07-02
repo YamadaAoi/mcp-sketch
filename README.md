@@ -128,9 +128,9 @@ MCP: `sketch_html_list`
 
 | 参数     | CLI 选项                 | MCP 参数  | 必填 | 说明       |
 | -------- | ------------------------ | --------- | ---- | ---------- |
-| 文件路径 | `-p, --file_path <PATH>` | file_path | 是   | zip 或目录 |
+| 文件路径 | `-f, --file_path <PATH>` | file_path | 是   | zip 或目录 |
 
-例：`npx -y mcp-sketch list -p /path/to/export.zip`
+例：`npx -y mcp-sketch list -f /path/to/export.zip`
 
 返回结果：`[{ pageName, artboardName, previewPath }]`
 
@@ -153,7 +153,7 @@ MCP: `sketch_html_analyze`
 | 起始偏移       | `-o, --offset`           | offset        | 否   | 从第 m 个图层开始返回（默认 0）                  |
 | 保存结果到文件 | `--sr, --save_result`    | save_result   | 否   | 保存 JSON 到 `{input}.cache/` 目录，默认 `false` |
 
-例：`npx -y mcp-sketch analyze -p /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]" --limit 20`
+例：`npx -y mcp-sketch analyze -f /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]" --limit 20`
 
 返回结果：`{ artboard: { 图层、样式、图片等 }, previewPath: "预览图路径" }`
 

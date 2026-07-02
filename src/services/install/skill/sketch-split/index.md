@@ -22,7 +22,6 @@
 
 参数由调用方传入：
 
-- `FILE_PATH` — Sketch 文件路径
 - `page_name` — 页面名
 - `artboard_name` — 画板名
 - `errorDescription`（可选） — 用户反馈及问题分析
@@ -30,7 +29,9 @@
 ### 第一步：环境校验
 
 - 1. 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、assets_path、项目目录结构、命名规范、技术栈和UI组件库
-- 2. 若文件不存在，立即返回失败：proj-init.md 文件不存在
+  - 若文件不存在，立即返回失败：proj-init.md 文件不存在
+- 3. 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 获取 `filePath`
+  - 若文件不存在，立即返回失败：画板{page_name}-{artboard_name}中间状态不存在
 
 ### 第二步：查看输入参数是否包含`errorDescription`
 
@@ -43,14 +44,14 @@
 ### 第三步：画板分析（核心逻辑）
 
 ```bash
-npx -y mcp-sketch analyze -p {FILE_PATH} --pn {page_name} --an {artboard_name} --ap {assets_path} --limit {n} --offset {m}
+npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --ap "{assets_path}" --limit {n} --offset {m}
 ```
 
 **参数说明**：
 
 | 参数       | 说明                                                                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `-p`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                                              |
+| `-f`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                                                              |
 | `--pn`     | 页面名称，不传则取第一个 page                                                                                                            |
 | `--an`     | 画板名称，不传则取第一个 artboard                                                                                                        |
 | `--ap`     | 切图存放路径，从 `proj-init.md` 约定的静态资源目录。切图会自动压缩为 webp 格式。**必须传入**，与 draw 阶段使用同一路径，避免生成重复切图 |

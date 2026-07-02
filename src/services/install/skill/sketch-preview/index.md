@@ -16,81 +16,31 @@
 
 ### 步骤 1：读取项目配置
 
-读取 `.sketch-cache/proj-init.md`，获取：
-
-- 启动命令（如 `vite`、`npm run dev` 等）
-- 路由模式（hash 或 history）
-- 监听端口
+读取 `.sketch-cache/proj-init.md`，获取启动命令（如 `npm run dev`、`pnpm dev` 等）
 
 若文件不存在或缺少启动命令，返回失败信息：`proj-init.md 不存在或未配置启动命令`
 
-### 步骤 2：确定路由路径
+### 步骤 2：读取预览 URL
 
-读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取入口页面组件的 `componentPath`（`type: page` 的组件）。
+读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `previewUrl` 字段
 
-读取项目路由配置文件（`proj-init.md` 中记录的路由文件位置），在路由定义中查找该组件对应的路由路径：
+若不存在，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
 
-- Vue Router：在 `router/index.ts` 中查找 `component: () => import('...组件路径...')` 对应的 `path`
-- React Router：在路由配置文件中查找 `element={<...组件名... />}` 或 `lazy: () => import('...')` 对应的 `path`
-- 其他路由方案：同理，根据实际配置查找
-
-若找不到对应路由，返回失败信息：`未找到组件 {componentPath} 对应的路由配置`
-
-### 步骤 3：拼接预览 URL
-
-根据路由模式拼接完整 URL：
-
-- hash 模式：`http://localhost:{端口}/#/{路由路径}`
-- history 模式：`http://localhost:{端口}/{路由路径}`
-
-### 步骤 4：检测端口是否已启动
+### 步骤 3：调用 preview 启动服务并打开浏览器
 
 ```bash
-npx -y mcp-sketch check-port -p {端口}
+npx -y mcp-sketch preview -u "{previewUrl}" -c "{启动命令}" -p "{项目根目录}"
 ```
 
-- 若返回 `open`（端口已被占用）→ 跳到步骤 6（直接打开浏览器）
-- 若返回 `closed`（端口未被占用）→ 继续步骤 5
+**参数说明**：
 
-### 步骤 5：在新终端窗口启动开发服务器
+| 参数 | 必填 | 说明                                                                                                       |
+| ---- | ---- | ---------------------------------------------------------------------------------------------------------- |
+| `-u` | ✅   | 预览 URL，从状态文件 `previewUrl` 获取                                                                     |
+| `-c` | ✅   | 启动命令，从 `proj-init.md` 中读取                                                                         |
+| `-p` | ❌   | 项目根目录。如果当前工作目录就是项目根目录（能直接运行启动命令），则无需传；否则需要传入 `-p` 指定项目路径 |
 
-先检测当前运行平台，再用对应命令打开新终端：
-
-**Windows（PowerShell）**：
-
-```powershell
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '{项目根目录}'; {启动命令}"
-```
-
-**Windows（cmd）**：
-
-```cmd
-Start-Process cmd -ArgumentList "/k", "cd /d {项目根目录} && {启动命令}"
-```
-
-**macOS**：
-
-```bash
-osascript -e 'tell application "Terminal" to do script "cd {项目根目录} && {启动命令}"'
-```
-
-**Linux（gnome-terminal）**：
-
-```bash
-gnome-terminal -- bash -c "cd {项目根目录} && {启动命令}; exec bash"
-```
-
-**Linux（xterm，备选）**：
-
-```bash
-xterm -e "cd {项目根目录} && {启动命令}"
-```
-
-### 步骤 6：打开浏览器访问预览 URL
-
-```bash
-npx -y mcp-sketch preview -u {预览URL}
-```
+`preview` 命令会自动检测端口是否可用，若服务未启动则在新的终端窗口中运行启动命令，等待服务就绪后打开浏览器访问预览 URL
 
 ## 输出格式
 

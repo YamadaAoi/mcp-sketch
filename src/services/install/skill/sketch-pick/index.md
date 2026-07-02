@@ -15,7 +15,7 @@
 从上下文获取 `FILE_PATH`（Sketch 文件路径，zip 或目录），调用：
 
 ```bash
-npx -y mcp-sketch list -p {FILE_PATH}
+npx -y mcp-sketch list -f "{FILE_PATH}"
 ```
 
 ### 步骤 2：用户选择

@@ -13,6 +13,8 @@ export const preview = new Command()
   .name('preview')
   .description('Preview a URL in the browser')
   .option('-u, --url <URL>', 'Preview URL')
+  .option('-p, --projectPath <ProjectPath>', 'Project path')
+  .option('-c, --command <Command>', 'command to start local server')
   .action((opts: Record<string, unknown>) => {
     handlePreview(opts).catch(err => {
       logger.error(err, 'sketch-cli preview')
