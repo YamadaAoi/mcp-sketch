@@ -3,10 +3,12 @@ import { toolSketchList } from './list'
 import { toolSketchAnalyze } from './analyze'
 import { toolSketchPreview } from './preview'
 import { toolSketchScreenshot } from './screenshot'
+import { toolSketchState } from './state'
 
 export const tools: RegisterToolParams[] = [
   toolSketchList(),
   toolSketchAnalyze(),
   toolSketchPreview(),
-  toolSketchScreenshot()
+  toolSketchScreenshot(),
+  toolSketchState()
 ]

@@ -25,7 +25,10 @@ export const analyze = new Command()
   .description(
     'parsing Sketch Meaxure exported HTML archives (zip or folder) and extracting design structure information'
   )
-  .option('-f, --file_path <PATH>', 'Sketch HTML export path (zip or folder)')
+  .requiredOption(
+    '-f, --file_path <PATH>',
+    'Sketch HTML export path (zip or folder)'
+  )
   .option('--pn, --page_name [PAGENAME]', 'Page name')
   .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .option(

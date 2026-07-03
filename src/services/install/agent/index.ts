@@ -1,6 +1,5 @@
 import type { InstallConfig } from '../installer'
 import SketchLeaderPrompt from './sketch-leader/index.md'
-import SketchRecorderPrompt from './sketch-recorder/index.md'
 import SketchInitializerPrompt from './sketch-initializer/index.md'
 import SketchAnalyzerPrompt from './sketch-analyzer/index.md'
 import SketchArchitectPrompt from './sketch-architect/index.md'
@@ -43,49 +42,6 @@ export const AgentPool: InstallConfig[] = [
                 '*': 'allow',
                 'unzip *': 'deny',
                 'Expand-Archive *': 'deny'
-              }
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchRecorderPrompt,
-    name: 'sketch-recorder',
-    description: '记录员，负责管理画板状态文件的创建和更新',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-recorder.md',
-        meta: [
-          { key: 'name' },
-          { key: 'description' },
-          { key: 'tools', value: 'Read, Write, Edit, Bash' }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-recorder.md',
-        meta: [
-          { key: 'name' },
-          { key: 'description' },
-          { key: 'mode', value: 'subagent' },
-          { key: 'hidden', value: true },
-          { key: 'temperature', value: 0.1 },
-          {
-            key: 'permission',
-            value: {
-              read: 'allow',
-              write: 'allow',
-              edit: 'allow',
-              bash: {
-                '*': 'deny',
-                'Remove-Item *': 'allow',
-                'rm *': 'allow',
-                'del *': 'allow'
               }
             }
           }

@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { constants } from 'fs'
 import { getSharp } from './imageProcessor'
 
-async function fileExists(filePath: string) {
+export async function fileExists(filePath: string) {
   return fs
     .access(filePath, constants.F_OK)
     .then(() => true)

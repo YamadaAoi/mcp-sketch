@@ -12,9 +12,9 @@ async function handlePreview(opts: Record<string, unknown>) {
 export const preview = new Command()
   .name('preview')
   .description('Preview a URL in the browser')
-  .option('-u, --url <URL>', 'Preview URL')
+  .requiredOption('-u, --url <URL>', 'Preview URL')
+  .requiredOption('-c, --command <Command>', 'command to start local server')
   .option('-p, --projectPath <ProjectPath>', 'Project path')
-  .option('-c, --command <Command>', 'command to start local server')
   .action((opts: Record<string, unknown>) => {
     handlePreview(opts).catch(err => {
       logger.error(err, 'sketch-cli preview')

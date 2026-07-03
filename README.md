@@ -30,7 +30,6 @@ npx -y mcp-sketch install
 ```
 {agents}/
 ├── sketch-leader.md         ← 主 agent：前端 Leader
-├── sketch-recorder.md       ← 子 agent：状态记录员
 ├── sketch-initializer.md    ← 子 agent：项目架构师
 ├── sketch-analyzer.md       ← 子 agent：分析师（pick/split/preview）
 ├── sketch-architect.md      ← 子 agent：架构师（gen-base/layout）
@@ -48,6 +47,7 @@ npx -y mcp-sketch install
 ├── sketch-preview/          ← 预览布局
 ├── sketch-draw/             ← 绘制功能
 ├── sketch-draw-check/       ← 绘制审核
+├── sketch-screenshot-check/ ← 截图比对
 └── sketch-init-check/       ← 初始化审核
 ```
 
@@ -73,25 +73,26 @@ claude --agent sketch-leader
 
 ### 工作流
 
-| 阶段       | 子 agent           | skill                 | 并行 |
-| ---------- | ------------------ | --------------------- | ---- |
-| 初始化     | sketch-initializer | -                     | ❌   |
-| 初始化审核 | sketch-checker     | sketch-init-check     | ❌   |
-| 选择画板   | sketch-analyzer    | sketch-pick           | ❌   |
-| 创建状态   | sketch-recorder    | -                     | ❌   |
-| 组件拆分   | sketch-analyzer    | sketch-split          | ❌   |
-| 拆分审核   | sketch-checker     | sketch-split-check    | ❌   |
-| 记录拆分   | sketch-recorder    | -                     | ❌   |
-| 生成骨架   | sketch-architect   | sketch-gen-base       | ✅   |
-| 骨架审核   | sketch-checker     | sketch-gen-base-check | ✅   |
-| 记录骨架   | sketch-recorder    | -                     | ❌   |
-| 布局骨架   | sketch-architect   | sketch-layout         | ❌   |
-| 布局审核   | sketch-checker     | sketch-layout-check   | ❌   |
-| 预览布局   | sketch-analyzer    | sketch-preview        | ❌   |
-| 记录布局   | sketch-recorder    | -                     | ❌   |
-| 绘制功能   | sketch-developer   | sketch-draw           | ✅   |
-| 绘制审核   | sketch-checker     | sketch-draw-check     | ✅   |
-| 记录完成   | sketch-recorder    | -                     | ❌   |
+| 阶段       | 子 agent           | skill                   | 并行 |
+| ---------- | ------------------ | ----------------------- | ---- |
+| 初始化     | sketch-initializer | -                       | ❌   |
+| 初始化审核 | sketch-checker     | sketch-init-check       | ❌   |
+| 选择画板   | sketch-analyzer    | sketch-pick             | ❌   |
+| 创建状态   | leader             | -                       | ❌   |
+| 组件拆分   | sketch-analyzer    | sketch-split            | ❌   |
+| 拆分审核   | sketch-checker     | sketch-split-check      | ❌   |
+| 记录拆分   | leader             | -                       | ❌   |
+| 生成骨架   | sketch-architect   | sketch-gen-base         | ✅   |
+| 骨架审核   | sketch-checker     | sketch-gen-base-check   | ✅   |
+| 记录骨架   | leader             | -                       | ❌   |
+| 布局骨架   | sketch-architect   | sketch-layout           | ❌   |
+| 布局审核   | sketch-checker     | sketch-layout-check     | ❌   |
+| 预览布局   | sketch-analyzer    | sketch-preview          | ❌   |
+| 记录布局   | leader             | -                       | ❌   |
+| 绘制功能   | sketch-developer   | sketch-draw             | ✅   |
+| 绘制审核   | sketch-checker     | sketch-draw-check       | ✅   |
+| 截图比对   | sketch-checker     | sketch-screenshot-check | ❌   |
+| 记录完成   | leader             | -                       | ❌   |
 
 ### 使用方式
 
@@ -113,7 +114,23 @@ claude --agent sketch-leader
 - 项目配置：`.sketch-cache/proj-init.md`
 - 画板状态：`.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
-Leader 只能读取状态文件，所有写入操作委托给 sketch-recorder。中断后可恢复进度。所有文件路径使用相对路径。
+Leader 通过 `mcp-sketch state` CLI 管理状态文件。中断后可恢复进度。所有文件路径使用相对路径。
+
+### 环境变量
+
+项目根目录下创建 `.sketch.env` 文件，用于Chrome 路径等：
+
+| 字段            | 类型   | 必填 | 默认值                      | 说明                  |
+| --------------- | ------ | ---- | --------------------------- | --------------------- |
+| `CHROME_PATH`   | string | 是   | -                           | Chrome 可执行文件路径 |
+| `USER_DATA_DIR` | string | 否   | `~/.mcp-sketch-chrome-data` | Chrome 用户数据目录   |
+| `DEBUG_PORT`    | number | 否   | `9222`                      | Chrome 远程调试端口   |
+
+示例：
+
+```
+CHROME_PATH=\path\to\chrome.exe
+```
 
 ## 工具
 

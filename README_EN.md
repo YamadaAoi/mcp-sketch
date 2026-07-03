@@ -32,7 +32,6 @@ Installed file structure:
 ```
 {agents}/
 ├── sketch-leader.md         ← Main agent: Frontend Leader
-├── sketch-recorder.md       ← Sub-agent: State Recorder
 ├── sketch-initializer.md    ← Sub-agent: Project Architect
 ├── sketch-analyzer.md       ← Sub-agent: Analyst (pick/split/preview)
 ├── sketch-architect.md      ← Sub-agent: Architect (gen-base/layout)
@@ -50,6 +49,7 @@ Installed file structure:
 ├── sketch-preview/          ← Preview layout
 ├── sketch-draw/             ← Draw component features
 ├── sketch-draw-check/       ← Review drawing
+├── sketch-screenshot-check/ ← Screenshot comparison
 └── sketch-init-check/       ← Review project init
 ```
 
@@ -75,25 +75,26 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 
 ### Workflow
 
-| Phase           | Sub-agent          | Skill                 | Parallel |
-| --------------- | ------------------ | --------------------- | -------- |
-| Initialize      | sketch-initializer | -                     | ❌       |
-| Init Review     | sketch-checker     | sketch-init-check     | ❌       |
-| Pick Artboard   | sketch-analyzer    | sketch-pick           | ❌       |
-| Create State    | sketch-recorder    | -                     | ❌       |
-| Split           | sketch-analyzer    | sketch-split          | ❌       |
-| Split Review    | sketch-checker     | sketch-split-check    | ❌       |
-| Record Split    | sketch-recorder    | -                     | ❌       |
-| Gen Base        | sketch-architect   | sketch-gen-base       | ✅       |
-| Base Review     | sketch-checker     | sketch-gen-base-check | ✅       |
-| Record Base     | sketch-recorder    | -                     | ❌       |
-| Layout          | sketch-architect   | sketch-layout         | ❌       |
-| Layout Review   | sketch-checker     | sketch-layout-check   | ❌       |
-| Preview         | sketch-analyzer    | sketch-preview        | ❌       |
-| Record Layout   | sketch-recorder    | -                     | ❌       |
-| Draw            | sketch-developer   | sketch-draw           | ✅       |
-| Draw Review     | sketch-checker     | sketch-draw-check     | ✅       |
-| Record Complete | sketch-recorder    | -                     | ❌       |
+| Phase           | Sub-agent          | Skill                   | Parallel |
+| --------------- | ------------------ | ----------------------- | -------- |
+| Initialize      | sketch-initializer | -                       | ❌       |
+| Init Review     | sketch-checker     | sketch-init-check       | ❌       |
+| Pick Artboard   | sketch-analyzer    | sketch-pick             | ❌       |
+| Create State    | leader             | -                       | ❌       |
+| Split           | sketch-analyzer    | sketch-split            | ❌       |
+| Split Review    | sketch-checker     | sketch-split-check      | ❌       |
+| Record Split    | leader             | -                       | ❌       |
+| Gen Base        | sketch-architect   | sketch-gen-base         | ✅       |
+| Base Review     | sketch-checker     | sketch-gen-base-check   | ✅       |
+| Record Base     | leader             | -                       | ❌       |
+| Layout          | sketch-architect   | sketch-layout           | ❌       |
+| Layout Review   | sketch-checker     | sketch-layout-check     | ❌       |
+| Preview         | sketch-analyzer    | sketch-preview          | ❌       |
+| Record Layout   | leader             | -                       | ❌       |
+| Draw            | sketch-developer   | sketch-draw             | ✅       |
+| Draw Review     | sketch-checker     | sketch-draw-check       | ✅       |
+| Screenshot      | sketch-checker     | sketch-screenshot-check | ❌       |
+| Record Complete | leader             | -                       | ❌       |
 
 ### Usage
 
@@ -115,7 +116,23 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 - Project config: `.sketch-cache/proj-init.md`
 - Artboard state: `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
-Leader can only read state files; all write operations are delegated to sketch-recorder. Resume from where you left off if interrupted. All file paths use relative paths.
+Leader manages state files via `mcp-sketch state` CLI. Resume from where you left off if interrupted. All file paths use relative paths.
+
+### Environment Variables
+
+Create a `.sketch.env` file in the project root to configure Chrome path, etc.:
+
+| Field           | Type   | Required | Default                     | Description                  |
+| --------------- | ------ | -------- | --------------------------- | ---------------------------- |
+| `CHROME_PATH`   | string | yes      | -                           | Path to Chrome executable    |
+| `USER_DATA_DIR` | string | no       | `~/.mcp-sketch-chrome-data` | Chrome user data directory   |
+| `DEBUG_PORT`    | number | no       | `9222`                      | Chrome remote debugging port |
+
+Example:
+
+```
+CHROME_PATH=\path\to\chrome.exe
+```
 
 ## Tools
 
