@@ -13,7 +13,7 @@ export const preview = new Command()
   .name('preview')
   .description('Preview a URL in the browser')
   .requiredOption('-u, --url <URL>', 'Preview URL')
-  .requiredOption('-c, --command <Command>', 'command to start local server')
+  .option('-c, --command <Command>', 'command to start local server')
   .option('-p, --projectPath <ProjectPath>', 'Project path')
   .action((opts: Record<string, unknown>) => {
     handlePreview(opts).catch(err => {

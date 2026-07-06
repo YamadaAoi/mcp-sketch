@@ -11,8 +11,8 @@ import { chromium, type BrowserContext, type Page } from 'playwright-core'
 import { getEnv } from '@/utils/env'
 
 export const sketchPreviewInputSchema = z.object({
-  command: z.string().describe('command to start local server'),
   url: z.string().describe('Preview URL'),
+  command: z.string().describe('command to start local server').optional(),
   projectPath: z.string().describe('Project path').optional()
 })
 
@@ -307,18 +307,23 @@ async function findOrCreatePage(context: BrowserContext, url: string) {
 
 /**
  * 打开浏览器并访问指定URL
- * @param command - 启动浏览器的命令
  * @param url - 浏览器要打开的URL
+ * @param command - 启动浏览器的命令
  * @param projectPath - 项目路径
  * @returns 浏览器实例
  */
 export async function openBrowser(
-  command: string,
   url: string,
+  command?: string,
   projectPath?: string
 ) {
   const isAccessible = await checkUrlOnce(url)
   if (!isAccessible) {
+    if (!command) {
+      throw new Error(
+        '❌ local server not started, please provide the start command'
+      )
+    }
     await startDevServer(command, url, projectPath)
   }
 
@@ -337,7 +342,7 @@ export async function sketchPreview(args: SketchPreviewInputSchema) {
   let response = 'Sketch Exception'
 
   try {
-    await openBrowser(args.command, args.url, args.projectPath)
+    await openBrowser(args.url, args.command, args.projectPath)
     response = `✅ ${args.url} opened in browser`
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
