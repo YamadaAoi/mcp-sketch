@@ -1,4 +1,4 @@
-import { exec, spawn } from 'child_process'
+import { spawn } from 'child_process'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 import http from 'http'
@@ -228,9 +228,20 @@ async function connectChrome() {
 
   const isPortOpen = await checkPort(debugPort)
   if (!isPortOpen) {
-    exec(
-      `"${chromePath}" --start-maximized --remote-debugging-port=${debugPort} --user-data-dir="${userDataDir}"`
+    const child = spawn(
+      chromePath,
+      [
+        '--start-maximized',
+        `--remote-debugging-port=${debugPort}`,
+        `--user-data-dir=${userDataDir}`
+      ],
+      {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true
+      }
     )
+    child.unref()
 
     let waitTime = 0
     while (!(await checkPort(debugPort)) && waitTime < 10000) {
