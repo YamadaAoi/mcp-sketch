@@ -26,37 +26,33 @@ function startInNewWindow(command: string, cwd: string) {
   const p = platform()
 
   if (p === 'win32') {
-    commandStr = 'powershell'
-    args = [
-      '-NoProfile',
-      '-Command',
-      `Start-Process cmd -ArgumentList '/k ${command}' -WorkingDirectory '${cwd}'`
-    ]
-    // fullCommand = `Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location ${safeCwd}; ${command}"`
+    commandStr = 'cmd'
+    args = ['/c', 'start', 'cmd', '/k', command]
   } else if (p === 'darwin') {
-    // macOS: 使用系统自带的 Terminal.app 打开新窗口
-    // 使用 osascript 执行 AppleScript 是最稳妥的方式
-    // fullCommand = `osascript -e 'tell application "Terminal" to do script "cd ${safeCwd} && ${command}"'`
+    commandStr = 'osascript'
+    args = [
+      '-e',
+      `tell application "Terminal" to do script "cd \\\"${cwd}\\\" && ${command}"`
+    ]
   } else {
-    // Linux: 尝试使用常见的终端模拟器 (gnome-terminal)
-    // 如果系统没有 gnome-terminal，可以替换为 xterm -e
-    // fullCommand = `gnome-terminal -- bash -c "cd ${safeCwd} && ${command}; exec bash" > /dev/null 2>&1 &`
+    commandStr = 'x-terminal-emulator'
+    args = ['-e', 'bash', '-c', `cd "${cwd}" && ${command}; exec bash`]
   }
 
   const child = spawn(commandStr, args, {
     detached: true,
     stdio: 'ignore',
-    cwd: cwd,
+    cwd,
     windowsHide: false
   })
 
-  // 销毁外壳进程的管道，确保 opencode 立即放行
-  // child.stdin?.destroy()
-  // child.stdout?.destroy()
-  // child.stderr?.destroy()
+  child.on('error', err => {
+    console.error(`❌ 启动命令失败: ${err.message}`)
+  })
+
   child.unref()
 
-  console.log(`✅ 已在新窗口启动: ${command}`)
+  console.log(`✅ 已在新窗口启动！！！！ ${command}`)
 }
 
 /**

@@ -1,7 +1,7 @@
 // import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
-import { openBrowser } from '../preview/index.bak'
+import { openBrowser } from '../preview/index'
 // import { processImage } from '@/utils/saveFile'
 
 export const sketchScreenshotInputSchema = z.object({
