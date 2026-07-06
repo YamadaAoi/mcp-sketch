@@ -1,8 +1,8 @@
-import path from 'path'
+// import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
-import { openBrowser } from '../preview'
-import { processImage } from '@/utils/saveFile'
+import { openBrowser } from '../preview/index.bak'
+// import { processImage } from '@/utils/saveFile'
 
 export const sketchScreenshotInputSchema = z.object({
   file_path: z
@@ -32,19 +32,19 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
   let response = 'Sketch Exception'
 
   try {
-    const page = await openBrowser(args.url, args.command, args.projectPath)
-    await page.bringToFront()
-    const screenshot = await page.screenshot()
+    await openBrowser(args.url, args.command, args.projectPath)
+    // await page.bringToFront()
+    // const screenshot = await page.screenshot()
 
-    const parsed = path.parse(args.file_path)
-    const dest = path.join(
-      parsed.dir,
-      `${parsed.name}.cache`,
-      `chrome_${args.page_name}_${args.artboard_name}_${Date.now()}.png`
-    )
+    // const parsed = path.parse(args.file_path)
+    // const dest = path.join(
+    //   parsed.dir,
+    //   `${parsed.name}.cache`,
+    //   `chrome_${args.page_name}_${args.artboard_name}_${Date.now()}.png`
+    // )
 
-    const previewPath = await processImage(screenshot, dest)
-    response = `Screenshot saved to ${previewPath}`
+    // const previewPath = await processImage(screenshot, dest)
+    // response = `Screenshot saved to ${previewPath}`
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
   }
