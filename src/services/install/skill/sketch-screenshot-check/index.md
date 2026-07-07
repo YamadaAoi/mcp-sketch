@@ -32,9 +32,15 @@
 
 ### 步骤 3：调用 screenshot 截图
 
+- **Windows**
+
 ```bash
-npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}" -c "{启动命令}"
+Start-Process cmd -ArgumentList '/c npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}" -c "{启动命令}"'
 ```
+
+- **macOS**：使用`osascript`启动新窗口并运行`npx -y mcp-sketch screenshot`命令
+
+- **Linux**: 使用`x-terminal-emulator`启动新窗口并运行`npx -y mcp-sketch screenshot`命令
 
 **参数说明**：
 

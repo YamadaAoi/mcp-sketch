@@ -28,9 +28,15 @@
 
 ### 步骤 3：调用 preview 启动服务并打开浏览器
 
+- **Windows**
+
 ```bash
-npx -y mcp-sketch preview -u "{previewUrl}" -c "{启动命令}" -p "{项目根目录}"
+Start-Process cmd -ArgumentList '/c npx -y mcp-sketch preview -u "{previewUrl}" -c "{启动命令}" -p "{项目根目录}"'
 ```
+
+- **macOS**：使用`osascript`启动新窗口并运行`npx -y mcp-sketch preview`命令
+
+- **Linux**: 使用`x-terminal-emulator`启动新窗口并运行`npx -y mcp-sketch preview`命令
 
 **参数说明**：
 
