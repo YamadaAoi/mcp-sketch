@@ -6,7 +6,6 @@ async function handlePreview(opts: Record<string, unknown>) {
   const args = sketchPreviewInputSchema.parse(opts)
   const text = await sketchPreview(args)
   console.log(text)
-  process.exit(0)
 }
 
 export const preview = new Command()

@@ -9,7 +9,6 @@ async function handleScreenshot(opts: Record<string, unknown>) {
   const args = sketchScreenshotInputSchema.parse(opts)
   const text = await sketchScreenshot(args)
   console.log(text)
-  process.exit(0)
 }
 
 export const screenshot = new Command()

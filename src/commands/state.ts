@@ -6,7 +6,6 @@ async function handleState(opts: Record<string, unknown>) {
   const args = sketchStateInputSchema.parse(opts)
   const text = await sketchState(args)
   console.log(text)
-  process.exit(0)
 }
 
 export const state = new Command()

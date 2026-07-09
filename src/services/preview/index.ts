@@ -31,8 +31,10 @@ function startInNewWindow(command: string, projectPath?: string) {
     let args: string[] = []
 
     if (p === 'win32') {
-      commandStr = 'cmd.exe'
-      args = ['/k', command]
+      commandStr = 'powershell'
+      args = [
+        `Start-Process powershell -WorkingDirectory '${absolutePath}' -ArgumentList '-Command ${command}'`
+      ]
     } else if (p === 'darwin') {
       commandStr = 'osascript'
       args = [
@@ -49,12 +51,7 @@ function startInNewWindow(command: string, projectPath?: string) {
       ]
     }
 
-    const child = spawn(commandStr, args, {
-      detached: true,
-      stdio: 'ignore',
-      windowsHide: false,
-      cwd: absolutePath
-    })
+    const child = spawn(commandStr, args)
 
     child.on('error', err => {
       reject(new Error(`❌ 无法启动新窗口: ${err.message}`))
