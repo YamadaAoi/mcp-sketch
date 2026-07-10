@@ -14,6 +14,8 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
+  CWD: z.string().default(process.cwd()),
+  SERVER_COMMAND: z.string().default('npm run dev'),
   CHROME_PATH: z.string().default(''),
   USER_DATA_DIR: z.string().default(join(homedir(), '.mcp-sketch-chrome-data')),
   DEBUG_PORT: z.number().default(9222)

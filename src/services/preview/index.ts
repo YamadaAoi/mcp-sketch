@@ -11,20 +11,62 @@ import { chromium, type BrowserContext, type Page } from 'playwright-core'
 import { getEnv } from '@/utils/env'
 
 export const sketchPreviewInputSchema = z.object({
-  url: z.string().describe('Preview URL'),
-  command: z.string().describe('command to start local server').optional(),
-  projectPath: z.string().describe('Project path').optional()
+  url: z.string().describe('Preview URL')
 })
 
 export type SketchPreviewInputSchema = SchemaOutput<
   typeof sketchPreviewInputSchema
 >
 
-function startInNewWindow(command: string, projectPath?: string) {
+function startBgService(command: string, projectPath?: string) {
   const absolutePath = projectPath ? resolve(projectPath) : process.cwd()
   if (projectPath && !existsSync(absolutePath)) {
     throw new Error(`❌ ${projectPath} not found`)
   }
+  return new Promise<string | undefined>((resolve, reject) => {
+    const p = platform()
+    let commandStr = ''
+    let args: string[] = []
+    let tmuxSession: string | undefined
+
+    if (p === 'win32') {
+      commandStr = 'powershell'
+      args = [
+        `Start-Process powershell -WorkingDirectory '${absolutePath}' -ArgumentList '-Command ${command}'`
+      ]
+    } else {
+      commandStr = 'tmux'
+      tmuxSession = `server-${Date.now()}`
+      args = [
+        'new-session',
+        '-d',
+        '-c',
+        absolutePath,
+        '-s',
+        tmuxSession,
+        command
+      ]
+    }
+
+    const child = spawn(commandStr, args)
+
+    child.on('error', err => {
+      reject(new Error(`❌ can not start service: ${err.message}`))
+    })
+
+    child.on('spawn', () => {
+      resolve(tmuxSession)
+    })
+
+    child.unref()
+  })
+}
+
+function startBgChrome(
+  chromePath: string,
+  debugPort: number,
+  userDataDir: string
+) {
   return new Promise<void>((resolve, reject) => {
     const p = platform()
     let commandStr = ''
@@ -33,28 +75,21 @@ function startInNewWindow(command: string, projectPath?: string) {
     if (p === 'win32') {
       commandStr = 'powershell'
       args = [
-        `Start-Process powershell -WorkingDirectory '${absolutePath}' -ArgumentList '-Command ${command}'`
-      ]
-    } else if (p === 'darwin') {
-      commandStr = 'osascript'
-      args = [
-        '-e',
-        `tell application "Terminal" to do script "cd '${absolutePath}' && ${command}"`
+        `Start-Process -FilePath '${chromePath}' -ArgumentList '--start-maximized --remote-debugging-port=${debugPort} --user-data-dir="${userDataDir}"'`
       ]
     } else {
-      commandStr = 'x-terminal-emulator'
+      commandStr = 'nohup'
       args = [
-        '-e',
-        'bash',
+        'sh',
         '-c',
-        `cd "${absolutePath}" && ${command}; exec bash`
+        `${chromePath} --start-maximized --remote-debugging-port=${debugPort} --user-data-dir="${userDataDir}" > /dev/null 2>&1 &`
       ]
     }
 
     const child = spawn(commandStr, args)
 
     child.on('error', err => {
-      reject(new Error(`❌ 无法启动新窗口: ${err.message}`))
+      reject(new Error(`❌ can not start chrome: ${err.message}`))
     })
 
     child.on('spawn', () => {
@@ -95,10 +130,7 @@ function isRecyclableBlankPage(page: Page): boolean {
  * @param host - 主机地址
  * @returns 是否打开
  */
-export function checkPort(
-  port: number,
-  host: string = 'localhost'
-): Promise<boolean> {
+function checkPort(port: number, host: string = 'localhost'): Promise<boolean> {
   return new Promise(resolve => {
     const socket = new Socket()
     socket.setTimeout(1000)
@@ -201,31 +233,11 @@ function waitForServer(targetUrl: string, timeout = 60000, interval = 500) {
 }
 
 /**
- * 启动开发服务器
- * @param command - 启动命令
- * @param url - 预览URL，用于检测服务是否就绪
- * @param projectPath - 项目路径
- */
-async function startDevServer(
-  command: string,
-  url: string,
-  projectPath?: string
-) {
-  await startInNewWindow(command, projectPath)
-  const result = await waitForServer(url)
-  if (!result.success) {
-    throw new Error(
-      `❌ server launch failed or timeout, check command: ${command}`
-    )
-  }
-}
-
-/**
  * 启动或连接 Chrome 浏览器
  * @returns CDP 连接上下文
  */
 async function connectChrome() {
-  const chromePath = getEnv('CHROME_PATH') || ''
+  const chromePath = getEnv('CHROME_PATH')
   const debugPort = getEnv('DEBUG_PORT')
   const userDataDir = getEnv('USER_DATA_DIR')
 
@@ -240,20 +252,7 @@ async function connectChrome() {
 
   const isPortOpen = await checkPort(debugPort)
   if (!isPortOpen) {
-    const child = spawn(
-      chromePath,
-      [
-        '--start-maximized',
-        `--remote-debugging-port=${debugPort}`,
-        `--user-data-dir=${userDataDir}`
-      ],
-      {
-        detached: true,
-        stdio: 'ignore',
-        windowsHide: true
-      }
-    )
-    child.unref()
+    await startBgChrome(chromePath, debugPort, userDataDir)
 
     let waitTime = 0
     while (!(await checkPort(debugPort)) && waitTime < 10000) {
@@ -318,17 +317,18 @@ async function findOrCreatePage(context: BrowserContext, url: string) {
 }
 
 /**
- * 打开浏览器并访问指定URL
+ * 启动本地服务
  * @param url - 浏览器要打开的URL
  * @param command - 启动浏览器的命令
  * @param projectPath - 项目路径
- * @returns 浏览器实例
+ * @returns session
  */
-export async function openBrowser(
+export async function startServer(
   url: string,
   command?: string,
   projectPath?: string
 ) {
+  let session: string | undefined
   const isAccessible = await checkUrlOnce(url)
   if (!isAccessible) {
     if (!command) {
@@ -336,12 +336,33 @@ export async function openBrowser(
         '❌ local server not started, please provide the start command'
       )
     }
-    await startDevServer(command, url, projectPath)
+    session = await startBgService(command, projectPath)
   }
 
-  const context = await connectChrome()
+  return session
+}
 
-  return findOrCreatePage(context, url)
+/**
+ * 打开浏览器并访问指定URL
+ * @param url - 浏览器要打开的URL
+ * @param command - 启动浏览器的命令
+ * @returns 浏览器实例
+ */
+export async function openBrowser(url: string, command?: string) {
+  const result = await waitForServer(url)
+  if (!result.success) {
+    throw new Error(
+      `❌ server launch failed or timeout, check command: ${command}`
+    )
+  }
+  const context = await connectChrome()
+  const page = await findOrCreatePage(context, url)
+
+  return page
+}
+
+export function getSessionDesc(session: string) {
+  return `✅ Use the following commands to manage the background dev server:\n- To view real-time logs: tmux attach -t ${session} (Press Ctrl+B, then D to safely detach and return to the terminal)\n- To stop the server: tmux kill-session -t ${session}`
 }
 
 /**
@@ -352,12 +373,23 @@ export async function openBrowser(
  */
 export async function sketchPreview(args: SketchPreviewInputSchema) {
   let response = 'Sketch Exception'
+  let session: string | undefined
 
   try {
-    await openBrowser(args.url, args.command, args.projectPath)
-    response = `✅ ${args.url} opened in browser`
+    const command = getEnv('SERVER_COMMAND')
+    const cwd = getEnv('CWD')
+    session = await startServer(args.url, command, cwd)
+    const page = await openBrowser(args.url, command)
+    await page?.context()?.browser()?.close()
+    response = `✅ ${args.url} opened in browser !`
+    if (session) {
+      response = `${response}\n${getSessionDesc(session)}`
+    }
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
+    if (session) {
+      response = `${response}\n${getSessionDesc(session)}`
+    }
   }
 
   return response

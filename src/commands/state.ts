@@ -16,7 +16,6 @@ export const state = new Command()
   .requiredOption('-c, --content <json>', 'JSON content to create or update')
   .option('--clean', 'just delete component & md files', false)
   .option('-r, --replace', 'replace component list, instead of merge', false)
-  .option('-p, --projectPath <ProjectPath>', 'Project path')
   .action((opts: Record<string, unknown>) => {
     handleState(opts).catch(err => {
       logger.error(err, 'sketch-cli state')

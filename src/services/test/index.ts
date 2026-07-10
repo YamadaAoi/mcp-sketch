@@ -12,8 +12,24 @@ function startInNewWindow(command: string) {
   const workingDirectory = process.cwd()
   console.log(command, workingDirectory)
   return new Promise<void>((resolve, reject) => {
-    const child = spawn('powershell', [
-      `Start-Process powershell -WorkingDirectory '${workingDirectory}' -ArgumentList '-Command ${command}'`
+    // const child = spawn('powershell', [
+    //   `Start-Process powershell -WorkingDirectory '${workingDirectory}' -ArgumentList '-Command ${command}'`
+    // ])
+
+    // const child = spawn('tmux', [
+    //   'new-session',
+    //   '-d',
+    //   '-s',
+    //   'mcp-sketch-dev-server',
+    //   '-c',
+    //   workingDirectory,
+    //   command
+    // ])
+    const userDataDir = '/home/zyk/.mcp-sketch-chrome-data'
+    const child = spawn('nohup', [
+      'sh',
+      '-c',
+      `/usr/bin/google-chrome --start-maximized --remote-debugging-port=9222 --user-data-dir="${userDataDir}" > /dev/null 2>&1 &`
     ])
 
     child.on('error', err => {

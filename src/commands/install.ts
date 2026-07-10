@@ -12,11 +12,6 @@ export const install = new Command()
   .description(
     'Scaffold mcp-sketch skills and agents to generate frontend code from artboards'
   )
-  .option(
-    '-c, --cwd <CWD>',
-    'current working directory, default is current directory',
-    process.cwd()
-  )
   .action((opts: Record<string, unknown>) => {
     handleInstall(opts).catch(err => {
       logger.error(err, 'sketch-cli install')

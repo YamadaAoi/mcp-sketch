@@ -1,7 +1,8 @@
 import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
-import { openBrowser } from '../preview/index'
+import { getSessionDesc, openBrowser, startServer } from '../preview'
+import { getEnv } from '@/utils/env'
 import { processImage } from '@/utils/saveFile'
 
 export const sketchScreenshotInputSchema = z.object({
@@ -10,9 +11,7 @@ export const sketchScreenshotInputSchema = z.object({
     .describe('sketch html export path (zip or folder, required)'),
   page_name: z.string().describe('page name (optional)'),
   artboard_name: z.string().describe('artboard name (optional)'),
-  url: z.string().describe('Preview URL'),
-  command: z.string().describe('command to start local server').optional(),
-  projectPath: z.string().describe('Project path').optional()
+  url: z.string().describe('Preview URL')
 })
 
 export type SketchScreenshotInputSchema = SchemaOutput<
@@ -30,11 +29,15 @@ export type SketchScreenshotInputSchema = SchemaOutput<
  */
 export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
   let response = 'Sketch Exception'
+  let session: string | undefined
 
   try {
-    const page = await openBrowser(args.url, args.command, args.projectPath)
-    await page.bringToFront()
+    const command = getEnv('SERVER_COMMAND')
+    const cwd = getEnv('CWD')
+    session = await startServer(args.url, command, cwd)
+    const page = await openBrowser(args.url, command)
     const screenshot = await page.screenshot()
+    await page?.context()?.browser()?.close()
 
     const parsed = path.parse(args.file_path)
     const dest = path.join(
@@ -45,8 +48,14 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
 
     const previewPath = await processImage(screenshot, dest)
     response = `Screenshot saved to ${previewPath}`
+    if (session) {
+      response = `${response}\n${getSessionDesc(session)}`
+    }
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
+    if (session) {
+      response = `${response}\n${getSessionDesc(session)}`
+    }
   }
 
   return response

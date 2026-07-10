@@ -21,8 +21,6 @@ export const screenshot = new Command()
   .requiredOption('--pn, --page_name [PAGENAME]', 'Page name')
   .requiredOption('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .requiredOption('-u, --url <URL>', 'Screenshot URL')
-  .option('-c, --command <Command>', 'command to start local server')
-  .option('-p, --projectPath <ProjectPath>', 'Project path')
   .action((opts: Record<string, unknown>) => {
     handleScreenshot(opts).catch(err => {
       logger.error(err, 'sketch-cli screenshot')

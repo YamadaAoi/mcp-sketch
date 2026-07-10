@@ -2,14 +2,14 @@ import { mkdir, readFile, writeFile, rm } from 'fs/promises'
 import { dirname, resolve } from 'path'
 import { z } from 'zod/v4'
 import { fileExists } from '@/utils/saveFile'
+import { getEnv } from '@/utils/env'
 
 export const sketchStateInputSchema = z.object({
   page_name: z.string().describe('page name'),
   artboard_name: z.string().describe('artboard name'),
   content: z.string().describe('JSON content to create or update'),
   clean: z.boolean().describe('just delete component & md files'),
-  replace: z.boolean().describe('replace component list, instead of merge'),
-  projectPath: z.string().describe('Project path').optional()
+  replace: z.boolean().describe('replace component list, instead of merge')
 })
 
 export type SketchStateInputSchema = z.infer<typeof sketchStateInputSchema>
@@ -181,19 +181,18 @@ export async function sketchState(args: SketchStateInputSchema) {
   let response = 'Sketch Exception'
 
   try {
-    const { page_name, artboard_name, clean, replace, content, projectPath } =
-      args
+    const cwd = getEnv('CWD')
+    const { page_name, artboard_name, clean, replace, content } = args
 
-    const projPath = projectPath ? resolve(projectPath) : process.cwd()
     const absPath = resolve(
-      projPath,
+      cwd,
       `.sketch-cache/artboards/${page_name}-${artboard_name}.json`
     )
     const newContent = parseState(content)
     let oldContent = await readState(absPath)
 
     if (clean && oldContent?.components?.length) {
-      await deleteComponentFiles(projPath, oldContent.components)
+      await deleteComponentFiles(cwd, oldContent.components)
     }
 
     if (!oldContent) {
