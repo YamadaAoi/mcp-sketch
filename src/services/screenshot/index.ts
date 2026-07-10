@@ -9,8 +9,8 @@ export const sketchScreenshotInputSchema = z.object({
   file_path: z
     .string()
     .describe('sketch html export path (zip or folder, required)'),
-  page_name: z.string().describe('page name (optional)'),
-  artboard_name: z.string().describe('artboard name (optional)'),
+  page_name: z.string().describe('page name'),
+  artboard_name: z.string().describe('artboard name'),
   url: z.string().describe('Preview URL')
 })
 
@@ -22,8 +22,8 @@ export type SketchScreenshotInputSchema = SchemaOutput<
  * 截图
  * @param args - 输入参数
  * @param args.file_path - sketch html export path (zip or folder, required)
- * @param args.page_name - page name (optional)
- * @param args.artboard_name - artboard name (optional)
+ * @param args.page_name - page name
+ * @param args.artboard_name - artboard name
  * @param args.url - Screenshot URL
  * @returns 输出参数，包含截图路径
  */

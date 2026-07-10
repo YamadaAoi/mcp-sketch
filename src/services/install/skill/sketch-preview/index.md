@@ -14,39 +14,19 @@
 - `page_name` — 页面名
 - `artboard_name` — 画板名
 
-### 步骤 1：读取项目配置
-
-读取 `.sketch-cache/proj-init.md`，获取启动命令（如 `npm run dev`、`pnpm dev` 等）
-
-若文件不存在或缺少启动命令，返回失败信息：`proj-init.md 不存在或未配置启动命令`
-
-### 步骤 2：读取预览 URL
+### 步骤 1：读取预览 URL
 
 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `previewUrl` 字段
 
 若不存在，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
 
-### 步骤 3：调用 preview 启动服务并打开浏览器
-
-- **Windows**
+### 步骤 2：调用命令启动服务并打开浏览器预览
 
 ```bash
-Start-Process cmd -ArgumentList '/c npx -y mcp-sketch preview -u "{previewUrl}" -c "{启动命令}" -p "{项目根目录}"'
+npx -y mcp-sketch preview -u "{previewUrl}"
 ```
 
-- **macOS**：使用`osascript`启动新窗口并运行`npx -y mcp-sketch preview`命令
-
-- **Linux**: 使用`x-terminal-emulator`启动新窗口并运行`npx -y mcp-sketch preview`命令
-
-**参数说明**：
-
-| 参数 | 必填 | 说明                                                                                                       |
-| ---- | ---- | ---------------------------------------------------------------------------------------------------------- |
-| `-u` | ✅   | 预览 URL，从状态文件 `previewUrl` 获取                                                                     |
-| `-c` | ✅   | 启动命令，从 `proj-init.md` 中读取                                                                         |
-| `-p` | ❌   | 项目根目录。如果当前工作目录就是项目根目录（能直接运行启动命令），则无需传；否则需要传入 `-p` 指定项目路径 |
-
-`preview` 命令会自动检测端口是否可用，若服务未启动则在新的终端窗口中运行启动命令，等待服务就绪后打开浏览器访问预览 URL
+- `mcp-sketch preview` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），检测端口是否可用。若服务未启动则自动打开新终端窗口运行启动命令，等待服务就绪后打开浏览器访问预览 URL
 
 ## 输出格式
 

@@ -64,7 +64,7 @@ Leader 在每个里程碑完成后必须调用 `mcp-sketch state` CLI 写入状�
 **state CLI 命令格式**：
 
 ```bash
-mcp-sketch state --pn <page_name> --an <artboard_name> [--clean] [-r] -p <project_path> -c '<JSON>'
+mcp-sketch state --pn <page_name> --an <artboard_name> [--clean] [-r] -c '<JSON>'
 ```
 
 **JSON 格式**规范：

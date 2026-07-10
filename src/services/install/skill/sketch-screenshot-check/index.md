@@ -14,11 +14,7 @@
 - `page_name` — 页面名
 - `artboard_name` — 画板名
 
-### 步骤 1：读取项目配置
-
-读取 `.sketch-cache/proj-init.md`，获取启动命令（如 `npm run dev`、`pnpm dev` 等），服务已停止需重启时使用。
-
-### 步骤 2：读取状态文件
+### 步骤 1：读取状态文件
 
 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
 
@@ -30,64 +26,49 @@
   - `width` — 画板宽度
   - `height` — 画板高度
 
-### 步骤 3：调用 screenshot 截图
-
-- **Windows**
+### 步骤 2：调用命令截图
 
 ```bash
-Start-Process cmd -ArgumentList '/c npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}" -c "{启动命令}"'
+npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}"
 ```
 
-- **macOS**：使用`osascript`启动新窗口并运行`npx -y mcp-sketch screenshot`命令
-
-- **Linux**: 使用`x-terminal-emulator`启动新窗口并运行`npx -y mcp-sketch screenshot`命令
-
-**参数说明**：
-
-| 参数   | 必填 | 说明                                                                                                       |
-| ------ | ---- | ---------------------------------------------------------------------------------------------------------- |
-| `-f`   | ✅   | Sketch 文件路径，从状态文件的 `filePath` 获取                                                              |
-| `--pn` | ✅   | 页面名                                                                                                     |
-| `--an` | ✅   | 画板名                                                                                                     |
-| `-u`   | ✅   | 截图 URL，从状态文件的 `previewUrl` 获取                                                                   |
-| `-c`   | ❌   | 启动命令，从 `proj-init.md` 获取，服务已停止需要重启时才传                                                 |
-| `-p`   | ❌   | 项目根目录。如果当前工作目录就是项目根目录（能直接运行启动命令），则无需传；否则需要传入 `-p` 指定项目路径 |
+- `mcp-sketch screenshot` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），若服务已停止则自动重启服务后再截图
 
 记录返回的截图保存路径 `screenshotPath`
 
-### 步骤 4：读取截图和设计稿预览图
+### 步骤 3：读取截图和设计稿预览图
 
 - 读取截图文件 `screenshotPath`
 - 读取设计稿预览图 `previewPath`
 
-### 步骤 5：逐项视觉比对
+### 步骤 4：逐项视觉比对
 
 从以下维度逐一比对截图与设计稿预览图，列出所有差异：
 
-**5a. 布局结构**
+**4a. 布局结构**
 
 - 页面整体布局是否与设计稿一致（header/body/footer 等大区块的上下顺序和比例）
 - 是否有元素明显缺失或多余
 
-**5b. 组件位置与大小**
+**4b. 组件位置与大小**
 
 - 各组件的左右/上下位置是否与设计稿对齐
 - 各组件的宽度/高度比例是否合理
 
-**5c. 间距**
+**4c. 间距**
 
 - 组件之间的间距是否明显过宽或过窄
 - 内边距是否明显异常
 
-**5d. 色彩**
+**4d. 色彩**
 
 - 背景色、文字色、边框色等主色调是否明显偏离设计稿
 
-**5e. 文字**
+**4e. 文字**
 
 - 是否有文字截断、重叠或明显溢出容器
 
-### 步骤 6：问题分类
+### 步骤 5：问题分类
 
 对发现的差异进行分级：
 
@@ -97,7 +78,7 @@ Start-Process cmd -ArgumentList '/c npx -y mcp-sketch screenshot -f "{filePath}"
 | P1 - 中等 | 间距/大小偏差、颜色偏差            | 建议修复，可酌情放行       |
 | P2 - 轻微 | 像素级偏移（< 5px）、装饰性差异    | 可忽略                     |
 
-### 步骤 7：排除设计差异
+### 步骤 6：排除设计差异
 
 以下差异属于设计与实现之间的**正常偏差**，不属于 bug，不计入问题列表：
 
@@ -106,7 +87,7 @@ Start-Process cmd -ArgumentList '/c npx -y mcp-sketch screenshot -f "{filePath}"
 - 设计稿中未实现的交互态（hover/focus）
 - 设计稿中的固定文案与实际项目的动态数据
 
-### 步骤 8：考虑屏幕尺寸差异
+### 步骤 7：考虑屏幕尺寸差异
 
 浏览器窗口尺寸通常不等于设计稿尺寸，因此截图与设计稿预览图必然存在整体缩放差异。比对时注意区分**可接受偏差**和**真实 bug**：
 

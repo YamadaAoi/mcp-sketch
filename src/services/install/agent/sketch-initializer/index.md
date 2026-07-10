@@ -66,18 +66,14 @@
 
 - 读取现有组件文件，判断 CSS 方案类型（CSS Modules / TailwindCSS / styled-components / Scoped CSS 等）
 
-### 步骤 8：确定本地开发服务器配置
-
-从 `package.json` 的 `scripts` 字段中检测启动本地项目的命令（如 `vite`、`webpack serve`、`next dev`、`ng serve`、`react-scripts start` 等），记录到 proj-init.md 中
-
-### 步骤 9：确定质量工具配置
+### 步骤 8：确定质量工具配置
 
 - 查看`package.json` 中 `scripts` 字段，判断包管理工具（如 npm、yarn、pnpm 等），包管理工具一般是全局安装的
 - 检查 `.prettierrc*` 及 `package.json` 中 prettier 脚本，记录格式化命令
 - 检查 `eslint.config.*` 及 `package.json` 中 lint 脚本，记录检查命令
 - 检查 `tsconfig.json` 及 `package.json` 中 typecheck 脚本，记录类型检查命令
 
-### 步骤 10：输出文档
+### 步骤 9：输出文档
 
 保存至 `.sketch-cache/proj-init.md`，文件夹不存在则自动创建，文件已存在则覆盖，文档格式如下：
 
@@ -158,17 +154,7 @@
 
 - **CSS 解决方案**:
 
-## 6. 本地开发服务器 (Dev Server)
-
-（若未检测到启动命令，记录为"未配置"）
-
-- **启动命令**:
-- **构建工具**:
-- **构建工具版本**:
-- **监听端口**:
-- **端口来源**: 配置文件 / 默认推断
-
-## 7. 质量工具与脚本 (Quality Tools & Scripts)
+## 6. 质量工具与脚本 (Quality Tools & Scripts)
 
 - **包管理器**:
 - **代码格式化命令**: 没有则去除此项

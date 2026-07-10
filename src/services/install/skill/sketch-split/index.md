@@ -33,11 +33,12 @@
 - 3. 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 获取 `filePath`
   - 若文件不存在，立即返回失败：画板{page_name}-{artboard_name}中间状态不存在
 
-### 第二步：查看输入参数是否包含`errorDescription`
+### 第二步：分析 `errorDescription`，确定修复方式
 
 - 若包含
-  - 1. 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，查看之前的组件拆分结果
-  - 2. 带着 `errorDescription` 继续执行第三步，根据实际情况重新拆分组件
+  - 1. 分析 `errorDescription`，判断问题类型：
+    - **可简单修复**（组件命名不规范、路径格式错误、组件描述文档字段不全等表层问题）→ 定位到具体字段直接修正，修正后跳到输出格式，无需重新执行画板分析
+    - **需重新拆分**（组件划分不合理、组件层级关系错误、遗漏关键组件等深层问题）→ 读取之前的组件拆分结果，带着 `errorDescription` 继续执行第三步
 - 若不包含
   直接执行第三步
 
