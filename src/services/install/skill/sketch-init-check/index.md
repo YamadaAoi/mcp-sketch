@@ -22,7 +22,6 @@
 - `## 3. 项目目录结构 (Project Structure)`（含表格）
 - `## 4. 路由 (Routing)`
 - `## 5. 样式方案(CSS)`
-- `## 6. 本地开发服务器 (Dev Server)`
 - `## 7. 质量工具与脚本 (Quality Tools & Scripts)`
 
 ## 输出格式
