@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.4.0
+
+### Minor Changes
+
+- 部分cli参数调整；预览和截图优化
+
 ## 1.3.0
 
 ### Minor Changes
