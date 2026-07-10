@@ -5,7 +5,6 @@ import { analyze } from '@/commands/analyze'
 import { preview } from '@/commands/preview'
 import { screenshot } from '@/commands/screenshot'
 import { state } from '@/commands/state'
-import { test } from '@/commands/test'
 
 export function startCli() {
   const program = new Command()
@@ -21,7 +20,6 @@ export function startCli() {
   program.addCommand(preview)
   program.addCommand(screenshot)
   program.addCommand(state)
-  program.addCommand(test)
 
   program.parse()
 }
