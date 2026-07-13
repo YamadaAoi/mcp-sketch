@@ -36,7 +36,10 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
     const cwd = getEnv('CWD')
     session = await startServer(args.url, command, cwd)
     const page = await openBrowser(args.url, command)
-    const screenshot = await page.screenshot()
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+    await page.waitForTimeout(2000)
+    await page.evaluate('window.scrollTo(0, 0)')
+    const screenshot = await page.screenshot({ fullPage: true })
     await page?.context()?.browser()?.close()
 
     const parsed = path.parse(args.file_path)
