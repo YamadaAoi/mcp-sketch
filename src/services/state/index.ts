@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, rm } from 'fs/promises'
 import { dirname, resolve } from 'path'
+import { load } from 'js-yaml'
 import { z } from 'zod/v4'
 import { fileExists } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
@@ -7,7 +8,7 @@ import { getEnv } from '@/utils/env'
 export const sketchStateInputSchema = z.object({
   page_name: z.string().describe('page name'),
   artboard_name: z.string().describe('artboard name'),
-  content: z.string().describe('JSON content to create or update'),
+  content: z.string().describe('Content data in YAML flow mapping format'),
   clean: z.boolean().describe('just delete component & md files'),
   replace: z.boolean().describe('replace component list, instead of merge')
 })
@@ -22,7 +23,7 @@ export interface ArtboardState {
   artboardName: string
   width: number
   height: number
-  stage: string
+  step: string
   components: ComponentState[]
   lastUpdateTime: string
 }
@@ -54,7 +55,7 @@ function getDefaultState(
     artboardName,
     width: 0,
     height: 0,
-    stage: 'picked',
+    step: 'step:3',
     components: [],
     lastUpdateTime: new Date().toISOString()
   }
@@ -67,7 +68,7 @@ function getDefaultState(
  */
 function parseState(contentStr: string) {
   try {
-    return JSON.parse(contentStr) as ArtboardState
+    return load(contentStr, { json: true }) as ArtboardState
   } catch {
     throw new Error('State file not valid')
   }
@@ -82,7 +83,12 @@ async function readState(filePath: string) {
   if (!(await fileExists(filePath))) {
     return undefined
   }
-  return parseState(await readFile(filePath, 'utf-8'))
+  const contentStr = await readFile(filePath, 'utf-8')
+  try {
+    return JSON.parse(contentStr) as ArtboardState
+  } catch {
+    throw new Error('State file not valid')
+  }
 }
 
 /**

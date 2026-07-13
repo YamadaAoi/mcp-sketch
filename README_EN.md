@@ -2,76 +2,37 @@
 
 [中文](./README.md) | English
 
-## Disclaimer
+Requires **multi-modal model** (preview image analysis needed). Agents are under iteration — customize prompts and permissions after install
 
-- Use **multi-modal models** — the `sketch-*` workflow requires analyzing preview images
-
-## Agents
-
-> **Note**: Agents are under continuous iteration and improvement. LLMs are unpredictable. After installation, feel free to customize prompt content and tool permissions to fit your project's specific needs
-
-> Currently only Claude Code and OpenCode are supported for one-click installation. Other tools that are compatible with the `.claude` directory structure can choose to install as Claude Code
-
-### Installation
-
-Install agents into your project with a single CLI command:
+## Installation
 
 ```bash
 npx -y mcp-sketch install
 ```
 
-Interactively select your AI tool platform, and files are automatically written to the corresponding directories:
+Select your AI platform, files are written to:
 
 | Platform        | Agents Directory    | Skills Directory    |
 | --------------- | ------------------- | ------------------- |
 | **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
 
-Installed file structure:
+Structure:
 
-```
-{agents}/
-├── sketch-leader.md         ← Main agent: Frontend Leader
-├── sketch-initializer.md    ← Sub-agent: Project Architect
-├── sketch-analyzer.md       ← Sub-agent: Analyst (pick/split/preview)
-├── sketch-architect.md      ← Sub-agent: Architect (gen-base/layout)
-├── sketch-developer.md      ← Sub-agent: Developer (draw)
-└── sketch-checker.md        ← Sub-agent: QA Engineer (all checks)
+- `sketch-leader` — main agent
+- `sketch-initializer` / `sketch-analyzer` / `sketch-architect` / `sketch-developer` / `sketch-checker` — sub-agents
+- `sketch-pick` / `sketch-split` / `sketch-gen-base` / `sketch-layout` / `sketch-preview` / `sketch-draw` / `sketch-screenshot-check` / `*check` — skills
 
-{skills}/
-├── sketch-pick/             ← Pick artboard
-├── sketch-split/            ← Split components
-├── sketch-split-check/      ← Review split
-├── sketch-gen-base/         ← Generate base components
-├── sketch-gen-base-check/   ← Review base components
-├── sketch-layout/           ← Layout components
-├── sketch-layout-check/     ← Review layout
-├── sketch-preview/          ← Preview layout
-├── sketch-draw/             ← Draw component features
-├── sketch-draw-check/       ← Review drawing
-├── sketch-screenshot-check/ ← Screenshot comparison
-└── sketch-init-check/       ← Review project init
-```
+## Usage
 
-### Leader Architecture
+**New flow**: Tell leader the page to implement; it runs the workflow automatically, pausing after layout for your preview
 
-sketch-leader is the **main agent** — you talk to it directly. It analyzes requirements, dispatches sub-agents, and reviews results
+**Fix mode**: Tell leader what's wrong (e.g. "spacing too large"); it analyzes and dispatches the right sub-agent
 
 ### Switch to Leader
 
-**OpenCode**:
-
-- After starting `opencode`, press `TAB` to switch to `sketch-leader`
-
-**Claude Code**:
-
-- Specify the agent when starting `claude`
-
-```
-claude --agent sketch-leader
-```
-
-After switching, all your messages are sent to sketch-leader, which dispatches sub-agents to complete the work
+- **OpenCode**: Press `TAB` after startup to switch to `sketch-leader`
+- **Claude Code**: `claude --agent sketch-leader`
 
 ### Workflow
 
@@ -92,153 +53,46 @@ After switching, all your messages are sent to sketch-leader, which dispatches s
 | Draw Review       | sketch-checker     | sketch-draw-check       | ✅       |
 | Screenshot        | sketch-checker     | sketch-screenshot-check | ❌       |
 
-### Usage
-
-**New flow**: Tell leader what page you want to implement. It automatically executes the workflow, pausing after layout for you to preview and confirm
-
-**Fix mode**: Tell leader what's wrong (e.g. "spacing too large", "color is off"). It analyzes the issue and dispatches the right sub-agent to fix it
-
-**Problem type judgment**:
-
-| Problem                       | Who to call     |
-| ----------------------------- | --------------- |
-| Poor component split          | sketch-split    |
-| Inter-component layout issues | sketch-layout   |
-| Intra-component layout/styles | sketch-draw     |
-| Base component code issues    | sketch-gen-base |
-
 ### State Files
 
-- Project config: `.sketch-cache/proj-init.md`
-- Artboard state: `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
-
-Leader manages state files via `mcp-sketch state` CLI. Resume from where you left off if interrupted. All file paths use relative paths
+`.sketch-cache/artboards/{page_name}-{artboard_name}.json`, managed via `mcp-sketch state`. Resumable on interrupt
 
 ### Environment Variables
 
-Create a `.sketch.env` file in the project root to configure Chrome path, project start command, etc.:
+Create `.env.sketch` in project root:
 
-| Field            | Type   | Required | Default                     | Description                     |
-| ---------------- | ------ | -------- | --------------------------- | ------------------------------- |
-| `CHROME_PATH`    | string | yes      | -                           | Path to Chrome executable       |
-| `SERVER_COMMAND` | string | yes      | `npm run dev`               | Command to start the dev server |
-| `CWD`            | string | no       | current working directory   | Project root directory path     |
-| `USER_DATA_DIR`  | string | no       | `~/.mcp-sketch-chrome-data` | Chrome user data directory      |
-| `DEBUG_PORT`     | number | no       | `9222`                      | Chrome remote debugging port    |
+| Field            | Required | Default                     | Description            |
+| ---------------- | -------- | --------------------------- | ---------------------- |
+| `CHROME_PATH`    | yes      | -                           | Chrome executable path |
+| `SERVER_COMMAND` | yes      | `npm run dev`               | Dev server command     |
+| `CWD`            | no       | cwd                         | Project root           |
+| `USER_DATA_DIR`  | no       | `~/.mcp-sketch-chrome-data` | Chrome user data dir   |
+| `DEBUG_PORT`     | no       | `9222`                      | Debug port             |
 
-Example:
-
-```
-CHROME_PATH=/usr/bin/google-chrome
-SERVER_COMMAND=pnpm dev
-```
-
-> **Tip**: When configuring the dev server, disable auto-open browser to prevent new tabs from popping up on every start. For Vite projects, set `server.open: false`
+> **Tip**: Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
 
 ### Prerequisites
 
-Preview and screenshot features need to start the local dev server in the background. **Linux / macOS / WSL** environments depend on `tmux` to manage background terminal sessions. Make sure it's installed:
+Preview and screenshot need a background dev server. **Linux / macOS / WSL** requires `tmux`:
 
 ```bash
-# macOS
-brew install tmux
-
-# Ubuntu / Debian / WSL (Ubuntu/Debian)
-sudo apt install tmux
-
+brew install tmux        # macOS
+sudo apt install tmux    # Ubuntu/Debian/WSL
 ```
 
-Windows users don't need any additional installation
+None needed on Windows
 
 ## Tools
 
-> The following are low-level tools, available for Agent use or standalone use
+> Run `npx -y mcp-sketch <cmd> --help` for full options
 
-### list
+- **list** `[-f <path>]` — list artboards `[{pageName, artboardName, previewPath}]`
+- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — parse layers/styles/assets, output JSON + preview
+- **preview** `-u <url>` — open browser to URL, auto-start dev server
+- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — save screenshot for visual comparison
+- **state** `--pn <page> --an <artboard> -c '<yaml>' [--clean] [-r]` — create/update artboard state. YAML: wrap with `"`, single quotes for values, space after colon
 
-Returns basic info for all artboards (page name, artboard name, preview path)
-
-CLI: `npx -y mcp-sketch list [options]`
-MCP: `sketch_html_list`
-
-| Parameter | CLI Flag                 | MCP Parameter | Required | Description   |
-| --------- | ------------------------ | ------------- | -------- | ------------- |
-| file path | `-f, --file_path <PATH>` | file_path     | yes      | zip or folder |
-
-Example: `npx -y mcp-sketch list -f /path/to/export.zip`
-
-Returns: `[{ pageName, artboardName, previewPath }]`
-
-### analyze
-
-Full parse: extract layer structure, styles, assets, output design JSON + preview image
-
-CLI: `npx -y mcp-sketch analyze [options]`
-MCP: `sketch_html_analyze`
-
-| Parameter     | CLI Flag                 | MCP Parameter | Required | Description                                          |
-| ------------- | ------------------------ | ------------- | -------- | ---------------------------------------------------- |
-| file path     | `-f, --file_path <PATH>` | file_path     | yes      | zip or folder                                        |
-| page name     | `--pn, --page_name`      | page_name     | no       |                                                      |
-| artboard name | `--an, --artboard_name`  | artboard_name | no       |                                                      |
-| rect          | `-r, --rect`             | rect          | no       | `[x, y, width, height]`                              |
-| exclude rects | `-e, --exclude_rects`    | exclude_rects | no       | `[[x, y, width, height], ...]`                       |
-| assets path   | `--ap, --assets_path`    | assets_path   | no       | default `src/assets/sketch`                          |
-| limit         | `-l, --limit`            | limit         | no       | number of layers to return                           |
-| offset        | `-o, --offset`           | offset        | no       | starting index (default 0)                           |
-| save result   | `--sr, --save_result`    | save_result   | no       | save JSON into `{input}.cache/` dir, default `false` |
-
-Example: `npx -y mcp-sketch analyze -f /path/to/export.zip --pn Home --an "User Management" -r "[0,0,1920,64]" --limit 20`
-
-Returns: `{ artboard: { layers, styles, images, etc. }, previewPath: "preview image path" }`
-
-Preview uses `sharp` (optionalDependency). If `sharp` fails to install (libvips issue), the original full artboard image is returned. If installed, the image is resized, cropped to `rect` (if specified), and compressed to webp
-
-### preview
-
-Open a browser to visit the specified URL (auto-starts the local dev server and waits for it to be ready)
-
-CLI: `npx -y mcp-sketch preview [options]`
-MCP: `sketch_html_preview`
-
-| Parameter | CLI Flag          | MCP Parameter | Required | Description |
-| --------- | ----------------- | ------------- | -------- | ----------- |
-| URL       | `-u, --url <URL>` | url           | yes      | Preview URL |
-
-Example: `npx -y mcp-sketch preview -u http://localhost:5173/home`
-
-### screenshot
-
-Take a browser screenshot and save it for visual comparison
-
-CLI: `npx -y mcp-sketch screenshot [options]`
-MCP: `sketch_html_screenshot`
-
-| Parameter     | CLI Flag                 | MCP Parameter | Required | Description    |
-| ------------- | ------------------------ | ------------- | -------- | -------------- |
-| file path     | `-f, --file_path <PATH>` | file_path     | yes      | zip or folder  |
-| page name     | `--pn, --page_name`      | page_name     | yes      |                |
-| artboard name | `--an, --artboard_name`  | artboard_name | yes      |                |
-| URL           | `-u, --url <URL>`        | url           | yes      | Screenshot URL |
-
-Example: `npx -y mcp-sketch screenshot -f /path/to/export.zip --pn Home --an Login -u http://localhost:5173/login`
-
-### state
-
-Create or update the artboard state file, used by the Leader to manage workflow progress
-
-CLI: `npx -y mcp-sketch state [options]`
-MCP: `sketch_html_state`
-
-| Parameter     | CLI Flag                | MCP Parameter | Required | Description                              |
-| ------------- | ----------------------- | ------------- | -------- | ---------------------------------------- |
-| page name     | `--pn, --page_name`     | page_name     | yes      |                                          |
-| artboard name | `--an, --artboard_name` | artboard_name | yes      |                                          |
-| JSON content  | `-c, --content <json>`  | content       | yes      | JSON string, e.g. `'{"key":"val"}'`      |
-| clean files   | `--clean`               | clean         | no       | delete component & md files before write |
-| replace list  | `-r, --replace`         | replace       | no       | replace component list instead of merge  |
-
-Example: `npx -y mcp-sketch state --pn Home --an Login -c '{"stage":"completed"}'`
+Output: assets in `src/assets/sketch/`, preview images in `{input}.cache/` (webp)
 
 ## MCP Configuration
 
@@ -253,18 +107,19 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
       "type": "local",
       "command": ["npx", "-y", "mcp-sketch"],
       "enabled": true,
-      "environment": { "MCP_MODE": "1", "LOG_LEVEL": "debug" }
+      "environment": { "MCP_MODE": "1" }
     }
   }
 }
 ```
 
-- **Trae / other compatible tools**
+- **claude code**
 
 ```json
 {
   "mcpServers": {
     "mcp-sketch": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "mcp-sketch"],
       "env": { "MCP_MODE": "1" }
@@ -272,18 +127,6 @@ Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local M
   }
 }
 ```
-
-## Selection Priority
-
-- **page**: `page_name` > first page
-- **artboard**: `artboard_name` > first artboard
-- **rect** (analyze only): filter rule — element is parsed only if its `x, y, x+width, y+height` bounds are fully inside the rect
-- **exclude_rects** (analyze only): exclusion rule — element is discarded if its `x, y, x+width, y+height` bounds are fully inside any exclusion rect. Takes effect first when used with `rect`
-
-## Output File Location
-
-- Assets: default `src/assets/sketch/` (customizable via `assets_path`)
-- Preview image: saved into `{input}.cache/` directory (webp format, fallback to original if sharp unavailable)
 
 ## Demo
 

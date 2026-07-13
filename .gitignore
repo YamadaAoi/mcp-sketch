@@ -7,5 +7,5 @@ dist/
 test-results/
 *.sketch
 *.zip
-.sketch.env
+.env.sketch
 AGENTS.md

@@ -13,7 +13,10 @@ export const state = new Command()
   .description('Create or update artboard state file')
   .requiredOption('--pn, --page_name [PAGENAME]', 'Page name')
   .requiredOption('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
-  .requiredOption('-c, --content <json>', 'JSON content to create or update')
+  .requiredOption(
+    '-c, --content <yaml>',
+    'Content data in YAML flow mapping format'
+  )
   .option('--clean', 'just delete component & md files', false)
   .option('-r, --replace', 'replace component list, instead of merge', false)
   .action((opts: Record<string, unknown>) => {

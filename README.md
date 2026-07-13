@@ -2,253 +2,97 @@
 
 [English](./README_EN.md) | 中文
 
-## 声明
+需**多模态模型**（分析预览图）。agents 持续迭代中，安装后按需调整 prompt 和权限
 
-- 使用**多模态模型**，`sketch-*`工作流需要分析预览图
-
-## Agents
-
-> **注意**：agents 仍在持续迭代优化中，AI 大模型存在不确定性。安装后请根据自身项目的实际需求灵活调整 prompt 内容和工具权限
-
-> 目前仅支持 Claude Code 和 OpenCode 一键安装。其他工具如兼容 `.claude` 目录结构，可选择以 Claude Code 方式安装
-
-### 安装
+## 安装
 
 ```bash
 npx -y mcp-sketch install
 ```
 
-交互式选择 AI 工具平台，自动将文件写入对应目录：
+交互选择平台，写入对应目录：
 
 | 平台            | agent 目录          | skill 目录          |
 | --------------- | ------------------- | ------------------- |
 | **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
 
-安装后的文件结构：
+安装后结构：
 
-```
-{agents}/
-├── sketch-leader.md         ← 主 agent：前端 Leader
-├── sketch-initializer.md    ← 子 agent：项目架构师
-├── sketch-analyzer.md       ← 子 agent：分析师（pick/split/preview）
-├── sketch-architect.md      ← 子 agent：架构师（gen-base/layout）
-├── sketch-developer.md      ← 子 agent：开发工程师（draw）
-└── sketch-checker.md        ← 子 agent：审核专员（所有 check）
+- `sketch-leader` — 主 agent
+- `sketch-initializer` / `sketch-analyzer` / `sketch-architect` / `sketch-developer` / `sketch-checker` — 子 agent
+- `sketch-pick` / `sketch-split` / `sketch-gen-base` / `sketch-layout` / `sketch-preview` / `sketch-draw` / `sketch-screenshot-check` / `*check` — skill
 
-{skills}/
-├── sketch-pick/             ← 选择画板
-├── sketch-split/            ← 组件拆分
-├── sketch-split-check/      ← 拆分审核
-├── sketch-gen-base/         ← 生成骨架
-├── sketch-gen-base-check/   ← 骨架审核
-├── sketch-layout/           ← 布局骨架
-├── sketch-layout-check/     ← 布局审核
-├── sketch-preview/          ← 预览布局
-├── sketch-draw/             ← 绘制功能
-├── sketch-draw-check/       ← 绘制审核
-├── sketch-screenshot-check/ ← 截图比对
-└── sketch-init-check/       ← 初始化审核
-```
+## 使用
 
-### Leader 架构
+**新流程**：告诉 leader 要实现什么页面，自动按工作流执行，layout 完成后暂停预览确认
 
-sketch-leader 是**主 agent**，用户直接与它对话，它负责分析需求、调度子 agent、审核结果
+**修复模式**：告诉 leader 问题（"间距太大""颜色不对"），它分析后调度对应子 agent 修复
 
 ### 切换到 Leader
 
-**OpenCode**：
-
-- 启动`opencode`后通过`TAB`键切换到`sketch-leader`
-
-**Claude Code**：
-
-- 启动`claude`时指定`agent`为`sketch-leader`
-
-```
-claude --agent sketch-leader
-```
-
-切换后，你的所有消息都会发送给 sketch-leader，由它调度子 agent 完成工作
+- **OpenCode**：启动后按 `TAB` 切换到 `sketch-leader`
+- **Claude Code**：`claude --agent sketch-leader`
 
 ### 工作流
 
-| 阶段                   | 子 agent           | skill                   | 并行 |
-| ---------------------- | ------------------ | ----------------------- | ---- |
-| 初始化                 | sketch-initializer | -                       | ❌   |
-| 初始化审核             | sketch-checker     | sketch-init-check       | ❌   |
-| 选择画板               | sketch-analyzer    | sketch-pick             | ❌   |
-| 组件拆分               | sketch-analyzer    | sketch-split            | ❌   |
-| 拆分审核               | sketch-checker     | sketch-split-check      | ❌   |
-| 展示拆分结果，等待确认 | -                  | -                       | ❌   |
-| 生成骨架               | sketch-architect   | sketch-gen-base         | ✅   |
-| 骨架审核               | sketch-checker     | sketch-gen-base-check   | ✅   |
-| 布局骨架               | sketch-architect   | sketch-layout           | ❌   |
-| 布局审核               | sketch-checker     | sketch-layout-check     | ❌   |
-| 预览布局               | sketch-analyzer    | sketch-preview          | ❌   |
-| 绘制功能               | sketch-developer   | sketch-draw             | ✅   |
-| 绘制审核               | sketch-checker     | sketch-draw-check       | ✅   |
-| 截图比对               | sketch-checker     | sketch-screenshot-check | ❌   |
-
-### 使用方式
-
-**新流程**：告诉 leader 你要实现什么页面，它会自动按工作流执行，layout 完成后暂停让你预览确认
-
-**修复模式**：告诉 leader 哪里有问题（如"间距太大"、"颜色不对"），它会分析问题、调用对应子 agent 修复
-
-**问题类型判断**：
-
-| 问题                  | 调用谁          |
-| --------------------- | --------------- |
-| 组件划分不合理        | sketch-split    |
-| 组件之间布局问题      | sketch-layout   |
-| 组件内部布局/样式问题 | sketch-draw     |
-| 基础组件代码不规范    | sketch-gen-base |
+| 阶段               | 子 agent           | skill                   | 并行 |
+| ------------------ | ------------------ | ----------------------- | ---- |
+| 初始化             | sketch-initializer | -                       | ❌   |
+| 初始化审核         | sketch-checker     | sketch-init-check       | ❌   |
+| 选择画板           | sketch-analyzer    | sketch-pick             | ❌   |
+| 组件拆分           | sketch-analyzer    | sketch-split            | ❌   |
+| 拆分审核           | sketch-checker     | sketch-split-check      | ❌   |
+| 展示结果，等待确认 | -                  | -                       | ❌   |
+| 生成骨架           | sketch-architect   | sketch-gen-base         | ✅   |
+| 骨架审核           | sketch-checker     | sketch-gen-base-check   | ✅   |
+| 布局骨架           | sketch-architect   | sketch-layout           | ❌   |
+| 布局审核           | sketch-checker     | sketch-layout-check     | ❌   |
+| 预览布局           | sketch-analyzer    | sketch-preview          | ❌   |
+| 绘制功能           | sketch-developer   | sketch-draw             | ✅   |
+| 绘制审核           | sketch-checker     | sketch-draw-check       | ✅   |
+| 截图比对           | sketch-checker     | sketch-screenshot-check | ❌   |
 
 ### 状态文件
 
-- 项目配置：`.sketch-cache/proj-init.md`
-- 画板状态：`.sketch-cache/artboards/{page_name}-{artboard_name}.json`
-
-Leader 通过 `mcp-sketch state` CLI 管理状态文件。中断后可恢复进度。所有文件路径使用相对路径
+`.sketch-cache/artboards/{page_name}-{artboard_name}.json`，通过 `mcp-sketch state` 管理，中断可恢复
 
 ### 环境变量
 
-项目根目录下创建 `.sketch.env` 文件，用于配置 Chrome 路径、项目启动命令等：
+项目根目录 `.env.sketch`：
 
-| 字段             | 类型   | 必填 | 默认值                      | 说明                     |
-| ---------------- | ------ | ---- | --------------------------- | ------------------------ |
-| `CHROME_PATH`    | string | 是   | -                           | Chrome 可执行文件路径    |
-| `SERVER_COMMAND` | string | 是   | `npm run dev`               | 启动本地开发服务器的命令 |
-| `CWD`            | string | 否   | 当前工作目录                | 项目根目录路径           |
-| `USER_DATA_DIR`  | string | 否   | `~/.mcp-sketch-chrome-data` | Chrome 用户数据目录      |
-| `DEBUG_PORT`     | number | 否   | `9222`                      | Chrome 远程调试端口      |
+| 字段             | 必填 | 默认值                      | 说明                |
+| ---------------- | ---- | --------------------------- | ------------------- |
+| `CHROME_PATH`    | 是   | -                           | Chrome 路径         |
+| `SERVER_COMMAND` | 是   | `npm run dev`               | 启动命令            |
+| `CWD`            | 否   | 当前目录                    | 项目根目录          |
+| `USER_DATA_DIR`  | 否   | `~/.mcp-sketch-chrome-data` | Chrome 用户数据目录 |
+| `DEBUG_PORT`     | 否   | `9222`                      | 调试端口            |
 
-示例：
-
-```
-CHROME_PATH=/usr/bin/google-chrome
-SERVER_COMMAND=pnpm dev
-```
-
-> **建议**：配置本地开发服务器时，关闭自动打开浏览器的功能，避免每次启动都弹出新标签页。例如 Vite 项目中设置 `server.open: false`
+> **建议**：配置本地开发服务器时关闭自动打开浏览器，例如 Vite 项目设置 `server.open: false`
 
 ### 前置依赖
 
-预览、截图等功能需要在后台启动本地开发服务器。**Linux / macOS / WSL** 环境依赖 `tmux` 管理后台终端会话，请确保已安装：
+预览和截图需后台启动本地服务。**Linux / macOS / WSL** 依赖 `tmux`：
 
 ```bash
-# macOS
-brew install tmux
-
-# Ubuntu / Debian / WSL (Ubuntu/Debian)
-sudo apt install tmux
-
+brew install tmux        # macOS
+sudo apt install tmux    # Ubuntu/Debian/WSL
 ```
 
-Windows 系统无需额外安装
+Windows 无需额外安装
 
 ## 工具
 
-> 以下是底层工具，供 Agent 调用或单独使用
+> 所有工具可用 `npx -y mcp-sketch <cmd> --help` 查看完整参数
 
-### list
+- **list** `[-f <path>]` — 返回画板列表 `[{pageName, artboardName, previewPath}]`
+- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — 解析图层/样式/切图，输出 JSON + 预览图
+- **preview** `-u <url>` — 打开浏览器访问 URL，自动启动本地服务
+- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图保存，用于视觉比对
+- **state** `--pn <page> --an <artboard> -c '<yaml>' [--clean] [-r]` — 创建/更新画板状态，YAML 格式要求：外层 `"`，值用单引号，冒号后空格
 
-返回所有画板的基础信息（页面名称、画板名称、预览图路径）
-
-CLI: `npx -y mcp-sketch list [options]`
-MCP: `sketch_html_list`
-
-| 参数     | CLI 选项                 | MCP 参数  | 必填 | 说明       |
-| -------- | ------------------------ | --------- | ---- | ---------- |
-| 文件路径 | `-f, --file_path <PATH>` | file_path | 是   | zip 或目录 |
-
-例：`npx -y mcp-sketch list -f /path/to/export.zip`
-
-返回结果：`[{ pageName, artboardName, previewPath }]`
-
-### analyze
-
-完整解析，提取图层结构、样式、切图，输出设计 JSON + 预览图
-
-CLI: `npx -y mcp-sketch analyze [options]`
-MCP: `sketch_html_analyze`
-
-| 参数           | CLI 选项                 | MCP 参数      | 必填 | 说明                                             |
-| -------------- | ------------------------ | ------------- | ---- | ------------------------------------------------ |
-| 文件路径       | `-p, --file_path <PATH>` | file_path     | 是   | zip 或目录                                       |
-| 页面名称       | `--pn, --page_name`      | page_name     | 否   |                                                  |
-| 画板名称       | `--an, --artboard_name`  | artboard_name | 否   |                                                  |
-| 矩形区域       | `-r, --rect`             | rect          | 否   | `[x, y, width, height]`                          |
-| 排除矩形区域   | `-e, --exclude_rects`    | exclude_rects | 否   | `[[x, y, width, height], ...]`                   |
-| 切图存放路径   | `--ap, --assets_path`    | assets_path   | 否   | 默认 `src/assets/sketch`                         |
-| 数量限制       | `-l, --limit`            | limit         | 否   | 返回图层数量，根据画板复杂度自定义               |
-| 起始偏移       | `-o, --offset`           | offset        | 否   | 从第 m 个图层开始返回（默认 0）                  |
-| 保存结果到文件 | `--sr, --save_result`    | save_result   | 否   | 保存 JSON 到 `{input}.cache/` 目录，默认 `false` |
-
-例：`npx -y mcp-sketch analyze -f /path/to/export.zip --pn 首页 --an 用户管理 -r "[0,0,1920,64]" --limit 20`
-
-返回结果：`{ artboard: { 图层、样式、图片等 }, previewPath: "预览图路径" }`
-
-预览图使用 `sharp`（optionalDependencies）处理。若 `sharp` 安装失败（libvips 问题），返回原始画板图片；安装成功则调整尺寸、按 `rect` 截取、压缩为 webp
-
-### preview
-
-打开浏览器访问指定 URL（自动启动本地服务并等待就绪）
-
-CLI: `npx -y mcp-sketch preview [options]`
-MCP: `sketch_html_preview`
-
-| 参数 | CLI 选项          | MCP 参数 | 必填 | 说明     |
-| ---- | ----------------- | -------- | ---- | -------- |
-| URL  | `-u, --url <URL>` | url      | 是   | 预览地址 |
-
-例：`npx -y mcp-sketch preview -u http://localhost:5173/home`
-
-### screenshot
-
-打开浏览器截图并保存，用于视觉比对
-
-CLI: `npx -y mcp-sketch screenshot [options]`
-MCP: `sketch_html_screenshot`
-
-| 参数     | CLI 选项                 | MCP 参数      | 必填 | 说明       |
-| -------- | ------------------------ | ------------- | ---- | ---------- |
-| 文件路径 | `-f, --file_path <PATH>` | file_path     | 是   | zip 或目录 |
-| 页面名   | `--pn, --page_name`      | page_name     | 是   |            |
-| 画板名   | `--an, --artboard_name`  | artboard_name | 是   |            |
-| URL      | `-u, --url <URL>`        | url           | 是   | 截图地址   |
-
-例：`npx -y mcp-sketch screenshot -f /path/to/export.zip --pn 首页 --an 登录 -u http://localhost:5173/login`
-
-### state
-
-创建或更新画板状态文件，供 Leader 管理工作流进度
-
-CLI: `npx -y mcp-sketch state [options]`
-MCP: `sketch_html_state`
-
-| 参数      | CLI 选项                | MCP 参数      | 必填 | 说明                                  |
-| --------- | ----------------------- | ------------- | ---- | ------------------------------------- |
-| 页面名    | `--pn, --page_name`     | page_name     | 是   |                                       |
-| 画板名    | `--an, --artboard_name` | artboard_name | 是   |                                       |
-| JSON 内容 | `-c, --content <json>`  | content       | 是   | JSON 字符串，格式如 `'{"key":"val"}'` |
-| 清理文件  | `--clean`               | clean         | 否   | 先删除组件和描述文件再写入            |
-| 替换列表  | `-r, --replace`         | replace       | 否   | 替换组件列表，不传则合并              |
-
-例：`npx -y mcp-sketch state --pn 首页 --an 登录 -c '{"stage":"completed"}'`
-
-## 参数优先级
-
-- **page**: `page_name` > 第一个 page
-- **artboard**: `artboard_name` > 第一个 artboard
-- **rect**（仅 analyze）: 过滤规则为元素 `x, y, x+width, y+height` 全部在矩形内才保留
-- **exclude_rects**（仅 analyze）: 排除规则为元素 `x, y, x+width, y+height` 全部在任一排除矩形内则丢弃，与 `rect` 同时使用时先生效
-
-## 输出文件位置
-
-- 切图：默认 `src/assets/sketch/`（可通过 `assets_path` 自定义）
-- 预览图：`{input}.cache/` 目录下（webp 格式，sharp 不可用时为原始格式）
+输出位置：切图默认 `src/assets/sketch/`，预览图在 `{input}.cache/`（webp）
 
 ## MCP 配置
 
@@ -263,18 +107,19 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
       "type": "local",
       "command": ["npx", "-y", "mcp-sketch"],
       "enabled": true,
-      "environment": { "MCP_MODE": "1", "LOG_LEVEL": "debug" }
+      "environment": { "MCP_MODE": "1" }
     }
   }
 }
 ```
 
-- **Trae / 其他兼容工具**
+- **claude code**
 
 ```json
 {
   "mcpServers": {
     "mcp-sketch": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "mcp-sketch"],
       "env": { "MCP_MODE": "1" }
@@ -283,6 +128,6 @@ MCP 模式需要设置环境变量 `MCP_MODE=1`，在 AI 工具中配置为本�
 }
 ```
 
-## 引导
+## Demo
 
 <img width="359" height="438" alt="example" src="https://github.com/user-attachments/assets/ab7ba022-0cde-4c95-a060-c8f3adae035e" />
