@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.4.1
+
+### Patch Changes
+
+- 截图等待2秒；记录日志cli content格式调整为yaml，leader记录中间状态逻辑调整
+
 ## 1.4.0
 
 ### Minor Changes
