@@ -24,13 +24,17 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
+- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+- `region`（可选） — 约束区域 `[x, y, w, h]`，传入后只分析该区域内的图层
 - `errorDescription`（可选） — 用户反馈及问题分析
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 第一步：环境校验
 
 - 1. 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、assets_path、项目目录结构、命名规范、技术栈和UI组件库
   - 若文件不存在，立即返回失败：proj-init.md 文件不存在
-- 3. 读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 获取 `filePath`
+- 3. 读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json` 获取 `filePath`
   - 若文件不存在，立即返回失败：画板{page_name}-{artboard_name}中间状态不存在
 
 ### 第二步：分析 `errorDescription`，确定修复方式
@@ -45,7 +49,7 @@
 ### 第三步：画板分析（核心逻辑）
 
 ```bash
-npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --ap "{assets_path}" --limit {n} --offset {m}
+npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --ap "{assets_path}" --limit {n} --offset {m} -r "{region}"
 ```
 
 **参数说明**：
@@ -155,12 +159,32 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 | 文件夹名 | camelCase  | 两个单词以上，首字母小写，如 `loginPage` |
 | 组件文件 | PascalCase | 两个单词以上，首字母大写，如 `LoginPage` |
 
+### 第五步：匹配存量组件（codegraph不可用则跳过）
+
+规划表生成后，检查哪些组件可以由项目现有组件替代：
+
+尝试调用 `mcp: codegraph_explore` 获取存量组件清单：
+
+```
+codegraph_explore: "list all common/reusable components in this project"
+```
+
+对规划表中的每个组件，与存量清单对比名称和功能：
+
+- 匹配 → 组件类型改为 `reuse`，不生成新路径（后续直接 import）
+- 不匹配 → 保持原有类型
+
+### 第六步：判断画板类型
+
+若第三步中判定为**子页面**（弹窗、浮层、Tab 内容等），输出中标记 `IS_PARTIAL`，交由 Leader 询问用户是否要注入到已有页面。若为主页面则正常输出
+
 ## 输出格式
 
 成功：
 
 ```
 已完成【{pageName}】-【{artboardName}】画板组件拆解
+{非独立页面传IS_PARTIAL，否则不传}
 预览图路径：<{previewPath}>
 画板尺寸：{width} x {height}
 组件规划如下：
@@ -168,6 +192,8 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 | -------- | -------- | -------- | ---- | ---- | ------------- | ---------- | ------------ | -------- |
 
 SPLIT_SUCCESS
+RECORD_STATE: previewPath, width, height, components
+NEED_CONFIRM: 让用户确认：以上组件拆分是否合理？合理继续，有问题请描述
 ```
 
 失败：

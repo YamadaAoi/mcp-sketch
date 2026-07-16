@@ -15,10 +15,13 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
+- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取状态文件
 
-读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `components` 数组。
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`，获取 `components` 数组。
 
 ### 步骤 2：遍历有子组件的父组件，逐项检查
 

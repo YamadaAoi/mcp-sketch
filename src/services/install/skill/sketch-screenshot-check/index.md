@@ -13,10 +13,13 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
+- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取状态文件
 
-读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 - 若文件存在，从中获取：

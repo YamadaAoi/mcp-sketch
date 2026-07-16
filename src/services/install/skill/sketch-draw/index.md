@@ -15,20 +15,24 @@
 
 ## 执行步骤
 
-以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription` 均由调用方传入上下文
+以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription`、`file_path` 均由调用方传入上下文。
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法、assets_path
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取状态文件
+
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 - 从状态文件中提取 `filePath`（Sketch 文件路径），后续 analyze 调用使用
 
-### 步骤 3：检查`components`数组是否存在`component_path`组件
+### 步骤 3：检查组件路径
 
-- 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中未找到 {component_path} 组件`
+检查 `component_path` 是否在状态文件的 `components` 数组中，存在则继续；若 gen-base 骨架已存在，读取并保留子容器 div 和 import，填充业务内容
 
 ### 步骤 4：分析 `errorDescription`，确定修复方式
 
@@ -106,7 +110,14 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 - **增量生成**：**必须**读取现有内容，如果组件文件内容不为空（如已存在子组件容器 div 和 import），在保留子容器 div 和 import 的基础上填充本组件自身的内容
 - **必须**使用响应式布局，灵活运用 `%`、`flex`、`calc` 等 CSS 布局技术
 - **每个 div 容器必须有明确的宽高**：根节点 `width: 100%; height: 100%; position: relative;`，内部容器按布局需要设置具体宽高（% 或 flex），严禁出现无宽高定义的 div 容器
-- **切图优先**通过 `background-image` 使用
+- **切图优先**通过 `background-image`引入
+- 当需要 import 项目已有或私有 UI 库的组件时，尝试调用 `mcp: codegraph_explore` 获取精确类型：
+
+```
+codegraph_explore: "show me the full source and props interface of {component_name}"
+```
+
+不可用时回退 Read：读取 `node_modules/{lib}/**/*.d.ts` 或组件源码头部提取 Props 定义，拿到签名后再写 import 和传参
 
 ## 输出格式
 
@@ -115,6 +126,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 ```
 组件 [ComponentName] 生成完毕
 DRAW_SUCCESS
+RECORD_STATE: components[{componentPath}].status = draw-done
 ```
 
 成功（修复模式）：
@@ -125,6 +137,7 @@ DRAW_SUCCESS
 修复内容：<描述修复了什么>
 
 DRAW_SUCCESS
+RECORD_STATE: components[{componentPath}].status = draw-done
 ```
 
 失败：

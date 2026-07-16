@@ -1,6 +1,5 @@
 import type { InstallConfig } from '../installer'
 import SketchLeaderPrompt from './sketch-leader/index.md'
-import SketchInitializerPrompt from './sketch-initializer/index.md'
 import SketchAnalyzerPrompt from './sketch-analyzer/index.md'
 import SketchArchitectPrompt from './sketch-architect/index.md'
 import SketchDeveloperPrompt from './sketch-developer/index.md'
@@ -43,41 +42,6 @@ export const AgentPool: InstallConfig[] = [
                 'unzip *': 'deny',
                 'Expand-Archive *': 'deny'
               }
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    prompt: SketchInitializerPrompt,
-    name: 'sketch-initializer',
-    description: '初始化专员，分析项目技术栈/规范，生成 proj-init.md',
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/agents',
-        fileName: 'sketch-initializer.md',
-        meta: [
-          { key: 'name' },
-          { key: 'description' },
-          { key: 'tools', value: 'Read, Write, Edit, Glob, Grep, Bash' }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/agents',
-        fileName: 'sketch-initializer.md',
-        meta: [
-          { key: 'name' },
-          { key: 'description' },
-          { key: 'mode', value: 'subagent' },
-          { key: 'hidden', value: true },
-          { key: 'temperature', value: 0.1 },
-          {
-            key: 'permission',
-            value: {
-              '*': 'allow'
             }
           }
         ]

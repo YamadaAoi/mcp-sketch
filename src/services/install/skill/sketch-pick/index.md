@@ -32,6 +32,7 @@ npx -y mcp-sketch list -f "{FILE_PATH}"
 选中画板：
 - page_name: 页面名, artboard_name: 画板名
 PICK_SUCCESS
+RECORD_STATE: filePath, pageName, artboardName
 ```
 
 失败：

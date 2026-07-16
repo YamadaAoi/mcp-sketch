@@ -15,13 +15,16 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
-- `errorDescription`（可选） — 修复模式下传入的用户反馈，描述布局问题
+- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+- `errorDescription`（可选） — 修复模式下传入的用户反馈
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、样式写法、路由文件位置、导入方式、本地开发服务器配置
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
@@ -44,23 +47,26 @@
 
 ### 步骤 6：路由配置更新
 
-- 检查是否已配置当前画板对应入口页面组件的路由：
-  - 已配置 → 直接跳过
-  - 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
+检查是否已配置当前画板对应入口页面组件的路由：
+
+- 已配置 → 直接跳过
+- 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
 
 ### 步骤 7：推断预览 URL
 
-读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式，从步骤 6 确定的路由路径，拼接预览 URL：
+读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式，从步骤 6 确定的路由路径，尝试拼接预览 URL：
 
-- hash 模式：`http://localhost:{端口}/#/{路由路径}`
-- history 模式：`http://localhost:{端口}/{路由路径}`
+- 端口和路由路径均已知：
+  - hash 模式：`http://localhost:{端口}/#/{路由路径}`
+  - history 模式：`http://localhost:{端口}/{路由路径}`
+- 端口或路由路径无法确定（如后台动态路由）→ `previewUrl` 输出 `UNKNOWN`，由 Leader 询问用户确认
 
 ### 步骤 8：组件布局
 
-- 1. 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
-- 2. 读取预览图，判断当前页面属于哪种布局模式（参照下方「布局模式参考」）
-- 3. 从入口页面组件（`type: page`）开始，按组件依赖树**深度优先遍历** `components` 中的每个组件：
-  - `children` 为空 → 直接跳过
+- 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
+- 读取预览图，判断当前页面属于哪种布局模式（参照下方「布局模式参考」）
+- 遍历 `components` 中每个组件：
+  - `children` 为空 → 直接跳过，不做任何修改
   - `children` 不为空：
     - 1. 根据 `rect` / `excludeRects` 计算每个子组件的布局信息
     - 2. 检查组件内容，如果组件已实现布局样式且符合布局信息，**直接跳过**
@@ -345,8 +351,22 @@
 
 ```
 路由和父组件布局已完成
-previewUrl：{previewUrl}
+previewUrl：{previewUrl} | UNKNOWN
+已修改组件：
+- {componentPath1}
+- {componentPath2}
+...
 LAYOUT_SUCCESS
+RECORD_STATE: previewUrl, each modified component → components[{componentPath}].status = layout-done
+```
+
+成功（无子组件，跳过布局）：
+
+```
+画板无子组件，跳过布局步骤
+previewUrl：{previewUrl} | UNKNOWN
+LAYOUT_SUCCESS
+RECORD_STATE: previewUrl
 ```
 
 失败：

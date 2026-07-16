@@ -8,6 +8,7 @@ import {
   type HtmlSketchLayer
 } from '@/utils/zip'
 import { processImage } from '@/utils/saveFile'
+import { getEnv } from '@/utils/env'
 import { getRect, roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
 
@@ -190,7 +191,6 @@ async function processPreview(
 ) {
   if (!artboard.previewPath) return
 
-  const parsed = path.parse(filePath)
   const imageData = images?.find(item =>
     item.path.endsWith(artboard.previewPath!)
   )?.data
@@ -198,9 +198,11 @@ async function processPreview(
 
   const extname = path.extname(artboard.previewPath)
   const fileName = path.basename(artboard.previewPath, extname)
-  const dest = path.join(
-    parsed.dir,
-    `${parsed.name}.cache`,
+  const cwd = getEnv('CWD')
+  const designFileName = path.basename(filePath, '.zip')
+  const dest = path.resolve(
+    cwd,
+    `.sketch-cache/artboards/${designFileName}`,
     `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${excludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
   )
   artboard.previewPath = await processImage(

@@ -55,7 +55,7 @@ Structure:
 
 ### State Files
 
-`.sketch-cache/artboards/{page_name}-{artboard_name}.json`, managed via `mcp-sketch state`. Resumable on interrupt
+`.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`, managed via `mcp-sketch state`. Resumable on interrupt
 
 ### Environment Variables
 
@@ -90,9 +90,9 @@ None needed on Windows
 - **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — parse layers/styles/assets, output JSON + preview
 - **preview** `-u <url>` — open browser to URL, auto-start dev server
 - **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — save screenshot for visual comparison
-- **state** `--pn <page> --an <artboard> -c '<yaml>' [--clean] [-r]` — create/update artboard state. YAML: wrap with `"`, single quotes for values, space after colon
+- **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — create/update artboard state. YAML: wrap with `"`, single quotes for values, space after colon
 
-Output: assets in `src/assets/sketch/`, preview images in `{input}.cache/` (webp)
+Output: assets in `src/assets/sketch/`, preview images in `.sketch-cache/artboards/{design_file_name}/` (webp)
 
 ## MCP Configuration
 

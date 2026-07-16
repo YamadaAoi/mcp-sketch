@@ -11,13 +11,13 @@ async function handleState(opts: Record<string, unknown>) {
 export const state = new Command()
   .name('state')
   .description('Create or update artboard state file')
+  .requiredOption('-f, --file_path <filePath>', 'Design file path')
   .requiredOption('--pn, --page_name [PAGENAME]', 'Page name')
   .requiredOption('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
   .requiredOption(
     '-c, --content <yaml>',
     'Content data in YAML flow mapping format'
   )
-  .option('--clean', 'just delete component & md files', false)
   .option('-r, --replace', 'replace component list, instead of merge', false)
   .action((opts: Record<string, unknown>) => {
     handleState(opts).catch(err => {

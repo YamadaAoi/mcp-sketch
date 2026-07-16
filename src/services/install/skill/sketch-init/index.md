@@ -1,4 +1,8 @@
-你是 项目架构师。你的任务是阅读项目代码，分析技术栈、代码风格和项目结构，生成 `.sketch-cache/proj-init.md` 供后续阶段使用
+# Sketch Init Skill
+
+分析项目代码，生成 `.sketch-cache/proj-init.md` 供后续阶段使用
+
+> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
 ## 核心约束
 
@@ -6,22 +10,17 @@
 - **绝不臆测项目代码风格**：必须基于配置文件（.prettierrc, .eslintrc 等）和现有代码进行判断
 - **绝不臆测项目结构**：必须基于现有文件目录进行判断
 - **绝不读取无关文件**：例如zip、rard等与项目代码无关的文件，不尝试解压或读取
-- **禁止修改 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件**：状态文件仅由主流程维护
 
 ## 执行步骤
 
-### 步骤 1：查看输入参数是否包含`errorDescription`
+以下步骤中的 `errorDescription`（可选）由调用方传入上下文
 
-- 若包含
-  带着 `errorDescription` 继续执行步骤 2，根据实际情况重新生成 `.sketch-cache/proj-init.md`
-- 若不包含
-  直接执行步骤 2
+### 步骤 1：检查 `.sketch-cache/proj-init.md` 是否存在
 
-### 步骤 2：检查 `.sketch-cache/proj-init.md` 是否存在
+- 若存在且未传入 `errorDescription`，直接跳过，不重复执行
+- 若存在且传入 `errorDescription`，则挑选以下步骤中涉及到 `errorDescription` 的步骤执行
 
-若**存在**且输入参数**不包含**`errorDescription`则直接跳过，不重复执行
-
-### 步骤 3：确定技术栈与依赖
+### 步骤 2：确定技术栈与依赖
 
 读取根目录及各包的 `package.json`，分析 `dependencies` 和 `devDependencies`：
 
@@ -33,7 +32,7 @@
 - **构建工具**：Vite / Rollup 等
 - **TypeScript 版本**
 
-### 步骤 4：确定代码风格与规范
+### 步骤 3：确定代码风格与规范
 
 - 读取 `.prettierrc`, `.editorconfig` 等配置，总结缩进、引号、分号规则
 - 读取 `eslint.config.*`, `tsconfig.json`, `stylelint.config` 等，总结命名限制、严格模式等
@@ -44,7 +43,7 @@
   - angular：是否使用类组件、装饰器等
   - 其他框架：根据实际情况判断组件编写规范
 
-### 步骤 5：确定项目结构
+### 步骤 4：确定项目结构
 
 - 分析 `src` 目录结构
   - 确定 API 目录，若不存在，则使用 `src/api/`
@@ -57,23 +56,23 @@
     - 若不存在，使用 `src/views` 作为 `views_path`
   - 确定业务组件目录（在 `views_path` 下，按页面分文件夹）
 
-### 步骤 6：确定路由配置方式
+### 步骤 5：确定路由配置方式
 
 - 查找路由配置文件（如 `router/index.ts` 或 `app/routes.ts`），总结路由定义方式（动态导入 / 静态配置）
 - 确定路由模式（如 `hash`、`history` 等）
 
-### 步骤 7：确定 CSS 方案
+### 步骤 6：确定 CSS 方案
 
 - 读取现有组件文件，判断 CSS 方案类型（CSS Modules / TailwindCSS / styled-components / Scoped CSS 等）
 
-### 步骤 8：确定质量工具配置
+### 步骤 7：确定质量工具配置
 
 - 查看`package.json` 中 `scripts` 字段，判断包管理工具（如 npm、yarn、pnpm 等），包管理工具一般是全局安装的
 - 检查 `.prettierrc*` 及 `package.json` 中 prettier 脚本，记录格式化命令
 - 检查 `eslint.config.*` 及 `package.json` 中 lint 脚本，记录检查命令
 - 检查 `tsconfig.json` 及 `package.json` 中 typecheck 脚本，记录类型检查命令
 
-### 步骤 9：输出文档
+### 步骤 8：输出文档
 
 保存至 `.sketch-cache/proj-init.md`，文件夹不存在则自动创建，文件已存在则覆盖，文档格式如下：
 

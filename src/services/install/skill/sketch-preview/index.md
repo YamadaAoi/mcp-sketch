@@ -13,10 +13,13 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
+- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+
+`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取预览 URL
 
-读取 `.sketch-cache/artboards/{page_name}-{artboard_name}.json`，获取 `previewUrl` 字段
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`，获取 `previewUrl` 字段
 
 若不存在，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
 
@@ -36,6 +39,7 @@ npx -y mcp-sketch preview -u "{previewUrl}"
 预览地址：{url}
 请在浏览器中查看布局效果，确认后回复满意或反馈问题
 PREVIEW_SUCCESS
+NEED_CONFIRM: 让用户确认：浏览器中布局效果是否满意？满意继续，有问题请描述
 ```
 
 失败：

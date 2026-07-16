@@ -380,6 +380,7 @@ export async function sketchPreview(args: SketchPreviewInputSchema) {
     const cwd = getEnv('CWD')
     session = await startServer(args.url, command, cwd)
     const page = await openBrowser(args.url, command)
+    await page?.reload({ waitUntil: 'domcontentloaded' })
     await page?.context()?.browser()?.close()
     response = `✅ ${args.url} opened in browser !`
     if (session) {

@@ -36,16 +36,16 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
     const cwd = getEnv('CWD')
     session = await startServer(args.url, command, cwd)
     const page = await openBrowser(args.url, command)
-    await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-    await page.waitForTimeout(2000)
-    await page.evaluate('window.scrollTo(0, 0)')
-    const screenshot = await page.screenshot({ fullPage: true })
+    await page?.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+    await page?.waitForTimeout(2000)
+    await page?.evaluate('window.scrollTo(0, 0)')
+    const screenshot = await page?.screenshot({ fullPage: true })
     await page?.context()?.browser()?.close()
 
-    const parsed = path.parse(args.file_path)
-    const dest = path.join(
-      parsed.dir,
-      `${parsed.name}.cache`,
+    const design_file_name = path.basename(args.file_path, '.zip')
+    const dest = path.resolve(
+      cwd,
+      `.sketch-cache/artboards/${design_file_name}`,
       `chrome_${args.page_name}_${args.artboard_name}_${Date.now()}.png`
     )
 

@@ -1,15 +1,15 @@
-import { mkdir, readFile, writeFile, rm } from 'fs/promises'
-import { dirname, resolve } from 'path'
+import { mkdir, readFile, writeFile } from 'fs/promises'
+import { basename, dirname, resolve } from 'path'
 import { load } from 'js-yaml'
 import { z } from 'zod/v4'
 import { fileExists } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 
 export const sketchStateInputSchema = z.object({
+  file_path: z.string().describe('design file path'),
   page_name: z.string().describe('page name'),
   artboard_name: z.string().describe('artboard name'),
   content: z.string().describe('Content data in YAML flow mapping format'),
-  clean: z.boolean().describe('just delete component & md files'),
   replace: z.boolean().describe('replace component list, instead of merge')
 })
 
@@ -157,49 +157,20 @@ function mergeState(
   return merged
 }
 
-async function deleteComponentFolder(
-  projectRoot: string,
-  componentPath: string
-) {
-  const folder = resolve(projectRoot, dirname(componentPath))
-  if (await fileExists(folder)) {
-    await rm(folder, { recursive: true, force: true })
-  }
-}
-
-async function deleteComponentFiles(
-  projectRoot: string,
-  components: ComponentState[]
-) {
-  for (const comp of components) {
-    if (comp.type === 'page-specific' || comp.type === 'common') {
-      await deleteComponentFolder(projectRoot, comp.componentPath)
-    }
-  }
-  for (const comp of components) {
-    if (comp.type === 'page') {
-      await deleteComponentFolder(projectRoot, comp.componentPath)
-    }
-  }
-}
-
 export async function sketchState(args: SketchStateInputSchema) {
   let response = 'Sketch Exception'
 
   try {
     const cwd = getEnv('CWD')
-    const { page_name, artboard_name, clean, replace, content } = args
+    const { file_path, page_name, artboard_name, replace, content } = args
 
+    const designFileName = basename(file_path, '.zip')
     const absPath = resolve(
       cwd,
-      `.sketch-cache/artboards/${page_name}-${artboard_name}.json`
+      `.sketch-cache/artboards/${designFileName}/${page_name}-${artboard_name}.json`
     )
     const newContent = parseState(content)
     let oldContent = await readState(absPath)
-
-    if (clean && oldContent?.components?.length) {
-      await deleteComponentFiles(cwd, oldContent.components)
-    }
 
     if (!oldContent) {
       oldContent = getDefaultState(page_name, artboard_name)

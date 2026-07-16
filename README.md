@@ -55,7 +55,7 @@ npx -y mcp-sketch install
 
 ### 状态文件
 
-`.sketch-cache/artboards/{page_name}-{artboard_name}.json`，通过 `mcp-sketch state` 管理，中断可恢复
+`.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`，通过 `mcp-sketch state` 管理，中断可恢复
 
 ### 环境变量
 
@@ -90,9 +90,9 @@ Windows 无需额外安装
 - **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — 解析图层/样式/切图，输出 JSON + 预览图
 - **preview** `-u <url>` — 打开浏览器访问 URL，自动启动本地服务
 - **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图保存，用于视觉比对
-- **state** `--pn <page> --an <artboard> -c '<yaml>' [--clean] [-r]` — 创建/更新画板状态，YAML 格式要求：外层 `"`，值用单引号，冒号后空格
+- **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — 创建/更新画板状态，YAML 格式要求：外层 `"`，值用单引号，冒号后空格
 
-输出位置：切图默认 `src/assets/sketch/`，预览图在 `{input}.cache/`（webp）
+输出位置：切图默认 `src/assets/sketch/`，预览图在 `.sketch-cache/artboards/{design_file_name}/`（webp）
 
 ## MCP 配置
 

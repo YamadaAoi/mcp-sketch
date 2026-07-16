@@ -1,6 +1,7 @@
 import type { InstallConfig } from '../installer'
 import SketchPickPrompt from './sketch-pick/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
+import SketchInitPrompt from './sketch-init/index.md'
 import SketchGenBasePrompt from './sketch-gen-base/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
 import SketchLayoutCheckPrompt from './sketch-layout-check/index.md'
@@ -11,8 +12,42 @@ import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
 import SketchInitCheckPrompt from './sketch-init-check/index.md'
 import SketchSplitCheckPrompt from './sketch-split-check/index.md'
 import SketchScreenshotCheckPrompt from './sketch-screenshot-check/index.md'
+import SketchCodePrompt from './sketch-code/index.md'
 
 export const SkillPool: InstallConfig[] = [
+  {
+    name: 'sketch-init',
+    description: '项目架构师，扫描项目配置生成 proj-init.md',
+    prompt: SketchInitPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
   {
     name: 'sketch-pick',
     description: '设计助理，提取画板列表，供用户单选',
@@ -258,6 +293,35 @@ export const SkillPool: InstallConfig[] = [
           {
             key: 'disallowed-tools',
             value: 'Write Edit'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-code',
+    description: '通用开发工程师，处理修改/重构等无设计稿的开发任务',
+    prompt: SketchCodePrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
           }
         ]
       },
