@@ -18,8 +18,8 @@ export const screenshot = new Command()
     '-f, --file_path <PATH>',
     'Sketch HTML export path (zip or folder)'
   )
-  .requiredOption('--pn, --page_name [PAGENAME]', 'Page name')
-  .requiredOption('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
+  .requiredOption('--pn, --page_name <PAGENAME>', 'Page name')
+  .requiredOption('--an, --artboard_name <ARTBOARDNAME>', 'Artboard name')
   .requiredOption('-u, --url <URL>', 'Screenshot URL')
   .action((opts: Record<string, unknown>) => {
     handleScreenshot(opts).catch(err => {

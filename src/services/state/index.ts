@@ -23,7 +23,6 @@ export interface ArtboardState {
   artboardName: string
   width: number
   height: number
-  step: string
   components: ComponentState[]
   lastUpdateTime: string
 }
@@ -55,7 +54,6 @@ function getDefaultState(
     artboardName,
     width: 0,
     height: 0,
-    step: 'step:3',
     components: [],
     lastUpdateTime: new Date().toISOString()
   }

@@ -10,54 +10,51 @@ Requires **multi-modal model** (preview image analysis needed). Agents are under
 npx -y mcp-sketch install
 ```
 
-Select your AI platform, files are written to:
+Select your AI platform:
 
 | Platform        | Agents Directory    | Skills Directory    |
 | --------------- | ------------------- | ------------------- |
 | **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
 
-Structure:
-
-- `sketch-leader` — main agent
-- `sketch-initializer` / `sketch-analyzer` / `sketch-architect` / `sketch-developer` / `sketch-checker` — sub-agents
-- `sketch-pick` / `sketch-split` / `sketch-gen-base` / `sketch-layout` / `sketch-preview` / `sketch-draw` / `sketch-screenshot-check` / `*check` — skills
-
 ## Usage
-
-**New flow**: Tell leader the page to implement; it runs the workflow automatically, pausing after layout for your preview
-
-**Fix mode**: Tell leader what's wrong (e.g. "spacing too large"); it analyzes and dispatches the right sub-agent
 
 ### Switch to Leader
 
 - **OpenCode**: Press `TAB` after startup to switch to `sketch-leader`
 - **Claude Code**: `claude --agent sketch-leader`
 
-### Workflow
+### Scenario 1: Create a New Page
 
-| Phase             | Sub-agent          | Skill                   | Parallel |
-| ----------------- | ------------------ | ----------------------- | -------- |
-| Initialize        | sketch-initializer | -                       | ❌       |
-| Init Review       | sketch-checker     | sketch-init-check       | ❌       |
-| Pick Artboard     | sketch-analyzer    | sketch-pick             | ❌       |
-| Split             | sketch-analyzer    | sketch-split            | ❌       |
-| Split Review      | sketch-checker     | sketch-split-check      | ❌       |
-| Show Result, Wait | -                  | -                       | ❌       |
-| Gen Base          | sketch-architect   | sketch-gen-base         | ✅       |
-| Base Review       | sketch-checker     | sketch-gen-base-check   | ✅       |
-| Layout            | sketch-architect   | sketch-layout           | ❌       |
-| Layout Review     | sketch-checker     | sketch-layout-check     | ❌       |
-| Preview           | sketch-analyzer    | sketch-preview          | ❌       |
-| Draw              | sketch-developer   | sketch-draw             | ✅       |
-| Draw Review       | sketch-checker     | sketch-draw-check       | ✅       |
-| Screenshot        | sketch-checker     | sketch-screenshot-check | ❌       |
+```
+Based on design.zip, create a login page
+```
 
-### State Files
+Flow: pick artboard → split components → generate skeleton → layout (with routing) → preview → draw
 
-`.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`, managed via `mcp-sketch state`. Resumable on interrupt
+### Scenario 2: Insert into Existing Page
 
-### Environment Variables
+```
+Based on design.zip, extract the user info card at the top-right and insert it into /dashboard
+```
+
+Flow: pick artboard → split region → component-level layout → draw → insert into target page → preview
+
+## Toolbox
+
+| skill           | Agent            | Description                           |
+| --------------- | ---------------- | ------------------------------------- |
+| sketch-pick     | sketch-analyzer  | List artboards for selection          |
+| sketch-split    | sketch-analyzer  | Analyze artboard, split components    |
+| sketch-preview  | sketch-analyzer  | Start dev server and preview          |
+| sketch-init     | sketch-architect | Scan project, generate config         |
+| sketch-gen-base | sketch-architect | Generate skeleton component code      |
+| sketch-layout   | sketch-architect | Configure routing and layout          |
+| sketch-draw     | sketch-developer | Draw component from design data       |
+| sketch-code     | sketch-developer | Modify/refactor/insert without design |
+| sketch-\*-check | sketch-checker   | Review quality at each stage          |
+
+## Environment Variables
 
 Create `.env.sketch` in project root:
 
@@ -69,9 +66,9 @@ Create `.env.sketch` in project root:
 | `USER_DATA_DIR`  | no       | `~/.mcp-sketch-chrome-data` | Chrome user data dir   |
 | `DEBUG_PORT`     | no       | `9222`                      | Debug port             |
 
-> **Tip**: Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
+> Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
 
-### Prerequisites
+## Prerequisites
 
 Preview and screenshot need a background dev server. **Linux / macOS / WSL** requires `tmux`:
 
@@ -86,17 +83,17 @@ None needed on Windows
 
 > Run `npx -y mcp-sketch <cmd> --help` for full options
 
-- **list** `[-f <path>]` — list artboards `[{pageName, artboardName, previewPath}]`
-- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — parse layers/styles/assets, output JSON + preview
-- **preview** `-u <url>` — open browser to URL, auto-start dev server
-- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — save screenshot for visual comparison
-- **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — create/update artboard state. YAML: wrap with `"`, single quotes for values, space after colon
+- **list** `[-f <path>]` — list artboards
+- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — parse layers/styles/assets
+- **preview** `-u <url>` — open browser preview, auto-start dev server
+- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — capture screenshot for visual comparison
+- **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
 
-Output: assets in `src/assets/sketch/`, preview images in `.sketch-cache/artboards/{design_file_name}/` (webp)
+Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/` (webp)
 
 ## MCP Configuration
 
-Set `MCP_MODE=1` environment variable to enable MCP mode, configure as a local MCP service:
+Set `MCP_MODE=1` to enable MCP mode:
 
 - **opencode**
 

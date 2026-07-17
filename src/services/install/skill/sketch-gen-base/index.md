@@ -2,11 +2,9 @@
 
 基于提供的组件规划布局数据，生成基础的组件代码
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
-
 ## 执行步骤
 
-以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription`、`file_path` 均由调用方传入上下文。`design_file_name = basename(file_path, '.zip')`
+以下步骤中的 `page_name`、`artboard_name`、`component_path`、`requirements`、`file_path` 均由调用方传入上下文。`design_file_name = basename(file_path, '.zip')`
 
 ### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、样式写法
 
@@ -20,12 +18,12 @@
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中未找到 {component_path} 组件`
 
-### 步骤 4：分析 `errorDescription`，确定修复方式
+### 步骤 4：分析 `requirements`，确定修复方式
 
-- 若包含
-  - 1. 分析 `errorDescription`，判断问题类型：
+- 若 `requirements` 描述了需要修复的问题（如 check 失败原因）
+  - 1. 分析 `requirements`，判断问题类型：
     - **可简单修复**（格式问题如 prettier 格式异常、文件命名不规范、组件描述文档字段错误等表层问题）→ 定位到具体问题直接修正，修复完成后跳到输出格式，无需重新生成组件骨架
-    - **需重新生成**（DOM 结构错误、组件类型错误、路径规划错误等深层问题）→ 查看之前的组件生成方案，带着 `errorDescription` 继续执行步骤 5
+    - **需重新生成**（DOM 结构错误、组件类型错误、路径规划错误等深层问题）→ 查看之前的组件生成方案，带着 `requirements` 继续执行步骤 5
 - 若不包含
   直接执行步骤 5
 
@@ -50,7 +48,7 @@
 
   ```markdown
   ---
-  type: page|common|page-specific
+  type: page|common|page-specific|section
   component_path: relative/path/to/ComponentName
   file_path: relative/path/to/sketch/export.zip
   page_name: somePage

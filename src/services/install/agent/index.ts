@@ -62,7 +62,8 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, AskUserQuestion, Skill'
+            value:
+              'Read, Glob, Grep, Bash, AskUserQuestion, Skill, mcp__codegraph'
           },
           { key: 'disallowedTools', value: 'Write, Edit' }
         ]
@@ -112,7 +113,7 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill'
+            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill, mcp__codegraph'
           }
         ]
       },
@@ -150,7 +151,8 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion'
+            value:
+              'Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion, mcp__codegraph'
           }
         ]
       },
@@ -199,7 +201,8 @@ export const AgentPool: InstallConfig[] = [
           { key: 'description' },
           {
             key: 'tools',
-            value: 'Read, Glob, Grep, Bash, Skill, AskUserQuestion'
+            value:
+              'Read, Glob, Grep, Bash, Skill, AskUserQuestion, mcp__codegraph'
           },
           { key: 'disallowedTools', value: 'Write, Edit' }
         ]

@@ -2,8 +2,6 @@
 
 基于 `mcp-sketch analyze` 提供的图层数据，结合预览图视觉参考，生成符合项目技术栈的组件功能代码
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
-
 ## 核心约束
 
 - **禁止自行解压**任何压缩文件！**禁止直接读取设计稿文件**
@@ -15,7 +13,7 @@
 
 ## 执行步骤
 
-以下步骤中的 `page_name`、`artboard_name`、`component_path`、`errorDescription`、`file_path` 均由调用方传入上下文。
+以下步骤中的 `page_name`、`artboard_name`、`component_path`、`requirements`、`file_path` 均由调用方传入上下文。
 
 `design_file_name = basename(file_path, '.zip')`
 
@@ -32,14 +30,14 @@
 
 ### 步骤 3：检查组件路径
 
-检查 `component_path` 是否在状态文件的 `components` 数组中，存在则继续；若 gen-base 骨架已存在，读取并保留子容器 div 和 import，填充业务内容
+检查 `component_path` 是否在状态文件的 `components` 数组中，存在则继续；若骨架已存在，读取并保留子容器 div 和 import，填充业务内容
 
-### 步骤 4：分析 `errorDescription`，确定修复方式
+### 步骤 4：分析 `requirements`，确定修复方式
 
-- 若包含
-  - 1. 分析 `errorDescription`，判断问题类型：
+- 若 `requirements` 描述了需要修复的问题（如 check 失败原因）
+  - 1. 分析 `requirements`，判断问题类型：
     - **可简单修复**（格式问题如 prettier 格式异常、命名不规范、导入路径错误等表层问题）→ 定位到具体问题直接修正（如运行格式化命令、修正命名、调整导入路径），修复完成后跳到步骤 7 输出，无需重新执行 analyze 和绘制
-    - **需重新绘制**（DOM 结构错误、关键元素缺失、交互逻辑不对等深层问题）→ 查看之前的组件绘制方案，带着 `errorDescription` 继续执行步骤 5
+    - **需重新绘制**（DOM 结构错误、关键元素缺失、交互逻辑不对等深层问题）→ 查看之前的组件绘制方案，带着 `requirements` 继续执行步骤 5
 - 若不包含
   直接执行步骤 5
 

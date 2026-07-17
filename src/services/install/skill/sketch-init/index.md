@@ -2,8 +2,6 @@
 
 分析项目代码，生成 `.sketch-cache/proj-init.md` 供后续阶段使用
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
-
 ## 核心约束
 
 - **绝不臆测项目技术栈**：必须基于 `package.json` 的依赖进行判断
@@ -13,12 +11,12 @@
 
 ## 执行步骤
 
-以下步骤中的 `errorDescription`（可选）由调用方传入上下文
+以下步骤中的 `requirements`（可选）由调用方传入上下文
 
 ### 步骤 1：检查 `.sketch-cache/proj-init.md` 是否存在
 
-- 若存在且未传入 `errorDescription`，直接跳过，不重复执行
-- 若存在且传入 `errorDescription`，则挑选以下步骤中涉及到 `errorDescription` 的步骤执行
+- 若存在且未传入 `requirements`，直接跳过，不重复执行
+- 若存在且传入 `requirements`，则根据 `requirements` 中的问题描述修复 proj-init.md 中的对应字段
 
 ### 步骤 2：确定技术栈与依赖
 

@@ -2,8 +2,6 @@
 
 配置画板对应页面的路由，为父组件编写子组件的 import 语句和 div 容器，搭建组件层级骨架。具体的组件细节绘制由后续 高级前端开发 负责
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
-
 ## 核心约束
 
 - **禁止自行解压**任何压缩文件！
@@ -16,7 +14,8 @@
 - `page_name` — 页面名
 - `artboard_name` — 画板名
 - `file_path` — 设计稿文件路径（用于定位状态文件目录）
-- `errorDescription`（可选） — 修复模式下传入的用户反馈
+- `layout_mode`（可选） — `page`（完整页面布局，含路由）或 `component`（组件内布局），默认 `page`
+- `requirements`（可选） — 额外要求。首次调用传空；重试/修复调用传 check 失败原因或用户反馈
 
 `design_file_name = basename(file_path, '.zip')`
 
@@ -32,12 +31,12 @@
 
 - 若不是，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 components 字段`
 
-### 步骤 4：分析 `errorDescription`，确定修复方式
+### 步骤 4：分析 `requirements`，确定修复方式
 
-- 若包含
-  - 1. 分析 `errorDescription`，判断问题类型：
+- 若 `requirements` 描述了需要修复的问题（如 check 失败原因）
+  - 1. 分析 `requirements`，判断问题类型：
     - **可简单修复**（格式问题如 prettier 格式异常、import 路径错误、CSS 属性值偏差等表层问题）→ 定位到具体代码直接修正，修复完成后跳到输出格式，无需重新执行布局流程
-    - **需重新布局**（布局模式选错、组件层级关系错误、路由配置错误等深层问题）→ 查看之前的组件布局方案，带着 `errorDescription` 继续执行步骤 5
+    - **需重新布局**（布局模式选错、组件层级关系错误、路由配置错误等深层问题）→ 查看之前的组件布局方案，带着 `requirements` 继续执行步骤 5
 - 若不包含
   直接执行步骤 5
 
@@ -47,24 +46,35 @@
 
 ### 步骤 6：路由配置更新
 
-检查是否已配置当前画板对应入口页面组件的路由：
+`layout_mode = component` → 跳过此步骤（组件内布局不涉及路由）
+
+`layout_mode = page` → 检查是否已配置当前画板对应入口页面组件的路由：
 
 - 已配置 → 直接跳过
 - 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
 
 ### 步骤 7：推断预览 URL
 
-读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式，从步骤 6 确定的路由路径，尝试拼接预览 URL：
+读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式：
 
-- 端口和路由路径均已知：
+`layout_mode = page` → 从步骤 6 确定的路由路径拼接预览 URL
+
+`layout_mode = component` → 读取目标页面的 state 文件，获取其 `previewUrl`：
+
+- 目标页面 state 存在且有 previewUrl → 直接使用
+- 目标页面 state 不存在或无 previewUrl → 输出 `UNKNOWN`
+
+- 端口和路由路径均已知（page 模式）或目标页面 previewUrl 已知（component 模式）：
   - hash 模式：`http://localhost:{端口}/#/{路由路径}`
   - history 模式：`http://localhost:{端口}/{路由路径}`
-- 端口或路由路径无法确定（如后台动态路由）→ `previewUrl` 输出 `UNKNOWN`，由 Leader 询问用户确认
+- 无法确定 → `previewUrl` 输出 `UNKNOWN`，由 Leader 询问用户确认
 
 ### 步骤 8：组件布局
 
 - 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
-- 读取预览图，判断当前页面属于哪种布局模式（参照下方「布局模式参考」）
+- 读取预览图，判断布局模式（参照下方「布局模式速查」）
+  - `layout_mode = page` → 判断整个页面的布局模式
+  - `layout_mode = component` → 判断被插入组件内部的布局模式（如卡片内 flex 横排、表单内纵向堆叠等）
 - 遍历 `components` 中每个组件：
   - `children` 为空 → 直接跳过，不做任何修改
   - `children` 不为空：
@@ -74,263 +84,27 @@
       - 容器 `div` 的css类名基于子组件名称`{sub-component-name}-wrap`
       - 正确 `import` 子组件到当前组件，填入相应的 `div` 容器中
       - 判断组件是否相对父级组件上下或左右居中，若居中则优先使其居中
-      - 编写CSS样式控制**子组件的位置和大小**，参照下方布局模式的宽高设置
+      - 编写CSS样式控制**子组件的位置和大小**，参照下方布局模式速查
 
-## 布局模式参考
+## 布局模式速查
 
-根据预览图判断页面属于哪种模式，按对应方案布局。
+根据预览图判断布局模式，按对应方案布局。
 
-### 模式 1：Flex 居中
+| 模式      | 适用场景                 | 容器写法                                                                      | 子组件写法                                                                                             |
+| --------- | ------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Flex 居中 | 登录页、弹窗、单卡片居中 | `display:flex; justify-content:center; align-items:center; width/height:100%` | 固定宽度或 `max-width`，高度 auto                                                                      |
+| 左右分栏  | 后台、设置页、邮箱       | `display:flex; width/height:100%`                                             | 左栏 `width:固定px; flex-shrink:0`，右栏 `flex:1; overflow:auto`                                       |
+| 上下分栏  | 标准页面、文章页、详情页 | `display:flex; flex-direction:column; width/height:100%`                      | 顶栏 `height:固定px; flex-shrink:0`，内容区 `flex:1; overflow:auto`                                    |
+| Grid 网格 | 仪表盘、数据面板、图片墙 | `display:grid; grid-template-columns:repeat(N,1fr); gap:16~24px`              | 各占一个 grid 单元，或跨列 `grid-column:span N`                                                        |
+| 固定定位  | 后台管理系统、CMS        | 外层 `width/height:100%`                                                      | 顶栏 `position:sticky/fixed;top:0`，侧栏 `position:fixed;left:0`，内容区 `margin-left/margin-top` 偏移 |
+| 流式卡片  | 商品列表、文章列表       | `display:flex; flex-wrap:wrap; gap:12~20px`                                   | `width:固定px或百分比;height:auto;flex-shrink:0`                                                       |
 
-**适用场景**：登录页、注册页、弹窗、确认框、单个卡片居中
+**变体判断要点：**
 
-**判断依据**：页面中央有一个独立区块（登录框、表单卡片），四周留白
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ justify-content: center
-├─ align-items: center
-├─ width: 100%
-├─ height: 100%
-└─ 子组件（居中卡片）
-   ├─ 固定宽度（如 400px）或 max-width
-   ├─ 固定高度或 auto 高度
-   └─ 无固定定位，由 flex 自动居中
-```
-
-**变体 - 偏左/偏右**：
-
-- 卡片靠左：`justify-content: flex-start` + `padding-left: 8%~15%`
-- 卡片靠右：`justify-content: flex-end` + `padding-right: 8%~15%`
-
-### 模式 2：左右布局（Sidebar + Main）
-
-**适用场景**：管理后台、设置页、邮箱、文件管理器
-
-**判断依据**：左侧有导航/菜单列表，右侧是主内容区，宽度不等分
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ width: 100%
-├─ height: 100%
-├─ 左侧菜单（sidebar）
-│  ├─ width: 固定像素（如 200px~280px）
-│  ├─ height: 100%
-│  └─ flex-shrink: 0
-└─ 右侧内容（main）
-   ├─ flex: 1（自动填满剩余宽度）
-   ├─ height: 100%
-   └─ overflow: auto（内容超出时滚动）
-```
-
-**变体 - 左窄右宽**：
-
-- 左侧：`width: 60px~80px`（仅图标导航）
-- 右侧：`flex: 1`
-
-### 模式 3：上下布局（Header + Content）
-
-**适用场景**：标准页面、文章页、详情页
-
-**判断依据**：顶部有标题栏/导航栏，下方是内容区域，垂直排列
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ flex-direction: column
-├─ width: 100%
-├─ height: 100%
-├─ 顶部栏（header）
-│  ├─ width: 100%
-│  ├─ height: 固定像素（如 50px~64px）
-│  └─ flex-shrink: 0
-└─ 内容区（content）
-   ├─ width: 100%
-   ├─ flex: 1
-   └─ overflow: auto
-```
-
-### 模式 4：上中下布局（Header + Content + Footer）
-
-**适用场景**：官网首页、产品页、带版权页的标准页面
-
-**判断依据**：顶部导航 + 中间内容 + 底部版权/链接栏
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ flex-direction: column
-├─ width: 100%
-├─ height: 100%
-├─ 顶部栏（header）
-│  ├─ width: 100%
-│  ├─ height: 固定像素（如 56px~64px）
-│  └─ flex-shrink: 0
-├─ 中间内容（content）
-│  ├─ width: 100%
-│  ├─ flex: 1
-│  └─ overflow: auto
-└─ 底部栏（footer）
-   ├─ width: 100%
-   ├─ height: 固定像素（如 40px~60px）
-   └─ flex-shrink: 0
-```
-
-### 模式 5：全屏背景 + 居中卡片
-
-**适用场景**：登录页（带背景图）、欢迎页、引导页
-
-**判断依据**：整个页面有背景图/背景色，中央浮动一个卡片
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ width: 100%
-├─ height: 100%
-├─ position: relative
-├─ background-size: cover
-├─ background-position: center
-└─ 子组件（卡片）
-   ├─ position: absolute（或 flex 居中）
-   ├─ top: 50%, left: 50%, transform: translate(-50%, -50%)
-   ├─ 固定宽高（如 420px × auto）
-   └─ 或用 flex 居中（同模式 1）
-```
-
-### 模式 6：Grid 网格
-
-**适用场景**：仪表盘、数据面板、图片墙、九宫格菜单
-
-**判断依据**：多个卡片/模块按网格排列，大小均匀或有规律
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: grid
-├─ grid-template-columns: repeat(3, 1fr)  ← 3列等分
-├─ gap: 16px~24px
-├─ width: 100%
-├─ height: 100%
-└─ 子组件（卡片）
-   ├─ 各占一个 grid 单元
-   └─ 或跨列：grid-column: span 2
-```
-
-**常见列数**：
-
-- 2 列：左右对比、双栏面板
-- 3 列：仪表盘、功能入口
-- 4 列：数据卡片、统计面板
-
-### 模式 7：固定定位布局（Admin Layout）
-
-**适用场景**：后台管理系统、CMS、ERP
-
-**判断依据**：顶部固定导航 + 左侧固定菜单 + 右侧内容区，滚动时导航和菜单不随内容滚动
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ width: 100%
-├─ height: 100%
-├─ 顶部导航（position: fixed / sticky）
-│  ├─ top: 0
-│  ├─ width: 100%
-│  ├─ height: 48px~56px
-│  └─ z-index 高
-├─ 左侧菜单（position: fixed）
-│  ├─ top: 顶部高度
-│  ├─ left: 0
-│  ├─ width: 180px~240px
-│  ├─ height: calc(100% - 顶部高度)
-│  └─ overflow: auto
-└─ 右侧内容区
-   ├─ margin-left: 左侧宽度
-   ├─ margin-top: 顶部高度
-   ├─ width: calc(100% - 左侧宽度)
-   ├─ height: calc(100% - 顶部高度)
-   └─ overflow: auto
-```
-
-### 模式 8：流式卡片列表
-
-**适用场景**：商品列表、文章列表、标签页内容
-
-**判断依据**：多个大小相近的卡片按行排列，可能自动换行
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ flex-wrap: wrap
-├─ gap: 12px~20px
-├─ width: 100%
-├─ height: 100%
-├─ align-content: flex-start（顶部对齐）
-└─ 子组件（卡片）
-   ├─ width: 固定（如 250px）或百分比（如 calc(33.33% - gap)）
-   ├─ height: 固定或 auto
-   └─ flex-shrink: 0
-```
-
-### 模式 9：Tab 切换布局
-
-**适用场景**：多标签页内容切换、设置面板、详情页多区块
-
-**判断依据**：顶部或左侧有 Tab 标签栏，下方/右侧是对应内容
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ flex-direction: column（上下 Tab）或 row（左右 Tab）
-├─ width: 100%
-├─ height: 100%
-├─ Tab 栏
-│  ├─ width: 100%（上下）或 固定宽度（左右）
-│  ├─ height: 40px~48px（上下）或 100%（左右）
-│  └─ flex-shrink: 0
-└─ 内容区
-   ├─ flex: 1
-   ├─ width: 100%
-   └─ overflow: auto
-```
-
-### 模式 10：嵌套左右布局
-
-**适用场景**：三栏布局（菜单+子菜单+内容）、复杂后台
-
-**判断依据**：多层嵌套的左右分栏
-
-**布局方案**：
-
-```
-父容器（page 组件）
-├─ display: flex
-├─ width: 100%, height: 100%
-├─ 左侧一级菜单（固定宽度）
-│  └─ width: 60px~80px
-├─ 中间二级菜单（固定宽度）
-│  └─ width: 160px~200px
-└─ 右侧内容（flex: 1）
-   ├─ flex: 1
-   └─ overflow: auto
-```
+- 居中偏左/偏右 → `justify-content: flex-start/end` + `padding`
+- 全屏背景+卡片 → 容器加 `position:relative;background-size:cover`，卡片用 flex 居中或 `position:absolute` + `transform`
+- Tab 切换 → 上下 Tab 用 `flex-direction:column`，左右 Tab 用 `row`
+- 三栏嵌套 → 在左右分栏基础上嵌套一层 flex
 
 ## 宽高设置速查表
 
@@ -350,7 +124,7 @@
 成功：
 
 ```
-路由和父组件布局已完成
+路由和父组件布局已完成 | 无子组件，跳过布局步骤
 previewUrl：{previewUrl} | UNKNOWN
 已修改组件：
 - {componentPath1}
@@ -358,15 +132,6 @@ previewUrl：{previewUrl} | UNKNOWN
 ...
 LAYOUT_SUCCESS
 RECORD_STATE: previewUrl, each modified component → components[{componentPath}].status = layout-done
-```
-
-成功（无子组件，跳过布局）：
-
-```
-画板无子组件，跳过布局步骤
-previewUrl：{previewUrl} | UNKNOWN
-LAYOUT_SUCCESS
-RECORD_STATE: previewUrl
 ```
 
 失败：

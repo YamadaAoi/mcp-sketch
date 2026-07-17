@@ -2,8 +2,6 @@
 
 通用的开发技能，处理其他 skill 未覆盖的开发任务，包括**修改存量组件**、**提取公共组件**、**插入到现有页面**、**调整业务逻辑**等
 
-> ⚠️ **警告**：你**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
-
 ## 核心约束
 
 - **不涉及设计稿分析**：没有设计稿，不需要调用 `mcp-sketch analyze`
@@ -12,7 +10,7 @@
 
 ## 执行步骤
 
-以下步骤中的 `component_path`、`target_component`（可选）、`errorDescription`（可选）均由调用方传入上下文。
+以下步骤中的 `component_path`、`target_component`（可选）、`requirements`（可选）均由调用方传入上下文。
 
 ### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、代码风格、项目结构
 
@@ -20,14 +18,15 @@
 
 ### 步骤 2：理解需求
 
-分析 `errorDescription` 中的用户需求：
+分析 `requirements` 中的内容，判断任务类型：
 
 - **修改组件**：理解要把组件改成什么样，需要改动哪些部分
 - **提取公共组件**：理解要抽取哪些共性逻辑，目标组件结构如何设计
 - **插入到现有页面**（传入 `target_component` 时）：将 `component_path` 指向的组件插入到 `target_component` 页面中
 - **其他任务**：理解具体需求
+- **修复**：`requirements` 描述的是 check 失败原因或用户反馈的修复意见
 
-没有 `errorDescription` 时返回失败：`缺少 errorDescription，请描述需要做什么`
+没有 `requirements` 时返回失败：`缺少 requirements，请描述需要做什么`
 
 ### 步骤 3：读取目标文件
 
@@ -56,7 +55,7 @@
 当任务为「插入」时，遵循以下规则：
 
 1. **保持可见**：组件必须默认可见，以确保预览和截图能捕捉到。不要添加 `v-if="false"`、`display: none`、`hidden` 等隐藏逻辑
-2. **精确插入**：按 `errorDescription` 中描述的位置插入（如在某组件后、某容器内等）
+2. **精确插入**：按 `requirements` 中描述的位置插入（如在某组件后、某容器内等）
 3. **最小修改**：只加 import + 组件标签，不修改目标页面的其他逻辑
 4. **命名引用**：确保 `component_path` 的组件名与 import 路径正确对应
 
