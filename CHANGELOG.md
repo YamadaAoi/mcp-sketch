@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.5.0
+
+### Minor Changes
+
+- 尝试兼容老项目
+
 ## 1.4.1
 
 ### Patch Changes
