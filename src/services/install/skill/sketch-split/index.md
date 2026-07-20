@@ -152,21 +152,22 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 
 **组件类型说明：**
 
-| 类型            | 说明                      | 适用场景                       |
-| --------------- | ------------------------- | ------------------------------ |
-| `page`          | 路由级页面入口            | 完整页面模式，每个页面最多一个 |
-| `page-specific` | 页面私有业务组件          | 完整页面模式下的业务区块       |
-| `section`       | 区域插入的 section 级组件 | region 模式，插入到已有页面    |
-| `common`        | 可跨页面复用的公共组件    | 两种模式均适用                 |
+| 类型            | 说明                              | 适用场景                                               |
+| --------------- | --------------------------------- | ------------------------------------------------------ |
+| `page`          | 路由级页面入口                    | 完整页面模式，每个页面最多一个                         |
+| `page-specific` | 页面私有业务组件 / section 子组件 | 完整页面模式的业务区块 / 区域插入模式的 section 子组件 |
+| `section`       | 区域插入的 section 级父组件       | 区域插入模式，插入到已有页面                           |
+| `common`        | 可跨页面复用的公共组件            | 两种模式均适用                                         |
 
 **路径生成规则**（从 `proj-init.md` 读取 `views_path` 和 `components_path`）：
 
-| 场景     | 组件类型     | 路径格式                                                                    | 示例                                                      |
-| -------- | ------------ | --------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 完整页面 | 页面入口     | `{views_path}/{pageName}/{PageName}.{vue/tsx/other}`                        | `src/views/loginPage/LoginPage.{vue/tsx/other}`           |
-| 完整页面 | 页面私有组件 | `{views_path}/{pageName}/{componentName}/{ComponentName}.{vue/tsx/other}`   | `src/views/loginPage/loginForm/LoginForm.{vue/tsx/other}` |
-| 区域插入 | section 组件 | `{views_path}/{targetPage}/{componentName}/{ComponentName}.{vue/tsx/other}` | `src/views/userProfile/infoCard/InfoCard.{vue/tsx/other}` |
-| 两种模式 | 公共组件     | `{components_path}/{componentName}/{ComponentName}.{vue/tsx/other}`         | `src/components/modalDialog/ModalDialog.{vue/tsx/other}`  |
+| 场景     | 组件类型       | 路径格式                                                                                  | 示例                                                             |
+| -------- | -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 完整页面 | 页面入口       | `{views_path}/{pageName}/{PageName}.{vue/tsx/other}`                                      | `src/views/loginPage/LoginPage.{vue/tsx/other}`                  |
+| 完整页面 | 页面私有组件   | `{views_path}/{pageName}/{componentName}/{ComponentName}.{vue/tsx/other}`                 | `src/views/loginPage/loginForm/LoginForm.{vue/tsx/other}`        |
+| 区域插入 | section 父组件 | `{views_path}/{targetPage}/{componentName}/{ComponentName}.{vue/tsx/other}`               | `src/views/userProfile/infoCard/InfoCard.{vue/tsx/other}`        |
+| 区域插入 | section 子组件 | `{views_path}/{targetPage}/{parentComponentName}/{childName}/{ChildName}.{vue/tsx/other}` | `src/views/userProfile/infoCard/avatarSection/AvatarSection.vue` |
+| 两种模式 | 公共组件       | `{components_path}/{componentName}/{ComponentName}.{vue/tsx/other}`                       | `src/components/modalDialog/ModalDialog.{vue/tsx/other}`         |
 
 > 区域插入模式下，`targetPage` 从 `requirements` 中提取页面路径后，通过项目路由配置或 `views_path` 目录结构确定实际目录名
 
@@ -208,7 +209,7 @@ SPLIT_SUCCESS
 RECORD_STATE: previewPath, width, height, targetPage, components（使用 -r 覆盖整个组件列表）
 components 数组中每个组件必须包含以下字段：
 - componentPath: 组件文件路径
-- type: page | common | page-specific | section
+- type: page | common | page-specific | section（section 的子组件使用 page-specific）
 - status: split-done
 - rect: [x, y, width, height]
 - excludeRects: [[x1,y1,w1,h1], ...]（所有直接子组件的 rect）
