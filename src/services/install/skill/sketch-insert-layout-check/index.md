@@ -1,6 +1,6 @@
-# Sketch Layout Check Skill
+# Sketch Insert Layout Check Skill
 
-审核父组件的布局是否符合要求：子组件容器包裹、lint/typecheck
+审核 section 组件插入到目标页面的结果：组件内部布局、目标页面引用、lint/typecheck
 
 > ⚠️ **警告**：**绝对禁止**新建、修改或删除 `.sketch-cache/artboards/` 目录下的任何 JSON 状态文件。状态文件仅由主流程维护，你只能通过上下文参数获取必要信息。
 
@@ -23,7 +23,7 @@
 
 读取 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
-- 若不存在，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
+- 若不存在，返回失败：`画板{page_name}-{artboard_name}中间状态不存在`
 
 ### 步骤 2：提取待检查组件
 
@@ -33,20 +33,23 @@
 
 ### 步骤 3：遍历检查每个组件
 
-对每个 `layout-done` 组件（有子组件的父组件）执行以下检查：
+对每个 `layout-done` 组件执行以下检查：
 
-#### 3a. 容器包裹检查
+#### 3a. 组件内部布局检查
 
-每个直接子组件是否有 `div` 容器包裹，类名 `{sub-component-name}-wrap`
+- 每个直接子组件是否有 `div` 容器包裹，类名 `{sub-component-name}-wrap`
+- 每个子组件是否已正确 import
 
-#### 3b. import 检查
+#### 3b. 目标页面引用检查
 
-每个子组件是否已正确 import
+- 读取 `targetPage` 字段获取目标页面组件路径
+- 目标页面是否已 import 当前 section 组件
+- 目标页面中是否正确使用该组件
 
 #### 3c. 运行 lint/typecheck
 
-- lint：`eslint <涉及的组件文件路径>`（精确到本次修改的文件，无需全量扫描）
-- typecheck：`tsc --noEmit`（不支持指定文件，需全量检查，过滤本次修改的组件相关错误）
+- lint：`eslint <涉及的组件文件路径>`（精确到本次修改的文件）
+- typecheck：`tsc --noEmit`
 - 若项目没有对应检查工具，跳过即可
 
 ### 步骤 4：汇总结果
@@ -58,26 +61,25 @@
 全部通过：
 
 ```
-全部组件布局审核通过，共 {n} 个组件
-LAYOUT_CHECK_SUCCESS
+全部组件插入布局审核通过，共 {n} 个组件
+INSERT_LAYOUT_CHECK_SUCCESS
 RECORD_STATE: components[{componentPath}].status = layout-check-done（所有通过的组件）
 ```
 
 存在失败：
 
 ```
-布局审核结果（共 {total} 个，{passCount} 个通过，{failCount} 个失败）：
+插入布局审核结果（共 {total} 个，{passCount} 个通过，{failCount} 个失败）：
 
 通过：
 - {component_path_1}
-- {component_path_2}
 
 失败：
 - 组件路径：{component_path}
-  问题类型：{容器缺失 | import缺失 | lint错误 | typecheck错误}
+  问题类型：{容器缺失 | import缺失 | 目标页面引用缺失 | lint错误 | typecheck错误}
   问题描述：{具体问题}
   修复建议：{建议如何修复}
 （逐个列出所有失败组件）
-LAYOUT_CHECK_FAILED
+INSERT_LAYOUT_CHECK_FAILED
 RECORD_STATE: 仅记录通过的组件为 layout-check-done，失败组件保持 layout-done
 ```

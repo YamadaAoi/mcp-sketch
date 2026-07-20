@@ -6,6 +6,7 @@
 
 - **禁止自行解压**任何压缩文件！
 - **禁止直接读取设计稿文件**
+- **前置状态校验**：若存在 `gen-base-done` 状态的组件（即 gen-base-check 未完成），中断流程并反馈，禁止在错误基础上继续任务
 
 ## 执行步骤
 
@@ -23,28 +24,39 @@
 
 - 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json` 文件
+### 步骤 2：读取状态文件
+
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json` 文件
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 
-### 步骤 3：检查`components`字段是否为非空数组
+### 步骤 3：前置状态校验
 
-- 若不是，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在 components 字段`
+检查 `components` 数组中是否存在 `status = 'gen-base-done'` 的组件
 
-### 步骤 4：分析 `requirements`，确定修复方式
+- **存在** → 中断流程，返回失败信息：`存在 {n} 个组件未通过 gen-base-check（状态仍为 gen-base-done），请先完成 gen-base-check`
+- **不存在** → 继续
+
+### 步骤 4：提取待处理组件
+
+从 `components` 数组中筛选 `status = 'gen-base-check-done'` 的组件
+
+- 若没有，返回：`没有需要配置布局的组件`
+
+### 步骤 5：分析 `requirements`，确定修复方式
 
 - 若 `requirements` 描述了需要修复的问题（如 check 失败原因）
   - 1. 分析 `requirements`，判断问题类型：
     - **可简单修复**（格式问题如 prettier 格式异常、import 路径错误、CSS 属性值偏差等表层问题）→ 定位到具体代码直接修正，修复完成后跳到输出格式，无需重新执行布局流程
-    - **需重新布局**（布局模式选错、组件层级关系错误、路由配置错误等深层问题）→ 查看之前的组件布局方案，带着 `requirements` 继续执行步骤 5
+    - **需重新布局**（布局模式选错、组件层级关系错误、路由配置错误等深层问题）→ 查看之前的组件布局方案，带着 `requirements` 继续执行步骤 6
 - 若不包含
-  直接执行步骤 5
+  直接执行步骤 6
 
-### 步骤 5：读取组件布局规划
+### 步骤 6：读取组件布局规划
 
-- 获取 `components` 数组中每个组件的 `children`/`rect`/`excludeRects`
+- 获取 `components` 数组中每个待处理组件的 `children`/`rect`/`excludeRects`
 
-### 步骤 6：路由配置更新
+### 步骤 7：路由配置更新
 
 `layout_mode = component` → 跳过此步骤（组件内布局不涉及路由）
 
@@ -53,11 +65,11 @@
 - 已配置 → 直接跳过
 - 未配置 → 按 `.sketch-cache/proj-init.md` 中的路由规范插入新路由，与现有路由写法保持一致
 
-### 步骤 7：推断预览 URL
+### 步骤 8：推断预览 URL
 
 读取 `.sketch-cache/proj-init.md` 获取监听端口和路由模式：
 
-`layout_mode = page` → 从步骤 6 确定的路由路径拼接预览 URL
+`layout_mode = page` → 从步骤 7 确定的路由路径拼接预览 URL
 
 `layout_mode = component` → 读取目标页面的 state 文件，获取其 `previewUrl`：
 
@@ -69,13 +81,13 @@
   - history 模式：`http://localhost:{端口}/{路由路径}`
 - 无法确定 → `previewUrl` 输出 `UNKNOWN`，由 Leader 询问用户确认
 
-### 步骤 8：组件布局
+### 步骤 9：组件布局
 
 - 根据 `.sketch-cache/proj-init.md` 确定技术栈、导入方式、样式写法
 - 读取预览图，判断布局模式（参照下方「布局模式速查」）
   - `layout_mode = page` → 判断整个页面的布局模式
   - `layout_mode = component` → 判断被插入组件内部的布局模式（如卡片内 flex 横排、表单内纵向堆叠等）
-- 遍历 `components` 中每个组件：
+- 遍历待处理组件：
   - `children` 为空 → 直接跳过，不做任何修改
   - `children` 不为空：
     - 1. 根据 `rect` / `excludeRects` 计算每个子组件的布局信息

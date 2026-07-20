@@ -30,7 +30,7 @@ Select your AI platform:
 Based on design.zip, create a login page
 ```
 
-Flow: pick artboard → split components → generate skeleton → layout (with routing) → preview → draw
+Flow: pick artboard → split components → generate skeleton → layout (with routing) → preview layout → draw → final preview
 
 ### Scenario 2: Insert into Existing Page
 
@@ -38,21 +38,33 @@ Flow: pick artboard → split components → generate skeleton → layout (with 
 Based on design.zip, extract the user info card at the top-right and insert it into /dashboard
 ```
 
-Flow: pick artboard → split region → component-level layout → draw → insert into target page → preview
+Flow: pick artboard → split region (auto-detect target page component path) → generate skeleton → layout & insert into target page → preview insertion → draw → final preview
 
 ## Toolbox
 
-| skill           | Agent            | Description                           |
-| --------------- | ---------------- | ------------------------------------- |
-| sketch-pick     | sketch-analyzer  | List artboards for selection          |
-| sketch-split    | sketch-analyzer  | Analyze artboard, split components    |
-| sketch-preview  | sketch-analyzer  | Start dev server and preview          |
-| sketch-init     | sketch-architect | Scan project, generate config         |
-| sketch-gen-base | sketch-architect | Generate skeleton component code      |
-| sketch-layout   | sketch-architect | Configure routing and layout          |
-| sketch-draw     | sketch-developer | Draw component from design data       |
-| sketch-code     | sketch-developer | Modify/refactor/insert without design |
-| sketch-\*-check | sketch-checker   | Review quality at each stage          |
+| skill                | Agent            | Description                                         |
+| -------------------- | ---------------- | --------------------------------------------------- |
+| sketch-pick          | sketch-analyzer  | List artboards for selection                        |
+| sketch-split         | sketch-analyzer  | Analyze artboard, split components                  |
+| sketch-preview       | sketch-analyzer  | Start dev server and preview                        |
+| sketch-init          | sketch-architect | Scan project, generate config                       |
+| sketch-gen-base      | sketch-architect | Generate skeleton component code                    |
+| sketch-layout        | sketch-architect | Configure routing and layout                        |
+| sketch-insert-layout | sketch-architect | Layout section components & insert into target page |
+| sketch-draw          | sketch-developer | Draw component from design data                     |
+| sketch-code          | sketch-developer | Modify/refactor/insert without design               |
+| sketch-\*-check      | sketch-checker   | Review quality at each stage                        |
+
+## State Management
+
+Each artboard's state is stored in `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
+
+Component state chain: `split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
+
+> For "insert into existing page": after `gen-base-check-done`, `insert-layout/insert-layout-check` write the same `layout-done/layout-check-done` states
+> `reuse` type components skip the state chain
+
+After executing a skill, subagents return `NEXT_STEP_RECOMMENDATION` to suggest the next action. The leader dynamically adjusts its todo list based on these recommendations. Some steps (like split) output `NEED_CONFIRM` to pause and wait for user approval.
 
 ## Environment Variables
 
@@ -89,7 +101,7 @@ None needed on Windows
 - **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — capture screenshot for visual comparison
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
 
-Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/` (webp)
+Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` (webp)
 
 ## MCP Configuration
 

@@ -22,9 +22,26 @@
 2. **调用 Skill**：使用 `skill: sketch-xxx` 技能完成工作
 3. **返回结果**：将 skill 执行结果返回给 Leader
 
+## 推荐逻辑
+
+skill 执行成功后，根据当前 skill 生成输出：
+
+| 当前 Skill     | NEED_CONFIRM（确认内容）                                 | NEXT_STEP_RECOMMENDATION（后续推荐）                       |
+| -------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| sketch-pick    | （无需确认）                                             | 委托subagent：sketch-analyzer 调用skill：sketch-split      |
+| sketch-split   | 让用户确认：以上组件拆分是否合理？合理继续，有问题请描述 | 委托subagent：sketch-checker 调用skill：sketch-split-check |
+| sketch-preview | （无需确认）                                             | 预览已完成，等待用户反馈或继续后续流程                     |
+
+若 skill 返回 FAILED，不输出 NEED_CONFIRM 和 NEXT_STEP_RECOMMENDATION，让 Leader 自行判断
+
 ## 输出格式
 
 ```
 ANALYZE_OVER
 {skill 执行结果}
+NEED_CONFIRM: {确认内容}
+NEXT_STEP_RECOMMENDATION: {推荐内容}
 ```
+
+- `NEED_CONFIRM` 仅在 split 成功时输出
+- `NEXT_STEP_RECOMMENDATION` 在所有 skill 成功时输出

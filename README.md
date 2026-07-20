@@ -30,7 +30,7 @@ npx -y mcp-sketch install
 根据设计稿 设计稿.zip，创建一个用户登录页
 ```
 
-流程：选画板 → 拆分组件 → 生成骨架 → 布局（含路由） → 预览确认 → 绘制功能代码
+流程：选画板 → 拆分组件 → 骨架代码 → 布局（含路由） → 预览确认布局 → 绘制功能代码 → 最终预览
 
 ### 场景二：插入到现有页面
 
@@ -38,21 +38,33 @@ npx -y mcp-sketch install
 根据设计稿 设计稿.zip，把右上角的用户信息卡片提取出来，插入到 /dashboard 页面
 ```
 
-流程：选画板 → 拆分指定区域 → 组件内布局 → 绘制 → 插入到目标页面 → 预览确认
+流程：选画板 → 拆分指定区域（自动推断目标页面组件路径） → 骨架代码 → 布局并插入目标页面 → 预览确认插入效果 → 绘制功能代码 → 最终预览
 
 ## 工具箱
 
-| skill           | 归属 agent       | 说明                         |
-| --------------- | ---------------- | ---------------------------- |
-| sketch-pick     | sketch-analyzer  | 提取画板列表供用户选择       |
-| sketch-split    | sketch-analyzer  | 分析画板，拆分组件           |
-| sketch-preview  | sketch-analyzer  | 启动服务并预览页面           |
-| sketch-init     | sketch-architect | 扫描项目，生成配置文档       |
-| sketch-gen-base | sketch-architect | 生成基础组件骨架代码         |
-| sketch-layout   | sketch-architect | 配置路由和父组件布局         |
-| sketch-draw     | sketch-developer | 根据设计稿绘制组件功能代码   |
-| sketch-code     | sketch-developer | 修改/重构/插入等无设计稿任务 |
-| sketch-\*-check | sketch-checker   | 审核各阶段输出质量           |
+| skill                | 归属 agent       | 说明                            |
+| -------------------- | ---------------- | ------------------------------- |
+| sketch-pick          | sketch-analyzer  | 提取画板列表供用户选择          |
+| sketch-split         | sketch-analyzer  | 分析画板，拆分组件              |
+| sketch-preview       | sketch-analyzer  | 启动服务并预览页面              |
+| sketch-init          | sketch-architect | 扫描项目，生成配置文档          |
+| sketch-gen-base      | sketch-architect | 生成基础组件骨架代码            |
+| sketch-layout        | sketch-architect | 配置路由和父组件布局            |
+| sketch-insert-layout | sketch-architect | 布局 section 组件并插入目标页面 |
+| sketch-draw          | sketch-developer | 根据设计稿绘制组件功能代码      |
+| sketch-code          | sketch-developer | 修改/重构/插入等无设计稿任务    |
+| sketch-\*-check      | sketch-checker   | 审核各阶段输出质量              |
+
+## 状态管理
+
+每个画板的状态文件存放在 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
+
+组件状态链：`split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
+
+> 插入老项目场景：`gen-base-check-done` 后经 `insert-layout/insert-layout-check` 写入相同的 `layout-done/layout-check-done` 状态
+> `reuse` 类型组件不走状态链
+
+subagent 执行 skill 后会返回 `NEXT_STEP_RECOMMENDATION` 推荐下一步动作，Leader 结合自己的 todo 列表动态调整。部分场景（如 split 后）会输出 `NEED_CONFIRM` 暂停等待用户确认。
 
 ## 环境变量
 
@@ -89,7 +101,7 @@ Windows 无需额外安装
 - **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图用于视觉比对
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — 管理画板状态
 
-切图输出：`src/assets/sketch/`，预览图：`.sketch-cache/artboards/{design_file_name}/`（webp）
+切图输出：`src/assets/sketch/`，预览图：`.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/`（webp）
 
 ## MCP 配置
 

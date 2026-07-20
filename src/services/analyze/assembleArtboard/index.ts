@@ -202,7 +202,7 @@ async function processPreview(
   const designFileName = path.basename(filePath, '.zip')
   const dest = path.resolve(
     cwd,
-    `.sketch-cache/artboards/${designFileName}`,
+    `.sketch-cache/artboards/${designFileName}/${artboard.pageName}/${artboard.name}`,
     `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${excludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
   )
   artboard.previewPath = await processImage(

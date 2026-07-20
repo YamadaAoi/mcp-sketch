@@ -24,14 +24,10 @@
 - `file_path` — 设计稿文件路径（用于定位状态文件目录）
 - `requirements`（可选） — 额外要求。首次调用传用户意图（如"左边的导航栏"、"区域 [x,y,w,h] 内的卡片"、"插入到 /user/profile"），split 据此调整拆分范围；重试/修复调用传 check 失败原因或用户反馈。若含坐标区域，自行提取作为 analyze 的 `-r` 参数；若含目标页面路径，提取作为 section 组件的放置目录
 
-`design_file_name = basename(file_path, '.zip')`
-
 ### 第一步：环境校验
 
-- 1. 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、assets_path、项目目录结构、命名规范、技术栈和UI组件库
+- 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、assets_path、项目目录结构、命名规范、技术栈和UI组件库
   - 若文件不存在，立即返回失败：proj-init.md 文件不存在
-- 3. 读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json` 获取 `filePath`
-  - 若文件不存在，立即返回失败：画板{page_name}-{artboard_name}中间状态不存在
 
 ### 第二步：分析 `requirements`，确定修复方式
 
@@ -47,7 +43,12 @@
 **若 `requirements` 描述了用户意图**（如"只画左边的导航栏"、"区域 [100,200,300,400] 内的卡片"、"插入到 /user/profile"），优先按以下规则调整：
 
 - 若 `requirements` 中包含明确的坐标区域（如 `[x,y,w,h]` 格式），提取作为 analyze 的 `-r` 参数
-- 若 `requirements` 中提到了页面路径或页面功能描述（如 `/user/profile`、"用户设置页"），以此为线索读取项目路由配置和 `views_path` 目录结构，确定对应的目标页面目录名 `targetPage`
+- 若 `requirements` 中提到了页面路径或页面功能描述（如 `/user/profile`、"用户设置页"），以此为线索确定目标页面组件路径：
+  1. 先尝试通过路由配置文件（如 `router/index.ts`、`router.config.ts` 等）匹配页面入口组件
+  2. 若路由配置中无匹配，通过 `mcp: codegraph_explore` 或 Grep 搜索 `views_path` 目录下的页面组件
+  3. **深入定位最深层插入位置**：拿到入口组件后，通过 CodeGraph/Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部。例如入口为 `UserSettings.vue`，其模板内引用了 `<ProfileCard>`、`<SecuritySection>`、`<NotificationPanel>`，若设计图层匹配的是通知区域，则 `targetPage` 应定为 `.../notificationPanel/NotificationPanel.vue`
+  4. 确定后产出组件文件路径作为 `targetPage`
+- `targetPage` 包含在 RECORD_STATE 中直接写入状态文件
 - 在组件识别中，以 `requirements` 为优先判断依据：用户说"导航栏"→ 优先识别横向容器；用户说"卡片"→ 优先识别独立封闭区域；用户说"表单"→ 优先识别输入控件组合
 - `requirements` 与预览图视觉判断冲突时，以 `requirements` 为准
 
@@ -204,8 +205,14 @@ codegraph_explore: "list all common/reusable components in this project"
 | -------- | -------- | -------- | ---- | ---- | ------------- | ---------- | ------------ | -------- |
 
 SPLIT_SUCCESS
-RECORD_STATE: previewPath, width, height, components
-NEED_CONFIRM: 让用户确认：以上组件拆分是否合理？合理继续，有问题请描述
+RECORD_STATE: previewPath, width, height, targetPage, components（使用 -r 覆盖整个组件列表）
+components 数组中每个组件必须包含以下字段：
+- componentPath: 组件文件路径
+- type: page | common | page-specific | section
+- status: split-done
+- rect: [x, y, width, height]
+- excludeRects: [[x1,y1,w1,h1], ...]（所有直接子组件的 rect）
+- children: ['childComponentPath', ...]（直接子组件路径列表）
 ```
 
 失败：

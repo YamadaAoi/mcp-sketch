@@ -13,7 +13,13 @@
 
 ## 执行步骤
 
-以下步骤中的 `page_name`、`artboard_name`、`component_path`、`requirements`、`file_path` 均由调用方传入上下文。
+参数由调用方传入：
+
+- `page_name` — 页面名
+- `artboard_name` — 画板名
+- `component_path` — 组件文件路径
+- `file_path` — 设计稿文件路径
+- `requirements`（可选） — 修复调用时传 check 失败原因
 
 `design_file_name = basename(file_path, '.zip')`
 
@@ -23,14 +29,16 @@
 
 ### 步骤 2：读取状态文件
 
-读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
 - 若不存在，跳过之后所有步骤，返回失败信息：`画板{page_name}-{artboard_name}中间状态不存在`
 - 从状态文件中提取 `filePath`（Sketch 文件路径），后续 analyze 调用使用
 
-### 步骤 3：检查组件路径
+### 步骤 3：检查组件状态
 
-检查 `component_path` 是否在状态文件的 `components` 数组中，存在则继续；若骨架已存在，读取并保留子容器 div 和 import，填充业务内容
+检查 `components` 数组中 `component_path` 对应的组件 `status` 是否为 `layout-check-done`
+
+- 若状态不是 `layout-check-done`，跳过之后所有步骤，失败信息：`{component_path} 当前状态为 {status}，需要 layout-check-done 才能绘制`
 
 ### 步骤 4：分析 `requirements`，确定修复方式
 
@@ -100,7 +108,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
     - 有切图覆盖 → 冗余，跳过
     - 无切图覆盖 → 真实背景，保留
 
-### 步骤 7：代码生成
+#### 6.3 代码生成
 
 根据过滤后的 `layers` 生成组件代码
 
@@ -122,7 +130,8 @@ codegraph_explore: "show me the full source and props interface of {component_na
 成功：
 
 ```
-组件 [ComponentName] 生成完毕
+组件 [{ComponentName}] 绘制完成
+
 DRAW_SUCCESS
 RECORD_STATE: components[{componentPath}].status = draw-done
 ```
@@ -130,7 +139,7 @@ RECORD_STATE: components[{componentPath}].status = draw-done
 成功（修复模式）：
 
 ```
-已修复组件【componentPath】
+已修复组件 [{componentPath}]
 
 修复内容：<描述修复了什么>
 

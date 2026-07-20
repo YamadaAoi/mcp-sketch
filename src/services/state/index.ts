@@ -21,6 +21,7 @@ export interface ArtboardState {
   previewUrl: string
   pageName: string
   artboardName: string
+  targetPage?: string
   width: number
   height: number
   components: ComponentState[]
@@ -30,11 +31,21 @@ export interface ArtboardState {
 export interface ComponentState {
   componentPath: string
   type?: 'page' | 'common' | 'page-specific'
-  status?: string
+  status?: ComponentStatus
   children?: string[]
   rect?: [number, number, number, number]
   excludeRects?: Array<[number, number, number, number]>
 }
+
+export type ComponentStatus =
+  | 'split-done'
+  | 'split-check-done'
+  | 'gen-base-done'
+  | 'gen-base-check-done'
+  | 'layout-done'
+  | 'layout-check-done'
+  | 'draw-done'
+  | 'draw-check-done'
 
 /**
  * 获取默认状态
@@ -165,7 +176,7 @@ export async function sketchState(args: SketchStateInputSchema) {
     const designFileName = basename(file_path, '.zip')
     const absPath = resolve(
       cwd,
-      `.sketch-cache/artboards/${designFileName}/${page_name}-${artboard_name}.json`
+      `.sketch-cache/artboards/${designFileName}/${page_name}/${artboard_name}/progress.json`
     )
     const newContent = parseState(content)
     let oldContent = await readState(absPath)

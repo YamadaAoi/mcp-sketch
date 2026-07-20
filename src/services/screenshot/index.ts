@@ -45,8 +45,8 @@ export async function sketchScreenshot(args: SketchScreenshotInputSchema) {
     const design_file_name = path.basename(args.file_path, '.zip')
     const dest = path.resolve(
       cwd,
-      `.sketch-cache/artboards/${design_file_name}`,
-      `chrome_${args.page_name}_${args.artboard_name}_${Date.now()}.png`
+      `.sketch-cache/artboards/${design_file_name}/${args.page_name}/${args.artboard_name}`,
+      `screenshot_${Date.now()}.png`
     )
 
     const previewPath = await processImage(screenshot, dest)

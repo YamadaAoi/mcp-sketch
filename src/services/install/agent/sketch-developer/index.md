@@ -22,9 +22,21 @@
 3. **调用 Skill**：使用 `skill: sketch-xxx` 技能完成工作
 4. **返回结果**：将 skill 执行结果返回给 Leader
 
+## 推荐逻辑
+
+skill 执行成功后，根据当前 skill 推荐后续动作：
+
+| 当前 Skill  | 成功 → NEXT_STEP_RECOMMENDATION                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| sketch-draw | 当前组件 draw 完成，等待所有并行 draw 任务结束后委托subagent：sketch-checker 调用skill：sketch-draw-check |
+| sketch-code | （场景复杂，不推荐后续步骤）                                                                              |
+
+若 skill 返回 FAILED，不推荐后续步骤，让 Leader 自行判断
+
 ## 输出格式
 
 ```
 DEVELOP_OVER
 {skill 执行结果}
+NEXT_STEP_RECOMMENDATION: {推荐内容}
 ```

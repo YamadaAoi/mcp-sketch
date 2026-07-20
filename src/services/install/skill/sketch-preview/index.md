@@ -13,17 +13,30 @@
 
 - `page_name` — 页面名
 - `artboard_name` — 画板名
-- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+- `file_path` — 设计稿文件路径
 
 `design_file_name = basename(file_path, '.zip')`
 
-### 步骤 1：读取预览 URL
+### 步骤 1：读取状态文件
 
-读取 `.sketch-cache/artboards/{design_file_name}/{page_name}-{artboard_name}.json`，获取 `previewUrl` 字段
+读取 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
-若不存在，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
+- 若不存在，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
 
-### 步骤 2：调用命令启动服务并打开浏览器预览
+### 步骤 2：确认预览条件
+
+检查 `previewUrl` 字段是否为空或 `UNKNOWN`
+
+- **为空或 UNKNOWN** → 返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
+- **有值** → 继续
+
+### 步骤 3：获取预览 URL
+
+从状态文件获取 `previewUrl` 字段
+
+若为空或 `UNKNOWN`，返回失败信息：`画板{page_name}-{artboard_name}未配置预览地址，请确认 layout 阶段已完成`
+
+### 步骤 4：调用命令启动服务并打开浏览器预览
 
 ```bash
 npx -y mcp-sketch preview -u "{previewUrl}"
@@ -39,7 +52,6 @@ npx -y mcp-sketch preview -u "{previewUrl}"
 预览地址：{url}
 请在浏览器中查看布局效果，确认后回复满意或反馈问题
 PREVIEW_SUCCESS
-NEED_CONFIRM: 让用户确认：浏览器中布局效果是否满意？满意继续，有问题请描述
 ```
 
 失败：

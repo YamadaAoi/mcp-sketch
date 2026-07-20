@@ -4,14 +4,15 @@ import SketchSplitPrompt from './sketch-split/index.md'
 import SketchInitPrompt from './sketch-init/index.md'
 import SketchGenBasePrompt from './sketch-gen-base/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
+import SketchInsertLayoutPrompt from './sketch-insert-layout/index.md'
 import SketchLayoutCheckPrompt from './sketch-layout-check/index.md'
+import SketchInsertLayoutCheckPrompt from './sketch-insert-layout-check/index.md'
 import SketchPreviewPrompt from './sketch-preview/index.md'
 import SketchDrawPrompt from './sketch-draw/index.md'
 import SketchDrawCheckPrompt from './sketch-draw-check/index.md'
 import SketchGenBaseCheckPrompt from './sketch-gen-base-check/index.md'
 import SketchInitCheckPrompt from './sketch-init-check/index.md'
 import SketchSplitCheckPrompt from './sketch-split-check/index.md'
-import SketchScreenshotCheckPrompt from './sketch-screenshot-check/index.md'
 import SketchCodePrompt from './sketch-code/index.md'
 
 export const SkillPool: InstallConfig[] = [
@@ -177,6 +178,68 @@ export const SkillPool: InstallConfig[] = [
     name: 'sketch-layout-check',
     description: '审核专员，审核父组件布局是否符合要求',
     prompt: SketchLayoutCheckPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-insert-layout',
+    description: '中级前端开发，布局 section 组件并插入到目标页面',
+    prompt: SketchInsertLayoutPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-insert-layout-check',
+    description: '审核专员，审核 section 组件插入目标页面的结果',
+    prompt: SketchInsertLayoutCheckPrompt,
     platforms: [
       {
         agent: 'claude',
@@ -404,39 +467,6 @@ export const SkillPool: InstallConfig[] = [
     name: 'sketch-split-check',
     description: '质量保障工程师，审核组件拆分结果，包括路径和命名规范',
     prompt: SketchSplitCheckPrompt,
-    platforms: [
-      {
-        agent: 'claude',
-        baseDir: '.claude/skills',
-        fileName: 'SKILL.md',
-        isNested: true,
-        meta: [
-          { key: 'name' },
-          { key: 'description' },
-          { key: 'user-invocable', value: false },
-          {
-            key: 'allowed-tools',
-            value: 'Read Glob Grep Bash'
-          },
-          {
-            key: 'disallowed-tools',
-            value: 'Write Edit'
-          }
-        ]
-      },
-      {
-        agent: 'opencode',
-        baseDir: '.opencode/skills',
-        fileName: 'SKILL.md',
-        isNested: true,
-        meta: [{ key: 'name' }, { key: 'description' }]
-      }
-    ]
-  },
-  {
-    name: 'sketch-screenshot-check',
-    description: '视觉审核专员，截图比对设计稿与浏览器渲染效果',
-    prompt: SketchScreenshotCheckPrompt,
     platforms: [
       {
         agent: 'claude',
