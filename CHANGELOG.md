@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.5.1
+
+### Patch Changes
+
+- subagent扩展推荐动作，skill适配老项目
+
 ## 1.5.0
 
 ### Minor Changes
