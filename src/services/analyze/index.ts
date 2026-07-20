@@ -23,7 +23,9 @@ export const sketchAnalyzeInputSchema = z.object({
     .optional(),
   assets_path: z
     .string()
-    .describe('assets path (optional), default src/assets/sketch')
+    .describe(
+      'assets path (optional), default ASSETS_PATH from .env.sketch or src/assets/sketch'
+    )
     .optional(),
   limit: z
     .number()

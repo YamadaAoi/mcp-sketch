@@ -41,7 +41,7 @@ export const analyze = new Command()
   )
   .option(
     '--ap, --assets_path [ASSETSPATH]',
-    'Assets output path, default: `src/assets/sketch`'
+    'Assets output path, default: `.env.sketch` ASSETS_PATH or `src/assets/sketch`'
   )
   .option(
     '-l, --limit [LIMIT]',

@@ -77,6 +77,7 @@ subagent 执行 skill 后会返回 `NEXT_STEP_RECOMMENDATION` 推荐下一步动
 | `CWD`            | 否   | 当前目录                    | 项目根目录          |
 | `USER_DATA_DIR`  | 否   | `~/.mcp-sketch-chrome-data` | Chrome 用户数据目录 |
 | `DEBUG_PORT`     | 否   | `9222`                      | 调试端口            |
+| `ASSETS_PATH`    | 否   | `src/assets/sketch`         | 切图输出路径        |
 
 > 配置本地开发服务器时关闭自动打开浏览器，例如 Vite 设置 `server.open: false`
 

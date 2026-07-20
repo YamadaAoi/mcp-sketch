@@ -77,6 +77,7 @@ Create `.env.sketch` in project root:
 | `CWD`            | no       | cwd                         | Project root           |
 | `USER_DATA_DIR`  | no       | `~/.mcp-sketch-chrome-data` | Chrome user data dir   |
 | `DEBUG_PORT`     | no       | `9222`                      | Debug port             |
+| `ASSETS_PATH`    | no       | `src/assets/sketch`         | Slice output path      |
 
 > Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
 

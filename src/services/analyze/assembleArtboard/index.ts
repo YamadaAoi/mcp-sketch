@@ -221,7 +221,7 @@ export async function assembleArtboard(
     data: Buffer
   }>
 ) {
-  const dest = args.assets_path ?? 'src/assets/sketch'
+  const dest = args.assets_path ?? getEnv('ASSETS_PATH')
   const newRect = getRect(args.rect)
   const newExcludeRects = args.exclude_rects?.reduce<
     [number, number, number, number][]

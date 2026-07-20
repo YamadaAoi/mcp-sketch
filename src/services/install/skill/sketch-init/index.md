@@ -45,7 +45,6 @@
 
 - 分析 `src` 目录结构
   - 确定 API 目录，若不存在，则使用 `src/api/`
-  - 确定 Assets 目录，若不存在，则使用 `src/assets/`
   - 确定公共组件目录
     - 若存在，记录为 `components_path`
     - 若不存在，使用 `src/components` 作为 `components_path`
@@ -114,7 +113,6 @@
 | 入口页面 |          |          |      |
 | 业务组件 |          |          |      |
 | API 接口 |          |          |      |
-| 静态资源 |          |          |      |
 
 ### 路径规范
 
