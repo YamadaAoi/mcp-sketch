@@ -13,7 +13,7 @@
 | Skill       | 职责             | 必需参数                      | 可选参数                                     |
 | ----------- | ---------------- | ----------------------------- | -------------------------------------------- |
 | sketch-draw | 绘制组件功能代码 | `component_path`, `file_path` | `page_name`, `artboard_name`, `requirements` |
-| sketch-code | 通用开发任务     | `component_path`              | `target_component`, `requirements`           |
+| sketch-code | 通用开发任务     | `component_path`              | `requirements`                               |
 
 ## 工作流程
 

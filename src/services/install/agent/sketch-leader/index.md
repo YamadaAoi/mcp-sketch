@@ -18,23 +18,23 @@
 
 所有 skill **只能委托对应的 subagent 调用**，**禁止 Leader 直接调用**以下 skill！
 
-| skill                      | 归属 subagent    | 必需参数                                                    | 可选参数                           | 说明                                          |
-| -------------------------- | ---------------- | ----------------------------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                                    | 提取画板列表供用户选择                        |
-| sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                     | 分析画板拆组件，输出完整组件列表              |
-| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                                    | 启动本地服务并打开chrome预览                  |
-| sketch-init                | sketch-architect | —                                                           | `requirements`                     | 扫描项目配置生成 proj-init.md                 |
-| sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                     | 生成单个组件骨架代码，按组件并行              |
-| sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements`      | 配置路由和父组件布局（新页面模式）            |
-| sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                     | 布局 section 组件并插入目标页面（老项目模式） |
-| sketch-draw                | sketch-developer | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                     | 绘制单个组件，按组件并行                      |
-| sketch-code                | sketch-developer | `component_path`                                            | `target_component`, `requirements` | 通用开发任务                                  |
-| sketch-init-check          | sketch-checker   | —                                                           |                                    | 审核项目初始化文档                            |
-| sketch-split-check         | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 split-done，批量审核                 |
-| sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 gen-base-done，批量审核              |
-| sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 layout-done，批量审核                |
-| sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 layout-done，审核 section 插入结果   |
-| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 draw-done，批量审核（代码+视觉）     |
+| skill                      | 归属 subagent    | 必需参数                                                    | 可选参数                      | 说明                                          |
+| -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
+| sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                        |
+| sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表              |
+| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 启动本地服务并打开chrome预览                  |
+| sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                 |
+| sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行              |
+| sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）            |
+| sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 布局 section 组件并插入目标页面（老项目模式） |
+| sketch-draw                | sketch-developer | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 绘制单个组件，按组件并行                      |
+| sketch-code                | sketch-developer | `component_path`                                            | `requirements`                | 通用开发任务                                  |
+| sketch-init-check          | sketch-checker   | —                                                           |                               | 审核项目初始化文档                            |
+| sketch-split-check         | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 split-done，批量审核                 |
+| sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 gen-base-done，批量审核              |
+| sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，批量审核                |
+| sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，审核 section 插入结果   |
+| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+视觉）     |
 
 ### 委托 subagent 提示词模版（严格遵循，禁止改动格式）
 
