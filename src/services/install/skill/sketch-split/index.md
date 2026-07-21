@@ -14,6 +14,7 @@
 - 工具限制：本阶段只允许使用 `mcp-sketch analyze` 获取画板信息，严禁直接读取设计稿文件或自行解压
 - 基础组件库：所有基础原子组件（按钮、输入框等）禁止拆分为独立文件，必须直接使用UI组件库中的组件
 - 所有组件及其路径不能有中文字符，只能使用英文、数字和下划线
+- **状态文件只读**：禁止直接新建、修改或删除 `.sketch-cache/` 下的状态文件。状态仅通过 `RECORD_STATE` 输出标记，由 Leader 负责写入
 
 ## 执行流程
 
@@ -48,7 +49,7 @@
   2. 若路由配置中无匹配，通过 `mcp: codegraph_explore` 或 Grep 搜索 `views_path` 目录下的页面组件
   3. **深入定位最深层插入位置**：拿到入口组件后，通过 CodeGraph/Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部。例如入口为 `UserSettings.vue`，其模板内引用了 `<ProfileCard>`、`<SecuritySection>`、`<NotificationPanel>`，若设计图层匹配的是通知区域，则 `targetPage` 应定为 `.../notificationPanel/NotificationPanel.vue`
   4. 确定后产出组件文件路径作为 `targetPage`
-- `targetPage` 包含在 RECORD_STATE 中直接写入状态文件
+- `targetPage` 通过 RECORD_STATE 输出，由 Leader 写入状态文件
 - 在组件识别中，以 `requirements` 为优先判断依据：用户说"导航栏"→ 优先识别横向容器；用户说"卡片"→ 优先识别独立封闭区域；用户说"表单"→ 优先识别输入控件组合
 - `requirements` 与预览图视觉判断冲突时，以 `requirements` 为准
 
