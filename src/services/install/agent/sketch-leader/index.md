@@ -91,11 +91,6 @@
 
 1. 从起点 skill 出发，按状态链逐步展开形成初始 todo 列表
 2. gen-base 和 draw 按组件并行（leader 为每个待处理组件单独发起一次调用）
-3. 其他 skill 读状态自动找待处理组件
-4. 执行过程中根据 subagent 返回的 `NEXT_STEP_RECOMMENDATION` 动态调整 todo 列表：
-   - **合理** → 采纳/插入
-   - **不合理** → 忽略
-   - 初始计划 + 动态推荐的组合确保即使初始计划有偏差也能被纠正
 
 ### 4. 列出 todo 确认
 
@@ -109,7 +104,11 @@ subagent 返回工作结果后：
 - 若输出中标明 `RECORD_STATE`，调用 `mcp-sketch state` 记录或更新相应字段
 - 若 `previewUrl` 的值为 `UNKNOWN`，Leader 先读取项目路由配置推断可能的预览地址，向用户确认后写入
 - 若输出中标明 `NEED_CONFIRM`，**必须暂停执行**，将确认内容展示给用户，等待明确回复后再继续
-- 若输出中标明 `NEXT_STEP_RECOMMENDATION`，与当前 todo 列表对照后采纳/插入/忽略
+- 若输出中标明 `NEXT_STEP_RECOMMENDATION`，评估收益与成本后动态调整 todo 列表
+  - **有什么收益？** 比如提前预览发现布局问题
+  - **花多少成本？** 比如预览只需委托相应的subagent执行
+  - **收益 >= 成本 → 优先采纳**：不要低估返工成本
+  - **收益 < 成本** → 忽略
 
 ## 三、状态与进度
 
@@ -140,6 +139,8 @@ subagent 返回工作结果后：
 
 CLI 命令格式：`mcp-sketch state -f <filePath> --pn <page> --an <artboard> [-r] -c "<YAML>"`
 
+> ⚠️ **`-r` 仅在需要全部替换 components 数组时使用**，否则会清空 components 数组中未被 YAML 覆盖的字段，导致数据丢失
+
 YAML 格式：使用 {} 包裹，键值对以 : 分隔，各项之间以 , 分隔，嵌套数组使用 []。特殊字符需用引号包裹
 
 ```yaml
@@ -151,7 +152,7 @@ YAML 格式：使用 {} 包裹，键值对以 : 分隔，各项之间以 , 分�
 | 时机            | 触发条件                             | Leader 操作                                                                                                                              |
 | --------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | ① 初始创建      | pick 返回 SUCCESS                    | 首次写入 `filePath` + `pageName` + `artboardName`                                                                                        |
-| ② subagent 推进 | 任意 subagent 返回 SUCCESS           | 读取 `RECORD_STATE`，按指示合并更新字段                                                                                                  |
+| ② subagent 推进 | 任意 subagent 返回 SUCCESS           | 读取 `RECORD_STATE`，按指示合并更新字段（**不带 `-r`**）                                                                                 |
 | ③ 错误回退      | subagent 返回 FAILED 或 check 不通过 | 按回退规则将组件 status 回退到前一状态，用 `-r` 覆盖写入；涉及文件结构变化先走删除流程再更新状态                                         |
 | ④ 跳过 reuse    | 操作指向 `type: reuse` 的组件        | 不调度 gen-base/layout/draw，不更新 status；insert-layout 阶段会自动将 reuse 组件插入到目标页面                                          |
 | ⑤ 重启恢复      | 新会话发现已有状态文件               | 扫描状态文件 → status 为 `done` 的跳过 → 文件缺失且 status 高于 `split-done` 的降级为 `split-done` → 有 `skipped` 组件时列出询问是否重试 |

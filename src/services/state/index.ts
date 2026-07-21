@@ -1,9 +1,15 @@
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { basename, dirname, resolve } from 'path'
+import { basename, dirname, isAbsolute, relative, resolve } from 'path'
 import { load } from 'js-yaml'
 import { z } from 'zod/v4'
 import { fileExists } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
+
+function toRelativePath(absOrRelative: string, cwd: string): string {
+  return isAbsolute(absOrRelative)
+    ? relative(cwd, absOrRelative)
+    : absOrRelative
+}
 
 export const sketchStateInputSchema = z.object({
   file_path: z.string().describe('design file path'),
@@ -151,10 +157,28 @@ function mergeComponents(
 function mergeState(
   existing: ArtboardState,
   incoming: ArtboardState,
-  replace: boolean
+  replace: boolean,
+  cwd: string
 ) {
   const { components: existingComponents, ...existingRest } = existing
   const { components: incomingComponents, ...incomingRest } = incoming
+
+  if (incomingRest.filePath) {
+    incomingRest.filePath = toRelativePath(incomingRest.filePath, cwd)
+  }
+  if (incomingRest.previewPath) {
+    incomingRest.previewPath = toRelativePath(incomingRest.previewPath, cwd)
+  }
+  if (incomingRest.targetPage) {
+    incomingRest.targetPage = toRelativePath(incomingRest.targetPage, cwd)
+  }
+  if (incomingComponents?.length) {
+    for (const comp of incomingComponents) {
+      if (comp.componentPath) {
+        comp.componentPath = toRelativePath(comp.componentPath, cwd)
+      }
+    }
+  }
 
   const merged: ArtboardState = {
     ...existingRest,
@@ -185,7 +209,7 @@ export async function sketchState(args: SketchStateInputSchema) {
       oldContent = getDefaultState(page_name, artboard_name)
     }
 
-    const merged = mergeState(oldContent, newContent, replace)
+    const merged = mergeState(oldContent, newContent, replace, cwd)
 
     await writeState(absPath, merged)
 
