@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.5.2-alpha.2
+
+### Patch Changes
+
+- 强调compact重要性;强调progress的只读属性;调整split任务类型判断逻辑
+
 ## 1.5.2-alpha.1
 
 ### Patch Changes
