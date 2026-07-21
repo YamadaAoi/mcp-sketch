@@ -1,6 +1,6 @@
 {
   "name": "mcp-sketch",
-  "version": "1.5.2-alpha.0",
+  "version": "1.5.2-alpha.1",
   "description": "MCP server & CLI for parsing Sketch-Meaxure exports into structured design data for AI agents",
   "type": "module",
   "bin": "dist/index.js",

@@ -4,5 +4,5 @@
   "initialVersions": {
     "mcp-sketch": "1.5.1"
   },
-  "changesets": ["spicy-baboons-stop"]
+  "changesets": ["eager-frogs-love", "spicy-baboons-stop"]
 }
