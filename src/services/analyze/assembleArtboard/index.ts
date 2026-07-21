@@ -1,4 +1,5 @@
 import path from 'path'
+import crypto from 'crypto'
 import { pinyin } from 'pinyin-pro'
 import {
   normalize,
@@ -203,7 +204,7 @@ async function processPreview(
   const dest = path.resolve(
     cwd,
     `.sketch-cache/artboards/${designFileName}/${artboard.pageName}/${artboard.name}`,
-    `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${excludeRects.map(r => r.join('_')).join('-')}` : ''}${extname}`
+    `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${crypto.createHash('md5').update(JSON.stringify(excludeRects)).digest('hex').slice(0, 8)}` : ''}${extname}`
   )
   artboard.previewPath = await processImage(
     imageData,
