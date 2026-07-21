@@ -29,14 +29,13 @@
 
 **全部通过（XX_CHECK_SUCCESS）：**
 
-| 检查 Skill                 | 成功 → NEXT_STEP_RECOMMENDATION                                                                                                                                                      |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| sketch-init-check          | 委托subagent：sketch-analyzer 调用skill：sketch-split                                                                                                                                |
-| sketch-split-check         | 委托subagent：sketch-architect 调用skill：sketch-gen-base                                                                                                                            |
-| sketch-gen-base-check      | gen-base-check 输出中有 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-insert-layout<br>无 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-layout |
-| sketch-insert-layout-check | 委托subagent：sketch-analyzer 调用skill：sketch-preview，让用户查看布局效果后再继续 draw                                                                                             |
-| sketch-layout-check        | 委托subagent：sketch-analyzer 调用skill：sketch-preview，让用户查看布局效果后再继续 draw                                                                                             |
-| sketch-draw-check          | 委托subagent：sketch-analyzer 调用skill：sketch-preview                                                                                                                              |
+| 检查 Skill                                       | 成功 → NEXT_STEP_RECOMMENDATION                                                                                                                                                                                            |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| sketch-init-check                                | 委托subagent：sketch-analyzer 调用skill：sketch-split                                                                                                                                                                      |
+| sketch-split-check                               | 委托subagent：sketch-architect 调用skill：sketch-gen-base                                                                                                                                                                  |
+| sketch-gen-base-check                            | 执行 `/compact` 清理上下文，之后：<br>gen-base-check 输出中有 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-insert-layout<br>无 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-layout |
+| sketch-layout-check / sketch-insert-layout-check | 执行 `/compact` 清理上下文，之后：<br>委托subagent：sketch-analyzer 调用skill：sketch-preview，让用户查看布局效果后再继续 draw                                                                                             |
+| sketch-draw-check                                | 执行 `/compact` 清理上下文，之后：<br>委托subagent：sketch-analyzer 调用skill：sketch-preview                                                                                                                              |
 
 **部分失败（XX_CHECK_FAILED 或包含失败组件）：**
 
