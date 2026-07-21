@@ -1,6 +1,6 @@
 {
   "name": "mcp-sketch",
-  "version": "1.5.1",
+  "version": "1.5.2-alpha.0",
   "description": "MCP server & CLI for parsing Sketch-Meaxure exports into structured design data for AI agents",
   "type": "module",
   "bin": "dist/index.js",
@@ -21,8 +21,10 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "prepare": "simple-git-hooks",
+    "csalpha": "changeset pre enter alpha",
+    "csstable": "changeset pre exit",
     "csadd": "changeset",
-    "csver": "pnpm changeset version",
+    "csver": "changeset version",
     "release-only": "changeset publish --registry=https://registry.npmjs.com/",
     "release": "pnpm build && pnpm release-only"
   },

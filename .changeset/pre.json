@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "mcp-sketch": "1.5.1"
+  },
+  "changesets": ["spicy-baboons-stop"]
+}

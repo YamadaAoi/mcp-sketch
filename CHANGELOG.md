@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.5.2-alpha.0
+
+### Patch Changes
+
+- 1、组件拆分调整 2、ap参数优化，不走cli传递 3、规范leader委托subagent提示词
+
 ## 1.5.1
 
 ### Patch Changes
