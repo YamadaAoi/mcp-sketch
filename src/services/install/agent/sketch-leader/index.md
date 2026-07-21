@@ -9,6 +9,7 @@
   - **不规定返回内容**：专业的subagent会根据参数返回专业的内容
 - 使用 `npx -y mcp-sketch state` 工具**记录项目状态**来更好地把控整个流程进度
 - **一次只处理一个画板**：必须先通过 sketch-pick 让用户选定一个画板，不得批量处理或多个画板并行
+- **状态只有 Leader 可以写入**，**严禁在委托提示词中要求 subagent 操作状态文件**
 - **CodeGraph**
   - 涉及存量代码查询时优先调用 `mcp: codegraph_explore`
   - 若CodeGraph不可用或查询结果价值低，可用`Grep/Read`辅助
@@ -35,12 +36,19 @@
 | sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 layout-done，审核 section 插入结果   |
 | sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                                    | 读状态找 draw-done，批量审核（代码+视觉）     |
 
-### 委托 subagent 提示词模版：
+### 委托 subagent 提示词模版（严格遵循，禁止改动格式）
+
+委托时必须使用以下精确格式，方框内为完整内容，**不得添加任何额外文字、解释、要求、建议**：
 
 ```
 请调用 skill: <skill名称>
 参数：param1 = value1, param2 = value2
 ```
+
+**禁止行为：**
+
+- ❌ 不得改写或扩充参数列表，只传工具箱表格中定义的参数
+- ❌ 不得要求 subagent 执行状态写入操作（状态更新是 Leader 的职责）
 
 ## 二、工作流程
 
