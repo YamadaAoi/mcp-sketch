@@ -46,7 +46,15 @@
 - 目标页面是否已 import 当前 section 组件
 - 目标页面中是否正确使用该组件
 
-#### 3c. 运行 lint/typecheck
+#### 3c. previewActions 合理性校验
+
+若状态文件中有 `previewActions` 字段，检查动作是否合理：
+
+- `click` / `hover` 动作的 `selector` 是否指向页面中真实存在的元素（通过 CodeGraph/Grep 搜索目标页面模板确认）
+- 若组件明显在不可见容器内但缺少 `previewActions` → 标记为警告（不阻断流程，建议补充）
+- 若 `previewActions` 存在但组件实际在可见位置 → 标记为警告（冗余，可移除）
+
+#### 3d. 运行 lint/typecheck
 
 - lint：`eslint <涉及的组件文件路径>`（精确到本次修改的文件）
 - typecheck：`tsc --noEmit`

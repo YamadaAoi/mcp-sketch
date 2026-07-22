@@ -72,7 +72,7 @@
 npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}"
 ```
 
-- `mcp-sketch screenshot` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），若服务已停止则自动重启服务后再截图
+- `mcp-sketch screenshot` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），若服务已停止则自动重启服务后再截图。截图前会自动滚动触发懒加载并执行状态文件中的 `previewActions` 交互动作，确保隐藏内容可见
 
 记录返回的截图保存路径 `screenshotPath`
 

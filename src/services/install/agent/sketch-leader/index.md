@@ -117,15 +117,16 @@ subagent 返回工作结果后：
 
 字段结构：
 
-| 字段           | 类型             | 说明                             |
-| -------------- | ---------------- | -------------------------------- |
-| `filePath`     | string           | 设计稿路径                       |
-| `previewPath`  | string           | 设计稿预览图路径                 |
-| `previewUrl`   | string           | 浏览器预览 URL                   |
-| `pageName`     | string           | 页面名                           |
-| `artboardName` | string           | 画板名                           |
-| `targetPage`   | string           | 目标页面组件路径（插入老项目时） |
-| `components`   | ComponentState[] | 组件列表                         |
+| 字段             | 类型             | 说明                             |
+| ---------------- | ---------------- | -------------------------------- |
+| `filePath`       | string           | 设计稿路径                       |
+| `previewPath`    | string           | 设计稿预览图路径                 |
+| `previewUrl`     | string           | 浏览器预览 URL                   |
+| `pageName`       | string           | 页面名                           |
+| `artboardName`   | string           | 画板名                           |
+| `targetPage`     | string           | 目标页面组件路径（插入老项目时） |
+| `previewActions` | PreviewAction[]  | 预览交互动作（插入不可见容器时） |
+| `components`     | ComponentState[] | 组件列表                         |
 
 `ComponentState` 字段：
 

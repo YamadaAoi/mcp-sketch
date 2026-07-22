@@ -11,6 +11,12 @@ async function handlePreview(opts: Record<string, unknown>) {
 export const preview = new Command()
   .name('preview')
   .description('Preview a URL in the browser')
+  .requiredOption(
+    '-f, --file_path <PATH>',
+    'Sketch HTML export path (zip or folder)'
+  )
+  .requiredOption('--pn, --page_name <PAGENAME>', 'Page name')
+  .requiredOption('--an, --artboard_name <ARTBOARDNAME>', 'Artboard name')
   .requiredOption('-u, --url <URL>', 'Preview URL')
   .action((opts: Record<string, unknown>) => {
     handlePreview(opts).catch(err => {

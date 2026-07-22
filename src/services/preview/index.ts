@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { existsSync } from 'fs'
+import { access } from 'fs/promises'
 import { resolve } from 'path'
 import http from 'http'
 import https from 'https'
@@ -9,8 +9,14 @@ import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.j
 import { z } from 'zod/v4'
 import { chromium, type BrowserContext, type Page } from 'playwright-core'
 import { getEnv } from '@/utils/env'
+import { getStatePath, readState, type PreviewAction } from '@/services/state'
 
 export const sketchPreviewInputSchema = z.object({
+  file_path: z
+    .string()
+    .describe('sketch html export path (zip or folder, required)'),
+  page_name: z.string().describe('page name'),
+  artboard_name: z.string().describe('artboard name'),
   url: z.string().describe('Preview URL')
 })
 
@@ -18,10 +24,14 @@ export type SketchPreviewInputSchema = SchemaOutput<
   typeof sketchPreviewInputSchema
 >
 
-function startBgService(command: string, projectPath?: string) {
+async function startBgService(command: string, projectPath?: string) {
   const absolutePath = projectPath ? resolve(projectPath) : process.cwd()
-  if (projectPath && !existsSync(absolutePath)) {
-    throw new Error(`❌ ${projectPath} not found`)
+  if (projectPath) {
+    try {
+      await access(absolutePath)
+    } catch {
+      throw new Error(`❌ ${projectPath} not found`)
+    }
   }
   return new Promise<string | undefined>((resolve, reject) => {
     const p = platform()
@@ -246,7 +256,9 @@ async function connectChrome() {
   }
 
   const absoluteChromePath = resolve(chromePath)
-  if (!existsSync(absoluteChromePath)) {
+  try {
+    await access(absoluteChromePath)
+  } catch {
     throw new Error(`❌ Chrome browser not found, check path: ${chromePath}`)
   }
 
@@ -317,6 +329,33 @@ async function findOrCreatePage(context: BrowserContext, url: string) {
 }
 
 /**
+ * 执行预览交互动作（点击、等待），用于展示隐藏的 UI 元素
+ */
+export async function executePreviewActions(
+  page?: Page,
+  actions?: PreviewAction[]
+) {
+  if (!page || !actions?.length) return
+  for (const act of actions) {
+    try {
+      if (act.action === 'wait') {
+        await page.waitForTimeout(act.ms ?? 500)
+      } else if (act.action === 'click' && act.selector) {
+        await page.waitForSelector(act.selector, { timeout: 3000 })
+        await page.click(act.selector)
+        await page.waitForTimeout(300)
+      } else if (act.action === 'hover' && act.selector) {
+        await page.waitForSelector(act.selector, { timeout: 3000 })
+        await page.hover(act.selector)
+        await page.waitForTimeout(300)
+      }
+    } catch {
+      // 元素不存在则静默跳过
+    }
+  }
+}
+
+/**
  * 启动本地服务
  * @param url - 浏览器要打开的URL
  * @param command - 启动浏览器的命令
@@ -344,19 +383,33 @@ export async function startServer(
 
 /**
  * 打开浏览器并访问指定URL
- * @param url - 浏览器要打开的URL
+ * @param args - 输入参数
  * @param command - 启动浏览器的命令
  * @returns 浏览器实例
  */
-export async function openBrowser(url: string, command?: string) {
-  const result = await waitForServer(url)
+export async function openBrowser(
+  args: SketchPreviewInputSchema,
+  command?: string
+) {
+  const result = await waitForServer(args.url)
   if (!result.success) {
     throw new Error(
       `❌ server launch failed or timeout, check command: ${command}`
     )
   }
   const context = await connectChrome()
-  const page = await findOrCreatePage(context, url)
+  const page = await findOrCreatePage(context, args.url)
+  await page?.reload({ waitUntil: 'domcontentloaded' })
+  await page?.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+  await page?.waitForTimeout(2000)
+  await page?.evaluate('window.scrollTo(0, 0)')
+  const absPath = getStatePath(
+    args.file_path,
+    args.page_name,
+    args.artboard_name
+  )
+  const state = await readState(absPath)
+  await executePreviewActions(page, state?.previewActions)
 
   return page
 }
@@ -379,8 +432,7 @@ export async function sketchPreview(args: SketchPreviewInputSchema) {
     const command = getEnv('SERVER_COMMAND')
     const cwd = getEnv('CWD')
     session = await startServer(args.url, command, cwd)
-    const page = await openBrowser(args.url, command)
-    await page?.reload({ waitUntil: 'domcontentloaded' })
+    const page = await openBrowser(args, command)
     await page?.context()?.browser()?.close()
     response = `✅ ${args.url} opened in browser !`
     if (session) {

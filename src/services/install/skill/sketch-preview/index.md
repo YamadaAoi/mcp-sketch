@@ -39,10 +39,10 @@
 ### 步骤 4：调用命令启动服务并打开浏览器预览
 
 ```bash
-npx -y mcp-sketch preview -u "{previewUrl}"
+npx -y mcp-sketch preview -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}"
 ```
 
-- `mcp-sketch preview` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），检测端口是否可用。若服务未启动则自动打开新终端窗口运行启动命令，等待服务就绪后打开浏览器访问预览 URL
+- `mcp-sketch preview` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），检测端口是否可用。若服务未启动则自动打开新终端窗口运行启动命令，等待服务就绪后打开浏览器访问预览 URL。预览时会自动读取状态文件中的 `previewActions`，执行交互动作（如点击切换开标签页）后再截图，确保隐藏内容可见
 
 ## 输出格式
 

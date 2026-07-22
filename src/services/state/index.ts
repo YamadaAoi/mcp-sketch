@@ -27,11 +27,12 @@ export interface ArtboardState {
   previewUrl: string
   pageName: string
   artboardName: string
-  targetPage?: string
   width: number
   height: number
   components: ComponentState[]
   lastUpdateTime: string
+  targetPage?: string
+  previewActions?: PreviewAction[]
 }
 
 export interface ComponentState {
@@ -41,6 +42,12 @@ export interface ComponentState {
   children?: string[]
   rect?: [number, number, number, number]
   excludeRects?: Array<[number, number, number, number]>
+}
+
+export interface PreviewAction {
+  action: 'click' | 'hover' | 'wait'
+  selector?: string
+  ms?: number
 }
 
 export type ComponentStatus =
@@ -90,11 +97,30 @@ function parseState(contentStr: string) {
 }
 
 /**
+ * 获取状态文件路径
+ * @param file_path - 设计文件路径
+ * @param page_name - 页面名称
+ * @param artboard_name - 艺术板名称
+ * @returns 状态文件路径
+ */
+export function getStatePath(
+  file_path: string,
+  page_name: string,
+  artboard_name: string
+) {
+  const designFileName = basename(file_path, '.zip')
+  return resolve(
+    getEnv('CWD'),
+    `.sketch-cache/artboards/${designFileName}/${page_name}/${artboard_name}/progress.json`
+  )
+}
+
+/**
  * 读取状态
  * @param filePath
  * @returns 状态
  */
-async function readState(filePath: string) {
+export async function readState(filePath: string) {
   if (!(await fileExists(filePath))) {
     return undefined
   }
@@ -197,11 +223,7 @@ export async function sketchState(args: SketchStateInputSchema) {
     const cwd = getEnv('CWD')
     const { file_path, page_name, artboard_name, replace, content } = args
 
-    const designFileName = basename(file_path, '.zip')
-    const absPath = resolve(
-      cwd,
-      `.sketch-cache/artboards/${designFileName}/${page_name}/${artboard_name}/progress.json`
-    )
+    const absPath = getStatePath(file_path, page_name, artboard_name)
     const newContent = parseState(content)
     let oldContent = await readState(absPath)
 
