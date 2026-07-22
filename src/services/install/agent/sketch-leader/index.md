@@ -22,7 +22,7 @@
 | -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
 | sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                        |
 | sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表              |
-| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 启动本地服务并打开chrome预览                  |
+| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 启动本地服务并打开chrome预览，常用于布局预览  |
 | sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                 |
 | sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行              |
 | sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）            |
@@ -34,7 +34,7 @@
 | sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 gen-base-done，批量审核              |
 | sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，批量审核                |
 | sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，审核 section 插入结果   |
-| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+视觉）     |
+| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+截图比对） |
 
 ### 委托 subagent 提示词模版（严格遵循，禁止改动格式）
 
@@ -105,7 +105,7 @@ subagent 返回工作结果后：
 - 若 `previewUrl` 的值为 `UNKNOWN`，Leader 先读取项目路由配置推断可能的预览地址，向用户确认后写入
 - 若输出中标明 `NEED_CONFIRM`，**必须暂停执行**，将确认内容展示给用户，等待明确回复后再继续
 - 若输出中标明 `NEXT_STEP_RECOMMENDATION`，动态调整 todo 列表
-  - **优先采纳 subagent 的专业建议**，除非建议不利于工作流或与用户意图冲突
+  - **必须采纳 subagent 的专业建议**，除非建议的代价高但收益小，列出拒绝的原因并跳过
   - 若建议中包含**告知用户手动执行 `/compact`** 的内容，向用户展示建议，由用户自行决定是否执行。compact 后继续正常工作即可，progress.json 会保持精确状态
 
 ## 三、状态与进度
