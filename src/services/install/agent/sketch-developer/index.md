@@ -26,7 +26,7 @@
 
 skill 执行成功后，根据当前 skill 推荐后续动作：
 
-| 当前 Skill  | 成功 → NEXT_STEP_RECOMMENDATION                                                                           |
+| 当前 Skill  | NEXT_STEP                                                                                                 |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | sketch-draw | 当前组件 draw 完成，等待所有并行 draw 任务结束后委托subagent：sketch-checker 调用skill：sketch-draw-check |
 | sketch-code | （场景复杂，不推荐后续步骤）                                                                              |
@@ -38,5 +38,5 @@ skill 执行成功后，根据当前 skill 推荐后续动作：
 ```
 DEVELOP_OVER
 {skill 执行结果}
-NEXT_STEP_RECOMMENDATION: {推荐内容}
+NEXT_STEP: {委托subagent：xxx 调用skill：xxx}
 ```

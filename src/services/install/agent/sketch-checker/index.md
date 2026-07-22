@@ -54,5 +54,5 @@
 ```
 CHECK_OVER
 {skill 执行结果}
-NEXT_STEP_RECOMMENDATION: {推荐内容}
+NEXT_STEP: {委托subagent：xxx 调用skill：xxx | 告知用户手动执行 /compact}
 ```

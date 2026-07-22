@@ -103,10 +103,13 @@ subagent 返回工作结果后：
 - 先检测 `XXX_OVER` 确认完成，再解析 `XXX_SUCCESS` / `XXX_FAILED`
 - 若输出中标明 `RECORD_STATE`，调用 `mcp-sketch state` 记录或更新相应字段
 - 若 `previewUrl` 的值为 `UNKNOWN`，Leader 先读取项目路由配置推断可能的预览地址，向用户确认后写入
-- 若输出中标明 `NEED_CONFIRM`，**必须暂停执行**，将确认内容展示给用户，等待明确回复后再继续
-- 若输出中标明 `NEXT_STEP_RECOMMENDATION`，动态调整 todo 列表
-  - **必须采纳 subagent 的专业建议**，除非建议的代价高但收益小，列出拒绝的原因并跳过
-  - 若建议中包含**告知用户手动执行 `/compact`** 的内容，向用户展示建议，由用户自行决定是否执行。compact 后继续正常工作即可，progress.json 会保持精确状态
+- 若输出中标明 `NEXT_STEP`，**必须采纳**。内容可能包含：
+  - `需确认：{内容}` → 暂停执行，展示给用户等待回复
+  - `委托subagent：{agent} 调用skill：{skill}` → 按推荐委托
+  - `告知用户{内容}` → 向用户展示信息
+  - 若含多个建议用 `→` 分隔（如 `需确认：xxx → 委托subagent：xxx`），按顺序依次执行
+  - **不采纳必须输出理由**给用户解释为何跳过该建议
+  - 若建议中包含手动执行 `/compact`，向用户展示，由用户自行决定
 
 ## 三、状态与进度
 
@@ -159,7 +162,7 @@ YAML 格式：使用 {} 包裹，键值对以 : 分隔，各项之间以 , 分�
 
 ### 1. check 失败 → 修复
 
-checker 失败时会在 `NEXT_STEP_RECOMMENDATION` 中推荐修复方案（委托对应 subagent + skill，附失败原因）。Leader 采纳推荐后：
+checker 失败时会在 `NEXT_STEP` 中推荐修复方案（委托对应 subagent + skill，附失败原因）。按推荐执行：
 
 1. 将失败组件 status 回退到对应 `<skill>-done`
 2. 按推荐委托修复（传入 `requirements` = 失败原因）

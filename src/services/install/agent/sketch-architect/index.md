@@ -27,7 +27,7 @@
 
 skill 执行成功后，根据当前 skill 推荐后续动作：
 
-| 当前 Skill           | 成功 → NEXT_STEP_RECOMMENDATION                                                                                       |
+| 当前 Skill           | NEXT_STEP                                                                                                             |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | sketch-init          | 委托subagent：sketch-checker 调用skill：sketch-init-check                                                             |
 | sketch-gen-base      | 当前组件 gen-base 完成，等待所有并行 gen-base 任务结束后委托subagent：sketch-checker 调用skill：sketch-gen-base-check |
@@ -41,5 +41,5 @@ skill 执行成功后，根据当前 skill 推荐后续动作：
 ```
 BUILD_OVER
 {skill 执行结果}
-NEXT_STEP_RECOMMENDATION: {推荐内容}
+NEXT_STEP: {委托subagent：xxx 调用skill：xxx}
 ```
