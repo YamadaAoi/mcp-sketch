@@ -32,15 +32,23 @@ Select your AI platform:
 Based on design.zip, create a login page
 ```
 
-Flow: pick artboard → split components → generate skeleton → layout (with routing) → preview layout → draw → final preview
+Flow: pick → split → gen-base → layout → preview → draw → draw-check
 
 ### Scenario 2: Insert into Existing Page
 
+Precision reduces LLM inference errors and rework. Choose the level of detail you have:
+
 ```
-Based on design.zip, extract the user info card at the top-right and insert it into /dashboard
+Based on design.zip, extract the bottom-right region (rect[220,340,180,120]) of the eWallet artboard as an asset card and insert it into the overview area of /assets page (inside .overview-content of src/views/assets/AssetsOverview.vue)
 ```
 
-Flow: pick artboard → split region (auto-detect target page component path) → generate skeleton → layout & insert into target page → preview insertion → draw → final preview
+```
+Based on design.zip, extract the user info card and insert it into /dashboard page
+```
+
+Provide what you know: design file → artboard name → region coordinates → target page route or component path → insertion context.
+
+Flow: pick → split (insert mode) → gen-base → insert-layout → preview → draw → draw-check
 
 ## Toolbox
 
@@ -59,16 +67,9 @@ Flow: pick artboard → split region (auto-detect target page component path) �
 
 ## State Management
 
-Each artboard's state is stored in `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
+State file: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
 Component state chain: `split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
-
-> For "insert into existing page": after `gen-base-check-done`, `insert-layout/insert-layout-check` write the same `layout-done/layout-check-done` states
-> `reuse` type components skip the state chain
-
-After executing a skill, subagents return `NEXT_STEP` with suggested next actions (including confirmation items and delegation instructions). The leader must adopt the suggestion or provide a reason to reject.
-
-**previewActions**: When components are inserted into initially hidden containers (inactive tabs, modals, accordions, etc.), `insert-layout` outputs a list of Playwright interaction actions (`click` / `hover` / `wait`). The screenshot and preview commands automatically read and execute these actions to ensure hidden content is visible in captures.
 
 ## Environment Variables
 
@@ -84,17 +85,7 @@ Create `.env.sketch` in project root:
 | `ASSETS_PATH`    | no       | `src/assets/sketch`         | Slice output path      |
 
 > Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
-
-## Prerequisites
-
-Preview and screenshot need a background dev server. **Linux / macOS / WSL** requires `tmux`:
-
-```bash
-brew install tmux        # macOS
-sudo apt install tmux    # Ubuntu/Debian/WSL
-```
-
-None needed on Windows
+> **Linux / macOS / WSL** requires `tmux`: `brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL). None needed on Windows
 
 ## Tools
 

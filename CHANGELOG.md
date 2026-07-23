@@ -1,5 +1,18 @@
 # mcp-sketch
 
+## 1.6.0
+
+### Minor Changes
+
+- 绘制逻辑优化；插入组件逻辑优化
+
+### Patch Changes
+
+- 3bf7e3a: 修复文件名过长导致写入失败的问题；state -r参数强调场景；state内路径转相对路径；subagent建议采取规则添加；code技能调整；工作流中引入上下文压缩机制
+- 7fd4536: 强调compact重要性;强调progress的只读属性;调整split任务类型判断逻辑
+- 09a0134: 1、组件拆分调整 2、ap参数优化，不走cli传递 3、规范leader委托subagent提示词
+- 2072441: 回退compact相关逻辑；区域插入模式预览和截图组装playwright动作
+
 ## 1.5.2-alpha.3
 
 ### Patch Changes

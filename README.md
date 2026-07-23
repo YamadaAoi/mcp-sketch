@@ -32,15 +32,23 @@ npx -y mcp-sketch install
 根据设计稿 设计稿.zip，创建一个用户登录页
 ```
 
-流程：选画板 → 拆分组件 → 骨架代码 → 布局（含路由） → 预览确认布局 → 绘制功能代码 → 最终预览
+流程：pick → split → gen-base → layout → preview → draw → draw-check
 
 ### 场景二：插入到现有页面
 
+描述越精确，LLM 推断越少、返工越少。按掌握的信息量选择示例：
+
 ```
-根据设计稿 设计稿.zip，把右上角的用户信息卡片提取出来，插入到 /dashboard 页面
+根据设计稿 设计稿.zip，把 eWallet 画板的右下区域（rect[220,340,180,120]）作为资产卡片，提取出来插入到 /assets 页面的总览区域（src/views/assets/AssetsOverview.vue 的 .overview-content 容器内）
 ```
 
-流程：选画板 → 拆分指定区域（自动推断目标页面组件路径） → 骨架代码 → 布局并插入目标页面 → 预览确认插入效果 → 绘制功能代码 → 最终预览
+```
+根据设计稿 设计稿.zip，把用户信息卡片提取出来，插入到 /dashboard 页面
+```
+
+根据掌握的信息，尽可能提供：设计稿文件 → 画板名 → 坐标区域 → 目标页面路由或组件路径 → 插入位置上下文
+
+流程：pick → split（插入模式）→ gen-base → insert-layout → preview → draw → draw-check
 
 ## 工具箱
 
@@ -59,16 +67,9 @@ npx -y mcp-sketch install
 
 ## 状态管理
 
-每个画板的状态文件存放在 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
+状态文件在 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
 组件状态链：`split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
-
-> 插入老项目场景：`gen-base-check-done` 后经 `insert-layout/insert-layout-check` 写入相同的 `layout-done/layout-check-done` 状态
-> `reuse` 类型组件不走状态链
-
-subagent 执行 skill 后会返回 `NEXT_STEP` 推荐下一步动作（包含需确认事项和下一步委托指令），Leader 必须采纳或给出驳回理由。部分场景会暂停等待用户确认。
-
-**previewActions**：当组件插入到不可见容器（非激活 Tab、弹框、折叠面板等）时，`insert-layout` 会输出 Playwright 交互动作列表（`click` / `hover` / `wait`），screenshot 和 preview 命令自动读取并执行，确保截图时隐藏内容可见。
 
 ## 环境变量
 
@@ -84,17 +85,7 @@ subagent 执行 skill 后会返回 `NEXT_STEP` 推荐下一步动作（包含需
 | `ASSETS_PATH`    | 否   | `src/assets/sketch`         | 切图输出路径        |
 
 > 配置本地开发服务器时关闭自动打开浏览器，例如 Vite 设置 `server.open: false`
-
-## 前置依赖
-
-预览和截图需后台启动本地服务。**Linux / macOS / WSL** 依赖 `tmux`：
-
-```bash
-brew install tmux        # macOS
-sudo apt install tmux    # Ubuntu/Debian/WSL
-```
-
-Windows 无需额外安装
+> **Linux / macOS / WSL** 需安装 `tmux`：`brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL)，Windows 无需额外安装
 
 ## 工具
 
