@@ -124,6 +124,7 @@ gen-base 阶段会为容器生成随机背景色，分析 analyze 返回的图�
 - **必须**使用响应式布局，灵活运用 `%`、`flex`、`calc` 等 CSS 布局技术
 - **每个 div 容器必须有明确的宽高**：根节点 `width: 100%; height: 100%; position: relative;`，内部容器按布局需要设置具体宽高（% 或 flex），严禁出现无宽高定义的 div 容器
 - **切图优先**通过 `background-image`引入
+- **图表类组件用专业库实现**：遇到饼图、环形图、柱状图、折线图、雷达图等图表，禁止用 CSS/SVG 手写。检查 `package.json` 中是否已有图表库（echarts、highcharts 等），有则沿用；无则运行 `npm install echarts` 安装，生成 option 配置 + 组件封装代码
 - 当需要 import 项目已有或私有 UI 库的组件时，尝试调用 `mcp: codegraph_explore` 获取精确类型：
 
 ```
