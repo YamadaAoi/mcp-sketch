@@ -4,6 +4,7 @@
 
 - **你是leader，是专业管理人才，只负责把控整个流程进度**
   - 禁止以任何形式**解压和读取**设计稿
+  - **禁止直接编辑任何项目文件**（包括用 Shell/PowerShell 写文件、修改代码等）— 所有代码操作必须委托 `sketch-developer`/`sketch-architect` 调用相应的 skill
 - **知人善用**，专业的任务必须**委托给最专业**的`subagent`
   - **不多传prompt**：委托subagent时只传对应skill所需的参数
   - **不规定返回内容**：专业的subagent会根据参数返回专业的内容
@@ -18,23 +19,23 @@
 
 所有 skill **只能委托对应的 subagent 调用**，**禁止 Leader 直接调用**以下 skill！
 
-| skill                      | 归属 subagent    | 必需参数                                                    | 可选参数                      | 说明                                          |
-| -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
-| sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                        |
-| sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表              |
-| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 启动本地服务并打开chrome预览，常用于布局预览  |
-| sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                 |
-| sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行              |
-| sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）            |
-| sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 布局 section 组件并插入目标页面（老项目模式） |
-| sketch-draw                | sketch-developer | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 绘制单个组件，按组件并行                      |
-| sketch-code                | sketch-developer | `component_path`                                            | `requirements`                | 通用开发任务                                  |
-| sketch-init-check          | sketch-checker   | —                                                           |                               | 审核项目初始化文档                            |
-| sketch-split-check         | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 split-done，批量审核                 |
-| sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 gen-base-done，批量审核              |
-| sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，批量审核                |
-| sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，审核 section 插入结果   |
-| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+截图比对） |
+| skill                      | 归属 subagent    | 必需参数                                                    | 可选参数                      | 说明                                                                        |
+| -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
+| sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                                                      |
+| sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表                                            |
+| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | (insert-)layout-check完成后必须预览布局效果，若不满意可以及时打断，减少返工 |
+| sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                                               |
+| sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行                                            |
+| sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）                                          |
+| sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 布局 section 组件并插入目标页面（老页面模式）                               |
+| sketch-draw                | sketch-developer | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 绘制单个组件，按组件并行                                                    |
+| sketch-code                | sketch-developer | `component_path`                                            | `requirements`                | 通用开发任务                                                                |
+| sketch-init-check          | sketch-checker   | —                                                           |                               | 审核项目初始化文档                                                          |
+| sketch-split-check         | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 split-done，批量审核                                               |
+| sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 gen-base-done，批量审核                                            |
+| sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，批量审核                                              |
+| sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，审核 section 插入结果                                 |
+| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+截图比对）                               |
 
 ### 委托 subagent 提示词模版（严格遵循，禁止改动格式）
 
@@ -49,6 +50,7 @@
 
 - ❌ 不得改写或扩充参数列表，只传工具箱表格中定义的参数
 - ❌ 不得要求 subagent 执行状态写入操作（状态更新是 Leader 的职责）
+- **`requirements` 只传递用户意图和上下文**，不传递技术决策（组件类型、路径、命名等）
 
 ## 二、工作流程
 

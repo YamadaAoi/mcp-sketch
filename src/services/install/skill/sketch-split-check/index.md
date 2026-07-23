@@ -74,7 +74,13 @@
 - section 子组件（`type: page-specific`，父组件为 section）必须位于其父 section 组件的文件夹内
 - 公共组件（`type: common`）必须位于 `{components_path}/` 下
 
-#### 5d. 拆分合理性校验
+#### 5d. 模式互斥校验
+
+- `type: page` 和 `type: section` 不得共存于同一状态文件的 `components` 数组中
+  - 共存说明 split 同时输出了新页面模式和插入模式的组件，属于逻辑错误
+- 若 `type: section` 的组件有子组件（`children` 非空），遍历其所有子孙组件，检查其 `type` 不得为 `section`
+
+#### 5e. 拆分合理性校验
 
 **基础元素误拆检查**：基础 UI 元素（按钮、输入框、图标、选择器等）不应被拆为独立组件，应直接使用项目 UI 组件库。若存在此类拆分，标记为违规。
 

@@ -113,7 +113,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 gen-base 阶段会为容器生成随机背景色，分析 analyze 返回的图层数据：
 
 - 组件在设计稿中有背景色 → 替换 `css` 中的颜色值
-- 组件在设计稿中无背景色（透明）→ 删除骨架中的背景色声明
+- 组件在设计稿中无背景色（透明）→ 删除骨架中的css背景色
 
 #### 6.4 代码生成
 
