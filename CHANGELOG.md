@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.5.2-alpha.3
+
+### Patch Changes
+
+- 回退compact相关逻辑；区域插入模式预览和截图组装playwright动作
+
 ## 1.5.2-alpha.2
 
 ### Patch Changes
