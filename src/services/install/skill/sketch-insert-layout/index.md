@@ -98,16 +98,16 @@
 
 ```jsonc
 // 点击 Tab 切换 + 等待动画
-[{ action: 'click', selector: '.ant-tabs-tab:nth-child(2)' }, { action: 'wait', ms: 500 }]
+[{ "action": "click", "selector": ".ant-tabs-tab:nth-child(2)" }, { "action": "wait", "ms": 500 }]
 
 // 悬浮触发下拉菜单
-[{ action: 'hover', selector: '.nav-item' }, { action: 'wait', ms: 300 }]
+[{ "action": "hover", "selector": ".ant-dropdown-item" }, { "action": "wait", "ms": 300 }]
 
 // 点击按钮弹出弹框
-[{ action: 'click', selector: '.open-modal-btn' }, { action: 'wait', ms: 500 }]
+[{ "action": "click", "selector": ".open-modal-btn" }, { "action": "wait", "ms": 500 }]
 
 // 展开折叠面板
-[{ action: 'click', selector: '.ant-collapse-header' }]
+[{ "action": "click", "selector": ".ant-collapse-header" }]
 ```
 
 动作列表通过 `RECORD_STATE: previewActions` 写入状态文件。若组件在页面加载时已可见，不输出此字段。

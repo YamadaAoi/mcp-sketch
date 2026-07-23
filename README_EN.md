@@ -4,6 +4,8 @@
 
 Requires **multi-modal model** (preview image analysis needed). Agents are under iteration — customize prompts and permissions after install
 
+> **CodeGraph recommended**: sketch uses the `codegraph_explore` MCP tool to query project code structure. Configure a CodeGraph MCP service in your AI platform for better project context understanding. Falls back to Grep/Read automatically when CodeGraph is unavailable.
+
 ## Installation
 
 ```bash
@@ -64,7 +66,9 @@ Component state chain: `split-done → split-check-done → gen-base-done → ge
 > For "insert into existing page": after `gen-base-check-done`, `insert-layout/insert-layout-check` write the same `layout-done/layout-check-done` states
 > `reuse` type components skip the state chain
 
-After executing a skill, subagents return `NEXT_STEP_RECOMMENDATION` to suggest the next action. The leader dynamically adjusts its todo list based on these recommendations. Some steps (like split) output `NEED_CONFIRM` to pause and wait for user approval.
+After executing a skill, subagents return `NEXT_STEP` with suggested next actions (including confirmation items and delegation instructions). The leader must adopt the suggestion or provide a reason to reject.
+
+**previewActions**: When components are inserted into initially hidden containers (inactive tabs, modals, accordions, etc.), `insert-layout` outputs a list of Playwright interaction actions (`click` / `hover` / `wait`). The screenshot and preview commands automatically read and execute these actions to ensure hidden content is visible in captures.
 
 ## Environment Variables
 
@@ -97,9 +101,9 @@ None needed on Windows
 > Run `npx -y mcp-sketch <cmd> --help` for full options
 
 - **list** `[-f <path>]` — list artboards
-- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — parse layers/styles/assets
-- **preview** `-u <url>` — open browser preview, auto-start dev server
-- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — capture screenshot for visual comparison
+- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — parse layers/styles/assets
+- **preview** `-f <path> --pn <page> --an <artboard> -u <url>` — open browser preview, auto-start dev server, auto-execute previewActions
+- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — capture screenshot for visual comparison, auto-scroll lazy load + execute previewActions
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
 
 Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` (webp)

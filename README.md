@@ -4,6 +4,8 @@
 
 需**多模态模型**（分析预览图）。agents 持续迭代中，安装后按需调整 prompt 和权限
 
+> **推荐配合 CodeGraph 使用**：sketch 通过 MCP 工具 `codegraph_explore` 查询项目代码结构，推荐在 AI 平台中配置 CodeGraph MCP 服务以获得更准确的项目上下文理解。若 CodeGraph 不可用，自动回退到 Grep/Read。
+
 ## 安装
 
 ```bash
@@ -64,7 +66,9 @@ npx -y mcp-sketch install
 > 插入老项目场景：`gen-base-check-done` 后经 `insert-layout/insert-layout-check` 写入相同的 `layout-done/layout-check-done` 状态
 > `reuse` 类型组件不走状态链
 
-subagent 执行 skill 后会返回 `NEXT_STEP_RECOMMENDATION` 推荐下一步动作，Leader 结合自己的 todo 列表动态调整。部分场景（如 split 后）会输出 `NEED_CONFIRM` 暂停等待用户确认。
+subagent 执行 skill 后会返回 `NEXT_STEP` 推荐下一步动作（包含需确认事项和下一步委托指令），Leader 必须采纳或给出驳回理由。部分场景会暂停等待用户确认。
+
+**previewActions**：当组件插入到不可见容器（非激活 Tab、弹框、折叠面板等）时，`insert-layout` 会输出 Playwright 交互动作列表（`click` / `hover` / `wait`），screenshot 和 preview 命令自动读取并执行，确保截图时隐藏内容可见。
 
 ## 环境变量
 
@@ -97,9 +101,9 @@ Windows 无需额外安装
 > `npx -y mcp-sketch <cmd> --help` 查看完整参数
 
 - **list** `[-f <path>]` — 列出画板
-- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [--ap <path>] [-l <n>] [-o <n>]` — 解析图层/样式/切图
-- **preview** `-u <url>` — 打开浏览器预览，自动启动本地服务
-- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图用于视觉比对
+- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — 解析图层/样式/切图
+- **preview** `-f <path> --pn <page> --an <artboard> -u <url>` — 打开浏览器预览，自动启动本地服务，自动执行 previewActions
+- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图用于视觉比对，自动滚动懒加载 + 执行 previewActions
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — 管理画板状态
 
 切图输出：`src/assets/sketch/`，预览图：`.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/`（webp）
