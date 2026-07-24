@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "mcp-sketch": "1.6.0"
+  },
+  "changesets": ["clear-ways-hide"]
+}

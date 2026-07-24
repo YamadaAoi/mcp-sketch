@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.6.1-alpha.0
+
+### Patch Changes
+
+- 私有组件库，公共组件提取供llm查阅
+
 ## 1.6.0
 
 ### Minor Changes
