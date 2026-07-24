@@ -41,7 +41,8 @@
 
 ### 步骤 4：读取项目配置
 
-读取 `.sketch-cache/proj-init.md`，获取 `views_path`、`components_path` 和 UI 组件库信息
+读取 `.sketch-cache/proj-init.md`，获取 `views_path`、`components_path`
+读取 `.sketch-cache/components-init.md`，获取 UI 组件库信息
 
 ### 步骤 5：遍历检查每个组件
 

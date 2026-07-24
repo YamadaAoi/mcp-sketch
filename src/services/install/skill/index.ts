@@ -2,6 +2,7 @@ import type { InstallConfig } from '../installer'
 import SketchPickPrompt from './sketch-pick/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
 import SketchInitPrompt from './sketch-init/index.md'
+import SketchInitComponentsPrompt from './sketch-init-components/index.md'
 import SketchGenBasePrompt from './sketch-gen-base/index.md'
 import SketchLayoutPrompt from './sketch-layout/index.md'
 import SketchInsertLayoutPrompt from './sketch-insert-layout/index.md'
@@ -20,6 +21,39 @@ export const SkillPool: InstallConfig[] = [
     name: 'sketch-init',
     description: '项目架构师，扫描项目配置生成 proj-init.md',
     prompt: SketchInitPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Write Edit Glob Grep Bash'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-init-components',
+    description: '组件分析工程师，分析项目组件生态生成 components-init.md',
+    prompt: SketchInitComponentsPrompt,
     platforms: [
       {
         agent: 'claude',

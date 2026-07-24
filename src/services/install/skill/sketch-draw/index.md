@@ -24,9 +24,11 @@
 
 `design_file_name = basename(file_path, '.zip')`
 
-### 步骤 1：读取 `.sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法
+### 步骤 1：读取项目配置
 
-- 若文件不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
+- 读取 `.sketch-cache/proj-init.md` 确认技术栈、导入方式、样式写法
+- 读取 `.sketch-cache/components-init.md` 确认 UI 组件库和可复用的公共组件
+- 若 `proj-init.md` 不存在，跳过之后所有步骤，返回失败信息：`proj-init.md 文件不存在`
 
 ### 步骤 2：读取状态文件
 
@@ -125,7 +127,7 @@ gen-base 阶段会为容器生成随机背景色，分析 analyze 返回的图�
 - **每个 div 容器必须有明确的宽高**：根节点 `width: 100%; height: 100%; position: relative;`，内部容器按布局需要设置具体宽高（% 或 flex），严禁出现无宽高定义的 div 容器
 - **切图优先**通过 `background-image`引入
 - **图表类组件用专业库实现**：遇到饼图、环形图、柱状图、折线图、雷达图等图表，禁止用 CSS/SVG 手写。检查 `package.json` 中是否已有图表库（echarts、highcharts 等），有则沿用；无则运行 `npm install echarts` 安装，生成 option 配置 + 组件封装代码
-- 当需要 import 项目已有或私有 UI 库的组件时，尝试调用 `mcp: codegraph_explore` 获取精确类型：
+- 当需要 import 项目已有或私有 UI 库的组件时，尝试调用源码分析工具（例如 `mcp: codegraph_explore`）获取精确类型：
 
 ```
 codegraph_explore: "show me the full source and props interface of {component_name}"

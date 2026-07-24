@@ -1,6 +1,6 @@
 # Sketch Init Check Skill
 
-审核 `sketch-initializer` 生成的项目初始化文档 `.sketch-cache/proj-init.md` 是否符合规范
+审核 `sketch-init` 和 `sketch-init-components` 生成的初始化文档是否符合规范
 
 ## 核心约束
 
@@ -9,13 +9,17 @@
 
 ## 执行步骤
 
-### 步骤 1：检查文件是否存在
+### 步骤 1：检查 proj-init.md
 
 读取 `.sketch-cache/proj-init.md`，若不存在，返回失败信息：`proj-init.md 文件不存在`
 
-### 步骤 2：检查文件格式
+### 步骤 2：检查 components-init.md
 
-检查 6 个主要章节是否存在（标题不完全一致也可以，主题对就行）：
+读取 `.sketch-cache/components-init.md`，若不存在，返回失败信息：`components-init.md 文件不存在`
+
+### 步骤 3：检查格式
+
+检查 proj-init.md 的 6 个主要章节是否存在（标题不完全一致也可以，主题对就行）：
 
 - 技术栈与依赖
 - 代码风格与规范
@@ -38,7 +42,7 @@ INIT_CHECK_SUCCESS
 ```
 项目初始化文档审核失败：
 - 问题类型：{文件缺失 | 格式不完整 | 关键字段缺失 }
-- 问题描述：{具体问题}
+- 问题描述：{具体问题，注明是 proj-init.md 还是 components-init.md}
 - 修复建议：{建议如何修复}
 INIT_CHECK_FAILED
 ```

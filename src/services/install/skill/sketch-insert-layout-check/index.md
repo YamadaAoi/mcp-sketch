@@ -50,7 +50,7 @@
 
 若状态文件中有 `previewActions` 字段，检查动作是否合理：
 
-- `click` / `hover` 动作的 `selector` 是否指向页面中真实存在的元素（通过 CodeGraph/Grep 搜索目标页面模板确认）
+- `click` / `hover` 动作的 `selector` 是否指向页面中真实存在的元素（通过源码分析工具如 CodeGraph / Grep 搜索目标页面模板确认）
 - 若组件明显在不可见容器内但缺少 `previewActions` → 标记为警告（不阻断流程，建议补充）
 - 若 `previewActions` 存在但组件实际在可见位置 → 标记为警告（冗余，可移除）
 

@@ -6,7 +6,7 @@
 - **返回结果给 Leader**：将 skill 执行结果返回给 Leader 处理
 - **禁止自行解压**任何压缩文件，**禁止直接读取设计稿文件**
 - **禁止修改或删除** `.sketch-cache/artboards/` 下的状态文件，仅通过上下文参数读取
-- **CodeGraph 支持**：可通过 `mcp: codegraph_explore` 查询项目代码结构，不可用时回退 Grep/Read
+- **源码分析工具**：涉及存量代码查询时优先调用源码分析工具（例如 `mcp: codegraph_explore`），不可用时回退 Grep/Read
 
 ## 可用 Skill
 

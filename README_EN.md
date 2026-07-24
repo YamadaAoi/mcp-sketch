@@ -52,18 +52,19 @@ Flow: pick → split (insert mode) → gen-base → insert-layout → preview �
 
 ## Toolbox
 
-| skill                | Agent            | Description                                         |
-| -------------------- | ---------------- | --------------------------------------------------- |
-| sketch-pick          | sketch-analyzer  | List artboards for selection                        |
-| sketch-split         | sketch-analyzer  | Analyze artboard, split components                  |
-| sketch-preview       | sketch-analyzer  | Start dev server and preview                        |
-| sketch-init          | sketch-architect | Scan project, generate config                       |
-| sketch-gen-base      | sketch-architect | Generate skeleton component code                    |
-| sketch-layout        | sketch-architect | Configure routing and layout                        |
-| sketch-insert-layout | sketch-architect | Layout section components & insert into target page |
-| sketch-draw          | sketch-developer | Draw component from design data                     |
-| sketch-code          | sketch-developer | Modify/refactor/insert without design               |
-| sketch-\*-check      | sketch-checker   | Review quality at each stage                        |
+| skill                  | Agent            | Description                                               |
+| ---------------------- | ---------------- | --------------------------------------------------------- |
+| sketch-pick            | sketch-analyzer  | List artboards for selection                              |
+| sketch-split           | sketch-analyzer  | Analyze artboard, split components                        |
+| sketch-preview         | sketch-analyzer  | Start dev server and preview                              |
+| sketch-init            | sketch-architect | Scan project, generate config                             |
+| sketch-init-components | sketch-architect | Analyze component ecosystem, generate component inventory |
+| sketch-gen-base        | sketch-architect | Generate skeleton component code                          |
+| sketch-layout          | sketch-architect | Configure routing and layout                              |
+| sketch-insert-layout   | sketch-architect | Layout section components & insert into target page       |
+| sketch-draw            | sketch-developer | Draw component from design data                           |
+| sketch-code            | sketch-developer | Modify/refactor/insert without design                     |
+| sketch-\*-check        | sketch-checker   | Review quality at each stage                              |
 
 ## State Management
 

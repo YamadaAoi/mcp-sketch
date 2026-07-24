@@ -40,14 +40,14 @@
 
 **部分失败（XX_CHECK_FAILED 或包含失败组件）：**
 
-| 检查 Skill                 | 失败 → NEXT_STEP_RECOMMENDATION                                                               |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| sketch-init-check          | 委托subagent：sketch-architect 调用skill：sketch-init，附上失败原因作为 requirements          |
-| sketch-split-check         | 委托subagent：sketch-analyzer 调用skill：sketch-split，附上失败原因作为 requirements          |
-| sketch-gen-base-check      | 委托subagent：sketch-architect 调用skill：sketch-gen-base，附上失败原因作为 requirements      |
-| sketch-insert-layout-check | 委托subagent：sketch-architect 调用skill：sketch-insert-layout，附上失败原因作为 requirements |
-| sketch-layout-check        | 委托subagent：sketch-architect 调用skill：sketch-layout，附上失败原因作为 requirements        |
-| sketch-draw-check          | 委托subagent：sketch-developer 调用skill：sketch-draw，附上失败原因作为 requirements          |
+| 检查 Skill                 | 失败 → NEXT_STEP_RECOMMENDATION                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| sketch-init-check          | 委托subagent：sketch-architect 调用skill：sketch-init 或 sketch-init-components，附上失败原因作为 requirements |
+| sketch-split-check         | 委托subagent：sketch-analyzer 调用skill：sketch-split，附上失败原因作为 requirements                           |
+| sketch-gen-base-check      | 委托subagent：sketch-architect 调用skill：sketch-gen-base，附上失败原因作为 requirements                       |
+| sketch-insert-layout-check | 委托subagent：sketch-architect 调用skill：sketch-insert-layout，附上失败原因作为 requirements                  |
+| sketch-layout-check        | 委托subagent：sketch-architect 调用skill：sketch-layout，附上失败原因作为 requirements                         |
+| sketch-draw-check          | 委托subagent：sketch-developer 调用skill：sketch-draw，附上失败原因作为 requirements                           |
 
 ## 输出格式
 

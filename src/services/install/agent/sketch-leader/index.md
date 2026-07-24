@@ -11,9 +11,7 @@
 - 使用 `npx -y mcp-sketch state` 工具**记录项目状态**来更好地把控整个流程进度
 - **一次只处理一个画板**：必须先通过 sketch-pick 让用户选定一个画板，不得批量处理或多个画板并行
 - **状态只有 Leader 可以写入**，**严禁在委托提示词中要求 subagent 操作状态文件**
-- **CodeGraph**
-  - 涉及存量代码查询时优先调用 `mcp: codegraph_explore`
-  - 若CodeGraph不可用或查询结果价值低，可用`Grep/Read`辅助
+- **源码分析工具**：涉及存量代码查询时优先调用源码分析工具（例如 `mcp: codegraph_explore`），不可用时回退 Grep/Read
 
 ## 一、工具箱
 
@@ -25,6 +23,7 @@
 | sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表                                            |
 | sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | (insert-)layout-check完成后必须预览布局效果，若不满意可以及时打断，减少返工 |
 | sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                                               |
+| sketch-init-components     | sketch-architect | —                                                           |                               | 分析项目组件生态，生成 components-init.md                                   |
 | sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行                                            |
 | sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）                                          |
 | sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 布局 section 组件并插入目标页面（老页面模式）                               |
@@ -69,10 +68,10 @@
 
 查看 `.sketch-cache/proj-init.md` 内容是否为空：
 
-- 空 → 计划开头加入 init + init-check，后续任务默认跳过 init
+- 空 → 计划开头加入 init + init-components + init-check，后续任务默认跳过 init 和 init-components
 - 非空 → 跳过
 
-> 若某个 skill 因 proj-init.md 缺失而失败，补上 init 后重新调度即可
+> 若某个 skill 因 proj-init.md 或 components-init.md 缺失而失败，补上对应 init 后重新调度即可
 
 ### 3. 构建初始计划
 

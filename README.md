@@ -52,18 +52,19 @@ npx -y mcp-sketch install
 
 ## 工具箱
 
-| skill                | 归属 agent       | 说明                            |
-| -------------------- | ---------------- | ------------------------------- |
-| sketch-pick          | sketch-analyzer  | 提取画板列表供用户选择          |
-| sketch-split         | sketch-analyzer  | 分析画板，拆分组件              |
-| sketch-preview       | sketch-analyzer  | 启动服务并预览页面              |
-| sketch-init          | sketch-architect | 扫描项目，生成配置文档          |
-| sketch-gen-base      | sketch-architect | 生成基础组件骨架代码            |
-| sketch-layout        | sketch-architect | 配置路由和父组件布局            |
-| sketch-insert-layout | sketch-architect | 布局 section 组件并插入目标页面 |
-| sketch-draw          | sketch-developer | 根据设计稿绘制组件功能代码      |
-| sketch-code          | sketch-developer | 修改/重构/插入等无设计稿任务    |
-| sketch-\*-check      | sketch-checker   | 审核各阶段输出质量              |
+| skill                  | 归属 agent       | 说明                            |
+| ---------------------- | ---------------- | ------------------------------- |
+| sketch-pick            | sketch-analyzer  | 提取画板列表供用户选择          |
+| sketch-split           | sketch-analyzer  | 分析画板，拆分组件              |
+| sketch-preview         | sketch-analyzer  | 启动服务并预览页面              |
+| sketch-init            | sketch-architect | 扫描项目，生成配置文档          |
+| sketch-init-components | sketch-architect | 分析组件生态，生成组件清单      |
+| sketch-gen-base        | sketch-architect | 生成基础组件骨架代码            |
+| sketch-layout          | sketch-architect | 配置路由和父组件布局            |
+| sketch-insert-layout   | sketch-architect | 布局 section 组件并插入目标页面 |
+| sketch-draw            | sketch-developer | 根据设计稿绘制组件功能代码      |
+| sketch-code            | sketch-developer | 修改/重构/插入等无设计稿任务    |
+| sketch-\*-check        | sketch-checker   | 审核各阶段输出质量              |
 
 ## 状态管理
 

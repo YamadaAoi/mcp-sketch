@@ -24,7 +24,6 @@
 
 - **基础框架**：React / Vue / Angular 等
 - **核心库**：
-  - UI库（Ant Design / Element Plus / TailwindCSS 等），确定组件导入方式（按需导入 / 全部导入）
   - 状态管理（Redux / Pinia 等）
   - 网络请求（Axios / Fetch 等）
 - **构建工具**：Vite / Rollup 等
@@ -82,8 +81,6 @@
 
 - **基础框架**:
 - **核心语言**:
-- **UI 组件库**:
-  - **导入方式**:
 - **状态管理**:
 - **网络请求**:
 - **构建工具**:

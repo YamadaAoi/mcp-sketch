@@ -27,8 +27,9 @@
 
 ### 第一步：环境校验
 
-- 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、项目目录结构、命名规范、技术栈和UI组件库
+- 读取 `.sketch-cache/proj-init.md` 获取：views_path、components_path、项目目录结构、命名规范、技术栈
   - 若文件不存在，立即返回失败：proj-init.md 文件不存在
+- 读取 `.sketch-cache/components-init.md` 获取 UI 组件库信息
 
 ### 第二步：分析 `requirements`，确定任务模式
 
@@ -47,8 +48,8 @@
      - `requirements` 包含"插入到"、"目标页面"、"已有页面"、"现有的xxx页面"等上下文
      - `requirements` 描述为部分实现（如"只画第一个 tab"、"只处理激活区域"），暗示该画板是存量页面的一部分
      1. 通过路由配置文件（如 `router/index.ts`、`router.config.ts` 等）匹配页面入口组件
-     2. 若路由配置中无匹配，通过 `mcp: codegraph_explore` 或 Grep 搜索 `views_path` 目录下的页面组件
-     3. **深入定位最深层插入位置**：拿到入口组件后，通过 CodeGraph/Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部
+     2. 若路由配置中无匹配，通过源码分析工具（例如 `mcp: codegraph_explore`）或 Grep 搜索 `views_path` 目录下的页面组件
+     3. **深入定位最深层插入位置**：拿到入口组件后，通过源码分析工具（例如 `mcp: codegraph_explore`）或 Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部
      4. 确定后产出组件文件路径作为 `targetPage`
 
 3. **提取坐标区域**：若 `requirements` 中包含 `[x,y,w,h]` 格式的坐标，记录用于 analyze 的 `-r` 参数
@@ -189,7 +190,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 
 规划表生成后，检查哪些组件可以由项目现有组件替代：
 
-尝试调用 `mcp: codegraph_explore` 获取存量组件清单：
+尝试调用源码分析工具获取存量组件清单：
 
 ```
 codegraph_explore: "list all common/reusable components in this project"
