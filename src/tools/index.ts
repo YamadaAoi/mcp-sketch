@@ -1,14 +1,12 @@
 import type { RegisterToolParams } from '@/types'
 import { toolSketchList } from './list'
 import { toolSketchAnalyze } from './analyze'
-import { toolSketchPreview } from './preview'
-import { toolSketchScreenshot } from './screenshot'
+import { toolSketchDev } from './dev'
 import { toolSketchState } from './state'
 
 export const tools: RegisterToolParams[] = [
   toolSketchList(),
   toolSketchAnalyze(),
-  toolSketchPreview(),
-  toolSketchScreenshot(),
+  toolSketchDev(),
   toolSketchState()
 ]

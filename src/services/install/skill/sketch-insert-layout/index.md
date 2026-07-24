@@ -86,33 +86,7 @@
   - 根据 `rect` 和预览图判断在页面中的插入位置
   - 在目标页面的合适位置使用该组件（替换占位内容或追加到指定区域）
 
-### 步骤 10：确定预览交互（previewActions）
-
-检查插入位置所在的容器：若组件被插入到**默认不可见**的容器内（如非激活 Tab、弹框、折叠面板、下拉菜单等），需定义 Playwright 动作使内容在预览时可见，支持以下动作类型：
-
-- **click** — 点击元素（切换 Tab、打开弹框、展开面板）
-- **hover** — 悬浮元素（触发下拉菜单、tooltip）
-- **wait** — 等待动画完成
-
-示例：
-
-```jsonc
-// 点击 Tab 切换 + 等待动画
-[{ "action": "click", "selector": ".ant-tabs-tab:nth-child(2)" }, { "action": "wait", "ms": 500 }]
-
-// 悬浮触发下拉菜单
-[{ "action": "hover", "selector": ".ant-dropdown-item" }, { "action": "wait", "ms": 300 }]
-
-// 点击按钮弹出弹框
-[{ "action": "click", "selector": ".open-modal-btn" }, { "action": "wait", "ms": 500 }]
-
-// 展开折叠面板
-[{ "action": "click", "selector": ".ant-collapse-header" }]
-```
-
-动作列表通过 `RECORD_STATE: previewActions` 写入状态文件。若组件在页面加载时已可见，不输出此字段。
-
-### 步骤 11：推断预览 URL
+### 步骤 9：推断预览 URL
 
 读取目标页面的 state 文件，获取其 `previewUrl`：
 
@@ -131,7 +105,7 @@
 - {componentPath2}
 ...
 INSERT_LAYOUT_SUCCESS
-RECORD_STATE: previewUrl, previewActions（组件在不可见容器中时输出）,each modified section component → components[{componentPath}].status = layout-done
+RECORD_STATE: previewUrl, each modified section component → components[{componentPath}].status = layout-done
 ```
 
 失败：

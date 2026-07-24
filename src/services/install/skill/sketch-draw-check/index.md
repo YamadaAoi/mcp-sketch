@@ -66,15 +66,22 @@
 
 - 从状态文件获取 `previewPath`（设计稿预览图路径）和 `previewUrl`（浏览器预览 URL）
 
-#### 4b. 调用命令截图
+#### 4b. Playwright MCP 截图
 
-```bash
-npx -y mcp-sketch screenshot -f "{filePath}" --pn "{page_name}" --an "{artboard_name}" -u "{previewUrl}"
+检查当前是否拥有 Playwright MCP 提供的浏览器工具（如 `browser_navigate`、`browser_screenshot`）：
+
+- **可用** → 按顺序执行：
+  1. 使用 `browser_navigate` 打开 `{previewUrl}`，观察页面渲染内容
+  2. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见
+  3. 使用 `browser_screenshot` 截取全页截图，保存到 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` 目录下
+  4. 记录截图路径 `screenshotPath`
+  5. 继续执行 4c-4g 进行视觉比对
+
+- **不可用** → 跳过视觉比对，输出警告：
+
 ```
-
-- `mcp-sketch screenshot` 命令会自动读取环境变量获取项目配置（启动命令、项目根目录），若服务已停止则自动重启服务后再截图。截图前会自动滚动触发懒加载并执行状态文件中的 `previewActions` 交互动作，确保隐藏内容可见
-
-记录返回的截图保存路径 `screenshotPath`
+⚠️ 未检测到 @playwright/mcp，无法自动截图进行视觉比对。请在你的 AI 平台中配置 @playwright/mcp MCP 服务以获得截图比对能力
+```
 
 #### 4c. 读取截图和设计稿预览图
 
@@ -155,7 +162,7 @@ DRAW_CHECK_FAILED
 RECORD_STATE: 仅记录通过的组件为 draw-check-done，失败组件保持 draw-done
 ```
 
-### 阶段二通过（无 P0 问题）：
+### 阶段二通过（含视觉比对）：
 
 ```
 基础检查通过，视觉比对完成：
@@ -163,6 +170,14 @@ RECORD_STATE: 仅记录通过的组件为 draw-check-done，失败组件保持 d
 截图：{screenshotPath}
 视觉差异：{P0数量}个严重, {P1数量}个中等, {P2数量}个轻微
 {P0/P1 问题逐条列出，含问题描述和修复建议}
+DRAW_CHECK_SUCCESS
+RECORD_STATE: components[{componentPath}].status = draw-check-done（所有通过的组件）
+```
+
+### 阶段二通过（跳过视觉比对）：
+
+```
+基础检查通过，视觉比对已跳过（@playwright/mcp 未配置）
 DRAW_CHECK_SUCCESS
 RECORD_STATE: components[{componentPath}].status = draw-check-done（所有通过的组件）
 ```

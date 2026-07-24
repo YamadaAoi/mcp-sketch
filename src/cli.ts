@@ -2,8 +2,7 @@ import { Command } from 'commander'
 import { install } from '@/commands/install'
 import { list } from './commands/list'
 import { analyze } from '@/commands/analyze'
-import { preview } from '@/commands/preview'
-import { screenshot } from '@/commands/screenshot'
+import { dev } from '@/commands/dev'
 import { state } from '@/commands/state'
 
 export function startCli() {
@@ -17,8 +16,7 @@ export function startCli() {
   program.addCommand(install)
   program.addCommand(list)
   program.addCommand(analyze)
-  program.addCommand(preview)
-  program.addCommand(screenshot)
+  program.addCommand(dev)
   program.addCommand(state)
 
   program.parse()

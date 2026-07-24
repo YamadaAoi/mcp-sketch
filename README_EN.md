@@ -76,14 +76,11 @@ Component state chain: `split-done → split-check-done → gen-base-done → ge
 
 Create `.env.sketch` in project root:
 
-| Field            | Required | Default                     | Description            |
-| ---------------- | -------- | --------------------------- | ---------------------- |
-| `CHROME_PATH`    | yes      | -                           | Chrome executable path |
-| `SERVER_COMMAND` | yes      | `npm run dev`               | Dev server command     |
-| `CWD`            | no       | cwd                         | Project root           |
-| `USER_DATA_DIR`  | no       | `~/.mcp-sketch-chrome-data` | Chrome user data dir   |
-| `DEBUG_PORT`     | no       | `9222`                      | Debug port             |
-| `ASSETS_PATH`    | no       | `src/assets/sketch`         | Slice output path      |
+| Field            | Required | Default             | Description        |
+| ---------------- | -------- | ------------------- | ------------------ |
+| `SERVER_COMMAND` | yes      | `npm run dev`       | Dev server command |
+| `CWD`            | no       | cwd                 | Project root       |
+| `ASSETS_PATH`    | no       | `src/assets/sketch` | Slice output path  |
 
 > Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
 > **Linux / macOS / WSL** requires `tmux`: `brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL). None needed on Windows
@@ -94,8 +91,7 @@ Create `.env.sketch` in project root:
 
 - **list** `[-f <path>]` — list artboards
 - **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — parse layers/styles/assets
-- **preview** `-f <path> --pn <page> --an <artboard> -u <url>` — open browser preview, auto-start dev server, auto-execute previewActions
-- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — capture screenshot for visual comparison, auto-scroll lazy load + execute previewActions
+- **dev** `-u <url>` — start local dev server
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
 
 Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` (webp)

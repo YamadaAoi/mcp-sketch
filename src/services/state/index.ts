@@ -32,7 +32,6 @@ export interface ArtboardState {
   components: ComponentState[]
   lastUpdateTime: string
   targetPage?: string
-  previewActions?: PreviewAction[]
 }
 
 export interface ComponentState {
@@ -42,12 +41,6 @@ export interface ComponentState {
   children?: string[]
   rect?: [number, number, number, number]
   excludeRects?: Array<[number, number, number, number]>
-}
-
-export interface PreviewAction {
-  action: 'click' | 'hover' | 'wait'
-  selector?: string
-  ms?: number
 }
 
 export type ComponentStatus =

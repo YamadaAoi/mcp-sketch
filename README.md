@@ -76,14 +76,11 @@ npx -y mcp-sketch install
 
 项目根目录 `.env.sketch`：
 
-| 字段             | 必填 | 默认值                      | 说明                |
-| ---------------- | ---- | --------------------------- | ------------------- |
-| `CHROME_PATH`    | 是   | -                           | Chrome 路径         |
-| `SERVER_COMMAND` | 是   | `npm run dev`               | 启动命令            |
-| `CWD`            | 否   | 当前目录                    | 项目根目录          |
-| `USER_DATA_DIR`  | 否   | `~/.mcp-sketch-chrome-data` | Chrome 用户数据目录 |
-| `DEBUG_PORT`     | 否   | `9222`                      | 调试端口            |
-| `ASSETS_PATH`    | 否   | `src/assets/sketch`         | 切图输出路径        |
+| 字段             | 必填 | 默认值              | 说明         |
+| ---------------- | ---- | ------------------- | ------------ |
+| `SERVER_COMMAND` | 是   | `npm run dev`       | 启动命令     |
+| `CWD`            | 否   | 当前目录            | 项目根目录   |
+| `ASSETS_PATH`    | 否   | `src/assets/sketch` | 切图输出路径 |
 
 > 配置本地开发服务器时关闭自动打开浏览器，例如 Vite 设置 `server.open: false`
 > **Linux / macOS / WSL** 需安装 `tmux`：`brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL)，Windows 无需额外安装
@@ -94,8 +91,7 @@ npx -y mcp-sketch install
 
 - **list** `[-f <path>]` — 列出画板
 - **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — 解析图层/样式/切图
-- **preview** `-f <path> --pn <page> --an <artboard> -u <url>` — 打开浏览器预览，自动启动本地服务，自动执行 previewActions
-- **screenshot** `-f <path> --pn <page> --an <artboard> -u <url>` — 截图用于视觉比对，自动滚动懒加载 + 执行 previewActions
+- **dev** `-u <url>` — 启动本地开发服务
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — 管理画板状态
 
 切图输出：`src/assets/sketch/`，预览图：`.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/`（webp）

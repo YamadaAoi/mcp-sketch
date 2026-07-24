@@ -71,7 +71,6 @@
     "js-yaml": "5.2.1",
     "pino": "10.3.1",
     "pinyin-pro": "3.28.1",
-    "playwright-core": "1.61.1",
     "prompts": "2.4.2",
     "unzipper": "0.12.3",
     "zod": "4.3.6"
