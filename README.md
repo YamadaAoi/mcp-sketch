@@ -19,6 +19,22 @@ npx -y mcp-sketch install
 | **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
 
+### 推荐 MCP 服务
+
+**CodeGraph** — 项目源码分析，提高组件规划与代码定位的准确性：
+
+```bash
+npm i -g @colbymchenry/codegraph
+codegraph install
+codegraph init
+```
+
+**Playwright MCP** — 浏览器预览与截图比对：
+
+- [Claude Code 配置](https://playwright.dev/mcp/clients/claude-code)
+- [OpenCode 配置](https://playwright.dev/mcp/clients/other-clients#opencode)
+- [保持登录状态（浏览器扩展方案）](https://playwright.dev/mcp/configuration/browser-extension)
+
 ## 使用
 
 ### 切换到 Leader
@@ -82,7 +98,6 @@ npx -y mcp-sketch install
 | `CWD`            | 否   | 当前目录            | 项目根目录   |
 | `ASSETS_PATH`    | 否   | `src/assets/sketch` | 切图输出路径 |
 
-> 配置本地开发服务器时关闭自动打开浏览器，例如 Vite 设置 `server.open: false`
 > **Linux / macOS / WSL** 需安装 `tmux`：`brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL)，Windows 无需额外安装
 
 ## 工具

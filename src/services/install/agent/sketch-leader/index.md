@@ -10,7 +10,7 @@
   - **不规定返回内容**：专业的subagent会根据参数返回专业的内容
 - 使用 `npx -y mcp-sketch state` 工具**记录项目状态**来更好地把控整个流程进度
 - **一次只处理一个画板**：必须先通过 sketch-pick 让用户选定一个画板，不得批量处理或多个画板并行
-- **状态只有 Leader 可以写入**，**严禁在委托提示词中要求 subagent 操作状态文件**
+- **状态只能由 Leader 亲自使用 `npx -y mcp-sketch state` 命令记录**，禁止通过其他任何方式直接编辑 `.sketch-cache/` 下的任何文件
 - **源码分析工具**：涉及存量代码查询时优先调用源码分析工具（例如 `mcp: codegraph_explore`），不可用时回退 Grep/Read
 
 ## 一、工具箱
@@ -21,7 +21,7 @@
 | -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
 | sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                                                      |
 | sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表                                            |
-| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | (insert-)layout-check完成后必须预览布局效果，若不满意可以及时打断，减少返工 |
+| sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 可用于(insert-)layout-check完成后预览布局效果，通过用户的及时反馈来减少返工 |
 | sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                                               |
 | sketch-init-components     | sketch-architect | —                                                           |                               | 分析项目组件生态，生成 components-init.md                                   |
 | sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行                                            |
@@ -34,7 +34,7 @@
 | sketch-gen-base-check      | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 gen-base-done，批量审核                                            |
 | sketch-layout-check        | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，批量审核                                              |
 | sketch-insert-layout-check | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 layout-done，审核 section 插入结果                                 |
-| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核（代码+截图比对）                               |
+| sketch-draw-check          | sketch-checker   | `page_name`, `artboard_name`, `file_path`                   |                               | 读状态找 draw-done，批量审核代码，最后会打开浏览器预览页面并截图比对        |
 
 ### 委托 subagent 提示词模版（严格遵循，禁止改动格式）
 
@@ -73,7 +73,7 @@
 
 > 若某个 skill 因 proj-init.md 或 components-init.md 缺失而失败，补上对应 init 后重新调度即可
 
-### 3. 构建初始计划
+### 3. 规划 TODO 任务列表(临时)，后续根据 subagent 的返回实时动态调整
 
 **起点判断：**
 
@@ -93,24 +93,20 @@
 1. 从起点 skill 出发，按状态链逐步展开形成初始 todo 列表
 2. gen-base 和 draw 按组件并行（leader 为每个待处理组件单独发起一次调用）
 
-### 4. 列出 todo 确认
-
-将初始计划转化为可读的 todo 列表展示给用户，确认后再执行。后续根据 subagent 推荐动态调整
-
-### 5. 把控 subagent 执行结果
+### 4. 把控 subagent 执行结果
 
 subagent 返回工作结果后：
 
 - 先检测 `XXX_OVER` 确认完成，再解析 `XXX_SUCCESS` / `XXX_FAILED`
 - 若输出中标明 `RECORD_STATE`，调用 `mcp-sketch state` 记录或更新相应字段
 - 若 `previewUrl` 的值为 `UNKNOWN`，Leader 先读取项目路由配置推断可能的预览地址，向用户确认后写入
-- 若输出中标明 `NEXT_STEP`，**必须采纳**。内容可能包含：
+- 若输出中标明 `NEXT_STEP`，**必须加入 todo 列表并执行**（除非与用户目标相悖）。内容可能包含：
   - `需确认：{内容}` → 暂停执行，展示给用户等待回复
   - `委托subagent：{agent} 调用skill：{skill}` → 按推荐委托
   - `告知用户{内容}` → 向用户展示信息
   - 若含多个建议用 `→` 分隔（如 `需确认：xxx → 委托subagent：xxx`），按顺序依次执行
-  - **不采纳必须输出理由**给用户解释为何跳过该建议
   - 若建议中包含手动执行 `/compact`，向用户展示，由用户自行决定
+- **每次 subagent 返回后，更新 todo 列表**：标记已完成项、按 NEXT_STEP 添加新项
 
 ## 三、状态与进度
 

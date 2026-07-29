@@ -19,6 +19,22 @@ Select your AI platform:
 | **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
 
+### Recommended MCP Services
+
+**CodeGraph** — source code analysis for better component planning and code location:
+
+```bash
+npm i -g @colbymchenry/codegraph
+codegraph install
+codegraph init
+```
+
+**Playwright MCP** — browser preview and screenshot comparison:
+
+- [Claude Code setup](https://playwright.dev/mcp/clients/claude-code)
+- [OpenCode setup](https://playwright.dev/mcp/clients/other-clients#opencode)
+- [Persistent login state (browser extension)](https://playwright.dev/mcp/configuration/browser-extension)
+
 ## Usage
 
 ### Switch to Leader
@@ -82,7 +98,6 @@ Create `.env.sketch` in project root:
 | `CWD`            | no       | cwd                 | Project root       |
 | `ASSETS_PATH`    | no       | `src/assets/sketch` | Slice output path  |
 
-> Disable auto-open browser in dev server config (e.g. Vite `server.open: false`)
 > **Linux / macOS / WSL** requires `tmux`: `brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL). None needed on Windows
 
 ## Tools
