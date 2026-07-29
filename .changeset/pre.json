@@ -4,5 +4,5 @@
   "initialVersions": {
     "mcp-sketch": "1.6.0"
   },
-  "changesets": ["clear-ways-hide"]
+  "changesets": ["clear-ways-hide", "frank-ways-pay"]
 }

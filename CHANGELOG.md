@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.7.0-alpha.1
+
+### Minor Changes
+
+- 操作浏览器方式调整
+
 ## 1.6.1-alpha.0
 
 ### Patch Changes
