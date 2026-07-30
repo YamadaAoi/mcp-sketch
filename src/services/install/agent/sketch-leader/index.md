@@ -22,8 +22,8 @@
 | sketch-pick                | sketch-analyzer  | `FILE_PATH`                                                 |                               | 提取画板列表供用户选择                                                      |
 | sketch-split               | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 分析画板拆组件，输出完整组件列表                                            |
 | sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 可用于(insert-)layout-check完成后预览布局效果，通过用户的及时反馈来减少返工 |
-| sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md                                               |
-| sketch-init-components     | sketch-architect | —                                                           |                               | 分析项目组件生态，生成 components-init.md                                   |
+| sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md（可与 init-components 并行）                  |
+| sketch-init-components     | sketch-architect | —                                                           |                               | 分析项目组件生态，生成 components-init.md（可与 init 并行）                 |
 | sketch-gen-base            | sketch-architect | `page_name`, `artboard_name`, `component_path`, `file_path` | `requirements`                | 生成单个组件骨架代码，按组件并行                                            |
 | sketch-layout              | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `layout_mode`, `requirements` | 配置路由和父组件布局（新页面模式）                                          |
 | sketch-insert-layout       | sketch-architect | `page_name`, `artboard_name`, `file_path`                   | `requirements`                | 布局 section 组件并插入目标页面（老页面模式）                               |
@@ -91,7 +91,8 @@
 **推理方法：**
 
 1. 从起点 skill 出发，按状态链逐步展开形成初始 todo 列表
-2. gen-base 和 draw 按组件并行（leader 为每个待处理组件单独发起一次调用）
+2. init 和 init-components 无依赖关系，可以并行
+3. gen-base 和 draw 按组件并行（leader 为每个待处理组件单独发起一次调用）
 
 ### 4. 把控 subagent 执行结果
 
