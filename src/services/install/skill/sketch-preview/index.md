@@ -48,7 +48,7 @@ npx -y mcp-sketch dev -u "{previewUrl}"
 
 检查当前是否拥有 Playwright MCP 提供的浏览器工具（如 `browser_navigate`）：
 
-- **可用** → 使用 `browser_navigate` 打开 `{previewUrl}`，工具会自动启动浏览器访问页面。打开后等待用户确认
+- **可用** → 使用 `browser_navigate` 打开 `{previewUrl}`，工具会自动启动浏览器访问页面。打开后等待用户确认。**不得使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态**
 - **不可用** → 输出警告：
 
 ```

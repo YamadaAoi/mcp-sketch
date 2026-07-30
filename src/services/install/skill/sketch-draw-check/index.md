@@ -72,7 +72,7 @@
 
 - **可用** → 按顺序执行：
   1. 使用 `browser_navigate` 打开 `{previewUrl}`，观察页面渲染内容
-  2. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见
+  2. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见。**必须模拟真实用户操作，禁止使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态/变量来显示隐藏内容**
   3. 使用 `browser_screenshot` 截取全页截图，保存到 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` 目录下
   4. 记录截图路径 `screenshotPath`
   5. 继续执行 4c-4g 进行视觉比对
