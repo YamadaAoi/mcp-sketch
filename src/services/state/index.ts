@@ -1,8 +1,8 @@
-import { mkdir, readFile, writeFile } from 'fs/promises'
-import { basename, dirname, isAbsolute, relative, resolve } from 'path'
+import { readFile } from 'fs/promises'
+import { basename, isAbsolute, relative, resolve } from 'path'
 import { load } from 'js-yaml'
 import { z } from 'zod/v4'
-import { fileExists } from '@/utils/saveFile'
+import { fileExists, writeJsonFile } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 
 function toRelativePath(absOrRelative: string, cwd: string): string {
@@ -126,19 +126,6 @@ export async function readState(filePath: string) {
 }
 
 /**
- * 写入状态
- * @param filePath
- * @param state
- */
-async function writeState(filePath: string, state: ArtboardState) {
-  const dir = dirname(filePath)
-  if (!(await fileExists(dir))) {
-    await mkdir(dir, { recursive: true })
-  }
-  await writeFile(filePath, JSON.stringify(state, null, 2), 'utf-8')
-}
-
-/**
  * 合并组件列表
  * @param existing - 存在的组件列表
  * @param incoming - 新入的组件列表
@@ -226,7 +213,7 @@ export async function sketchState(args: SketchStateInputSchema) {
 
     const merged = mergeState(oldContent, newContent, replace, cwd)
 
-    await writeState(absPath, merged)
+    await writeJsonFile(absPath, merged)
 
     response = `✅ RECORD_SUCCESS`
   } catch (error) {

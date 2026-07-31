@@ -17,6 +17,7 @@ export const list = new Command()
     '-f, --file_path <PATH>',
     'Sketch HTML export path (zip or folder)'
   )
+  .option('--persist', 'persist the result to file or not', false)
   .action((opts: Record<string, unknown>) => {
     handleList(opts).catch(err => {
       logger.error(err, 'sketch-cli list')

@@ -1,5 +1,6 @@
 import type { InstallConfig } from '../installer'
 import SketchPickPrompt from './sketch-pick/index.md'
+import SketchAnalyzeArtboardPrompt from './sketch-analyze-artboard/index.md'
 import SketchSplitPrompt from './sketch-split/index.md'
 import SketchInitPrompt from './sketch-init/index.md'
 import SketchInitComponentsPrompt from './sketch-init-components/index.md'
@@ -101,6 +102,39 @@ export const SkillPool: InstallConfig[] = [
             key: 'allowed-tools',
             value:
               'Read Glob Grep Bash Bash(npx -y mcp-sketch *) AskUserQuestion'
+          },
+          {
+            key: 'disallowed-tools',
+            value: 'Write Edit Bash(unzip *) PowerShell(Expand-Archive *)'
+          }
+        ]
+      },
+      {
+        agent: 'opencode',
+        baseDir: '.opencode/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [{ key: 'name' }, { key: 'description' }]
+      }
+    ]
+  },
+  {
+    name: 'sketch-analyze-artboard',
+    description: '解析单个画板并落盘图层数据，不做组件解读',
+    prompt: SketchAnalyzeArtboardPrompt,
+    platforms: [
+      {
+        agent: 'claude',
+        baseDir: '.claude/skills',
+        fileName: 'SKILL.md',
+        isNested: true,
+        meta: [
+          { key: 'name' },
+          { key: 'description' },
+          { key: 'user-invocable', value: false },
+          {
+            key: 'allowed-tools',
+            value: 'Read Glob Grep Bash Bash(npx -y mcp-sketch *)'
           },
           {
             key: 'disallowed-tools',

@@ -29,8 +29,8 @@ export const analyze = new Command()
     '-f, --file_path <PATH>',
     'Sketch HTML export path (zip or folder)'
   )
-  .option('--pn, --page_name [PAGENAME]', 'Page name')
-  .option('--an, --artboard_name [ARTBOARDNAME]', 'Artboard name')
+  .requiredOption('--pn, --page_name <PAGENAME>', 'Page name')
+  .requiredOption('--an, --artboard_name <ARTBOARDNAME>', 'Artboard name')
   .option(
     '-r, --rect [RECT]',
     'Specify rectangular region to parse, format: `[x, y, width, height]` (x, y is top-left corner)'
@@ -51,6 +51,7 @@ export const analyze = new Command()
     '-o, --offset [OFFSET]',
     'Starting index in sorted layers (optional, default 0)'
   )
+  .option('--persist', 'persist the result to file or not', false)
   .action((opts: Record<string, unknown>) => {
     handleAnalyze(opts).catch(err => {
       logger.error(err, 'sketch-cli analyze')

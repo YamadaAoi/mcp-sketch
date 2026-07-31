@@ -1,5 +1,6 @@
 import path from 'path'
-import crypto from 'crypto'
+import { createHash } from 'node:crypto'
+import { readFile } from 'fs/promises'
 import { pinyin } from 'pinyin-pro'
 import {
   normalize,
@@ -8,9 +9,9 @@ import {
   type HtmlSketchArtboard,
   type HtmlSketchLayer
 } from '@/utils/zip'
-import { processImage } from '@/utils/saveFile'
+import { fileExists, processImage } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
-import { getRect, roundIfExceeds } from '@/utils/util'
+import { roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
 
 function toPinyin(str: string): string {
@@ -22,9 +23,9 @@ function toPinyin(str: string): string {
   return result.replace(/ +/g, '-').replace(/^-|-$/g, '').toLowerCase()
 }
 
-function filterLayers(lyr: HtmlLayer) {
+function filterSketchLayer(lyr: HtmlSketchLayer) {
   return (
-    (lyr.type === 'slice' && !!lyr.exportable?.length) ||
+    (lyr.type === 'slice' && !!lyr.assets?.length) ||
     lyr.type === 'text' ||
     (lyr.type === 'shape' &&
       lyr.css?.some(
@@ -36,47 +37,41 @@ function filterLayers(lyr: HtmlLayer) {
   )
 }
 
-function filterLayersByRect(
-  lyr: HtmlLayer,
+function filterSketchLayerByRect(
+  lyr: HtmlSketchLayer,
   rect?: [number, number, number, number],
   excludeRects?: [number, number, number, number][]
 ) {
   const r = lyr.rect
-  if (r?.x == null || r?.y == null || r?.width == null || r?.height == null) {
-    return false
-  }
+  if (r?.length !== 4) return false
+  const [x, y, w, h] = r.map(Number)
 
   if (rect) {
     const isInRect =
-      r.x >= rect[0] &&
-      r.x < rect[0] + rect[2] &&
-      r.y >= rect[1] &&
-      r.y < rect[1] + rect[3] &&
-      r.x + r.width > rect[0] &&
-      r.x + r.width <= rect[0] + rect[2] &&
-      r.y + r.height > rect[1] &&
-      r.y + r.height <= rect[1] + rect[3]
+      x >= rect[0] &&
+      x < rect[0] + rect[2] &&
+      y >= rect[1] &&
+      y < rect[1] + rect[3] &&
+      x + w > rect[0] &&
+      x + w <= rect[0] + rect[2] &&
+      y + h > rect[1] &&
+      y + h <= rect[1] + rect[3]
     if (!isInRect) return false
   }
 
   if (excludeRects?.length) {
-    const rRight = r.x + r.width
-    const rBottom = r.y + r.height
+    const rRight = x + w
+    const rBottom = y + h
     for (const e of excludeRects) {
       const eRight = e[0] + e[2]
       const eBottom = e[1] + e[3]
-      if (
-        r.x >= e[0] &&
-        r.y >= e[1] &&
-        rRight <= eRight &&
-        rBottom <= eBottom
-      ) {
+      if (x >= e[0] && y >= e[1] && rRight <= eRight && rBottom <= eBottom) {
         return false
       }
     }
   }
 
-  return filterLayers(lyr)
+  return filterSketchLayer(lyr)
 }
 
 function calculateLayoutScore(rect: {
@@ -99,6 +94,14 @@ function calculateLayoutScore(rect: {
   return score
 }
 
+function rankLayers(layers: HtmlLayer[]) {
+  return [...layers].sort((a, b) => {
+    const scoreA = calculateLayoutScore(a.rect ?? {})
+    const scoreB = calculateLayoutScore(b.rect ?? {})
+    return scoreB - scoreA
+  })
+}
+
 function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
   const layer: HtmlSketchLayer = {
     type: lyr.type,
@@ -119,20 +122,20 @@ function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
   return layer
 }
 
-function rankAndPaginate(
-  layers: HtmlLayer[],
+/**
+ * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 分页。
+ * 用于缓存命中时复用 layer.json 中的数据，不重新解析设计稿。
+ */
+export function filterCachedLayers(
+  layers: HtmlSketchLayer[],
   rect?: [number, number, number, number],
   excludeRects?: [number, number, number, number][],
   limit?: number,
   offset?: number
 ) {
-  let filtered = layers.filter(l => filterLayersByRect(l, rect, excludeRects))
-
-  filtered.sort((a, b) => {
-    const scoreA = calculateLayoutScore(a.rect ?? {})
-    const scoreB = calculateLayoutScore(b.rect ?? {})
-    return scoreB - scoreA
-  })
+  let filtered = layers.filter(l =>
+    filterSketchLayerByRect(l, rect, excludeRects)
+  )
 
   if (limit !== undefined) {
     const start = offset ?? 0
@@ -183,7 +186,7 @@ async function compressAssets(
   }
 }
 
-async function processPreview(
+export async function processPreview(
   artboard: HtmlSketchArtboard,
   filePath: string,
   rect?: [number, number, number, number],
@@ -195,7 +198,13 @@ async function processPreview(
   const imageData = images?.find(item =>
     item.path.endsWith(artboard.previewPath!)
   )?.data
-  if (!imageData) return
+
+  // 缓存命中时没有 zip 图片缓冲，回退读取已落盘的全量预览文件
+  let sourceBuffer = imageData
+  if (!sourceBuffer && !images && (await fileExists(artboard.previewPath))) {
+    sourceBuffer = await readFile(artboard.previewPath)
+  }
+  if (!sourceBuffer) return
 
   const extname = path.extname(artboard.previewPath)
   const fileName = path.basename(artboard.previewPath, extname)
@@ -204,10 +213,10 @@ async function processPreview(
   const dest = path.resolve(
     cwd,
     `.sketch-cache/artboards/${designFileName}/${artboard.pageName}/${artboard.name}`,
-    `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${crypto.createHash('md5').update(JSON.stringify(excludeRects)).digest('hex').slice(0, 8)}` : ''}${extname}`
+    `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${createHash('md5').update(JSON.stringify(excludeRects)).digest('hex').slice(0, 8)}` : ''}${extname}`
   )
   artboard.previewPath = await processImage(
-    imageData,
+    sourceBuffer,
     dest,
     artboard.width,
     rect
@@ -223,22 +232,8 @@ export async function assembleArtboard(
   }>
 ) {
   const dest = args.assets_path ?? getEnv('ASSETS_PATH')
-  const newRect = getRect(args.rect)
-  const newExcludeRects = args.exclude_rects?.reduce<
-    [number, number, number, number][]
-  >((acc, r) => {
-    const rect = getRect(r)
-    if (rect) acc.push(rect)
-    return acc
-  }, [])
 
-  const filtered = rankAndPaginate(
-    artboard.layers,
-    newRect,
-    newExcludeRects,
-    args.limit,
-    args.offset
-  )
+  const ranked = rankLayers(artboard.layers)
 
   const newArtboard: HtmlSketchArtboard = {
     previewPath: artboard.imagePath ? normalize(artboard.imagePath) : undefined,
@@ -248,23 +243,16 @@ export async function assembleArtboard(
     objectID: artboard.objectID,
     width: artboard.width,
     height: artboard.height,
-    layers: filtered.map(toSketchLayer)
+    layers: ranked.map(toSketchLayer)
   }
 
   await compressAssets(
-    filtered,
+    ranked,
     newArtboard.layers,
     dest,
     images,
     artboard.pageName,
     artboard.name
-  )
-  await processPreview(
-    newArtboard,
-    args.file_path,
-    newRect,
-    newExcludeRects,
-    images
   )
 
   return newArtboard

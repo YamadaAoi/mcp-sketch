@@ -10,11 +10,12 @@
 
 ## 可用 Skill
 
-| Skill          | 职责                     | 必需参数                                  | 可选参数       |
-| -------------- | ------------------------ | ----------------------------------------- | -------------- |
-| sketch-pick    | 提取画板列表，供用户单选 | `FILE_PATH`                               |                |
-| sketch-split   | 拆分组件，制定组件规划表 | `page_name`, `artboard_name`, `file_path` | `requirements` |
-| sketch-preview | 启动服务器并预览布局效果 | `page_name`, `artboard_name`, `file_path` |                |
+| Skill                   | 职责                     | 必需参数                                  | 可选参数                |
+| ----------------------- | ------------------------ | ----------------------------------------- | ----------------------- |
+| sketch-pick             | 提取画板列表，供用户选择 | `FILE_PATHS`（设计稿路径数组）            | `mode`                  |
+| sketch-analyze-artboard | 解析画板并缓存图层数据   | `artboards`（画板对象数组）               | `rect`, `exclude_rects` |
+| sketch-split            | 拆分组件，制定组件规划表 | `artboards`（画板对象数组）               | `requirements`          |
+| sketch-preview          | 启动服务器并预览布局效果 | `page_name`, `artboard_name`, `file_path` |                         |
 
 ## 工作流程
 
@@ -26,11 +27,12 @@
 
 skill 执行成功后，根据当前 skill 生成输出：
 
-| 当前 Skill     | NEXT_STEP                                                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------------------------------- |
-| sketch-pick    | 委托subagent：sketch-analyzer 调用skill：sketch-split                                                             |
-| sketch-split   | 需确认：以上组件拆分是否合理？合理继续，有问题请描述 → 委托subagent：sketch-checker 调用skill：sketch-split-check |
-| sketch-preview | 预览已完成，等待用户反馈或继续后续流程                                                                            |
+| 当前 Skill              | NEXT_STEP                                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| sketch-pick             | 委托subagent：sketch-analyzer 调用skill：sketch-analyze-artboard                                                  |
+| sketch-analyze-artboard | 全部落盘后 → 委托subagent：sketch-analyzer 调用skill：sketch-split                                                |
+| sketch-split            | 需确认：以上组件拆分是否合理？合理继续，有问题请描述 → 委托subagent：sketch-checker 调用skill：sketch-split-check |
+| sketch-preview          | 预览已完成，等待用户反馈或继续后续流程                                                                            |
 
 若 skill 返回 FAILED，不输出 NEXT_STEP，让 Leader 自行判断
 

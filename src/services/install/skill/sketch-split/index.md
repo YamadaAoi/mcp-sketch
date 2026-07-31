@@ -6,8 +6,9 @@
 
 将设计稿拆解为三种类型的组件：
 
-- **完整页面模式**：页面入口组件 + 页面特有组件 + 公共组件。约束区域（如有）仅作为 analyze 的 `-r` 过滤器，不影响产出类型
+- **完整页面模式**：页面入口组件 + 页面特有组件 + 公共组件。约束区域（如有）由 analyze-artboard 在解析时过滤，split 直接读取已过滤的 layer.json，不影响产出类型
 - **区域插入模式**：section 级组件（卡片、表单区块等） + 公共组件，不创建页面入口组件，后续由 insert-layout 插入目标页面
+- **画板组模式**（多画板从不同角度描述同一页面）：各画板独立 analyze，合并组件规划，选主画板，分别记录
 
 ## 技术约束
 
@@ -20,10 +21,20 @@
 
 参数由调用方传入：
 
-- `page_name` — 页面名
-- `artboard_name` — 画板名
-- `file_path` — 设计稿文件路径（用于定位状态文件目录）
+- `artboards` — 画板对象数组（JSON 字符串），每个元素包含 `file_path`、`page_name`、`artboard_name`、`layer_path` 四个字段，如：
+  ```json
+  [
+    {
+      "file_path": "/path/design.zip",
+      "page_name": "xxx",
+      "artboard_name": "yyy",
+      "layer_path": ".sketch-cache/artboards/.../layer.json"
+    }
+  ]
+  ```
 - `requirements`（可选） — 额外要求
+
+数组长度为 1 时是单画板模式，长度 > 1 时是画板组模式（多个画板从不同角度描述同一页面）
 
 ### 第一步：环境校验
 
@@ -38,7 +49,7 @@
 1. **判断是修复还是新任务**：
    - 若 `requirements` 描述了 check 失败原因或用户反馈的修改意见 → **修复任务**
      - **可简单修复**（组件命名不规范、路径格式错误、描述文档字段不全等表层问题）→ 定位到具体字段直接修正，修正后跳到输出格式，无需重新执行画板分析
-     - **需重新拆分**（组件划分不合理、层级关系错误、遗漏关键组件等深层问题）→ 读取之前的拆分结果，带着 `requirements` 继续执行第三步
+     - **需重新拆分**（组件划分不合理、层级关系错误、遗漏关键组件等深层问题）→ 读取之前的拆分结果，带着 `requirements` 继续执行第四步
    - 若不包含修复内容 → **新任务**
 
 2. **新任务时，语义判断模式**（理解用户意图，不能仅凭路径字串机械判断）：
@@ -49,34 +60,34 @@
      - `requirements` 描述为部分实现（如"只画第一个 tab"、"只处理激活区域"），暗示该画板是存量页面的一部分
      1. 通过路由配置文件（如 `router/index.ts`、`router.config.ts` 等）匹配页面入口组件
      2. 若路由配置中无匹配，通过源码分析工具（例如 `mcp: codegraph_explore`）或 Grep 搜索 `views_path` 目录下的页面组件
-     3. **深入定位最深层插入位置**：拿到入口组件后，通过源码分析工具（例如 `mcp: codegraph_explore`）或 Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部
-     4. 确定后产出组件文件路径作为 `targetPage`
+   3. **深入定位最深层插入位置**：拿到入口组件后，通过源码分析工具（例如 `mcp: codegraph_explore`）或 Grep 读取其模板和子组件结构，结合设计稿 analyze 返回的图层 `rect` 和预览图，判断新组件应该插入到哪个子组件内部
+   4. 确定后产出组件文件路径作为 `targetPage`
 
-3. **提取坐标区域**：若 `requirements` 中包含 `[x,y,w,h]` 格式的坐标，记录用于 analyze 的 `-r` 参数
+### 第三步：判断画板数量模式
 
-### 第三步：画板分析（核心逻辑）
+根据 `artboards` 数组长度判断（无论完整页面还是区域插入模式，都可能有单画板或多画板两种场景）：
 
-**根据第二步的分析结果调整分析参数**：
+- **长度 > 1** → 多画板模式（多个画板描述同一功能的不同状态）：
+  1. 依次对每个画板元素 `artboards[i]` 执行第四步（画板分析），分别记录 analyze 结果
+  2. 判断哪个是主画板（布局最完整、最能代表页面整体结构的画板），其余为子画板
+  3. 对每个画板独立执行第五步（组件规划），组件模式沿用第二步确定的完整页面/区域插入模式。**跨画板去重**（见第五步）：各画板状态无关的公共结构只规划一次，记录在主画板；各画板只拆自己画板中实际出现且未被重复规划的组件
+  4. 主画板的 RECORD_STATE 额外写入 `subArtboards: [{filePath, pageName, artboardName}, ...]`（列出所有子画板，含各自的 file_path）
+  5. 每个子画板的 RECORD_STATE 额外写入 `mainArtboard: {filePath, pageName, artboardName}`
 
-- 若第二步提取了坐标区域，传入 analyze 的 `-r` 参数
-- 若第二步确定为区域插入模式，后续组件类型使用 section / page-specific；若为完整页面模式，使用 page / page-specific / common
+- **长度 = 1** → 单画板模式，按原有流程继续
 
-```bash
-npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --limit {n} --offset {m} -r "{region}"
-```
+### 第四步：画板分析（核心逻辑）
 
-**参数说明**：
+**控制上下文的阅读策略**：
 
-| 参数       | 说明                                                                                                     |
-| ---------- | -------------------------------------------------------------------------------------------------------- |
-| `-f`       | **必传**。Sketch 导出文件路径（zip 或目录）                                                              |
-| `--pn`     | 页面名称，不传则取第一个 page                                                                            |
-| `--an`     | 画板名称，不传则取第一个 artboard                                                                        |
-| `--limit`  | 返回的图层数量。根据画板复杂度自行估算，简单画板 10~15 个，复杂画板 20~30 个                             |
-| `--offset` | 从第 m 个图层开始返回（默认 0）。排名靠前的图层通常是大面积布局容器，排名靠后的图层是细节元素            |
-| `-r`       | 组件的矩形区域（可选），格式 `[x, y, width, height]`，从第二步提取的坐标区域。传入后只返回该区域内的图层 |
+- 文件按布局权重倒序，靠前是大面积布局容器，靠后是细节元素
+- 先读文件开头部分（前 20~30 条图层）+ 预览图，形成整体结构认知
+- 需要确认某个具体区域时，用 Read 的 offset/limit 定位读取该区域附近的图层，或用 Grep 按图层名检索
+- 若 layer.json 缺失，跳过后续步骤，直接返回错误：layer.json 文件不存在
 
-**返回结构**：
+按需读取所有传入画板`artboards[i]`的图层数据，直接使用 `artboards[i].layer_path` 指定的文件路径：
+
+**layer.json 格式**：
 
 ```json
 {
@@ -89,8 +100,10 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 }
 ```
 
-- `layers` 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层
+- `layers` 已按**布局权重从高到低排序**（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层
 - 每个图层的 `rect` 为数组格式 `[x, y, width, height]`
+
+对每个画板执行以下解读：
 
 - 1. **必须**先读取预览图`previewPath`
 - 2. 判断层级：主页面（有独立导航入口）vs 子页面（弹窗、浮层、Tab 内容等）
@@ -134,12 +147,17 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
   - 判断条件：视觉区域在 layers 中没有位置匹配的图层（例如纯文本元素、装饰性元素）
   - 操作：根据预览图中的视觉位置和尺寸进行估算，记录为估算值
 
-### 第四步：组件规划与输出
+### 第五步：组件规划与输出
 
 **根据第二步确定的模式规划组件**：
 
 - **完整页面模式**：若画板属于**子页面**，判断其所属主页面入口组件是否存在，若不存在也**纳入本次规划**。约束区域（如有）不影响产出类型。组件类型使用 page / page-specific / common
 - **区域插入模式**：**不创建页面入口组件**，所有产出均为 section / page-specific / common，后续由 insert-layout 插入目标页面。`targetPage` 通过 RECORD_STATE 输出
+- **多画板去重**（画板组模式）：多个画板描述同一功能的不同状态，必然存在跨画板重复的内容。规划时必须全局比对所有画板：
+  - **状态无关的公共结构**（如弹框容器本身、弹框头部 title、关闭按钮、底部操作栏等所有状态都出现的元素）→ 只规划**一次**，记录在主画板。其他画板**不得**再规划同名或重复组件
+  - **状态相关的差异内容**（如对话内容列表只在 chatting 状态出现、发送后的操作项只在 actions 状态出现）→ 归各画板自身
+  - 判断是否重复的标准：多个画板中 rect 位置一致、视觉结构一致、语义相同的元素，视为同一组件；不能仅因画板不同就拆成多个
+  - 完成后合并校验：把各画板组件表合并，确认同一功能下每个组件有且仅有一个规划，无遗漏也无重复
 - 按父子层级关系规则确定组件层级
   - 若组件 A 的 `rect` 完全包含组件 B 的 `rect`，则 B 是 A 的直接子组件
   - 若 B 同时被 A 和 C 包含，取层级最近的（最内层容器）作为直接父组件
@@ -186,7 +204,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 | 文件夹名 | camelCase  | 两个单词以上，首字母小写，如 `loginPage` |
 | 组件文件 | PascalCase | 两个单词以上，首字母大写，如 `LoginPage` |
 
-### 第五步：匹配存量组件（codegraph不可用则跳过）
+### 第六步：匹配存量组件（codegraph不可用则跳过）
 
 规划表生成后，检查哪些组件可以由项目现有组件替代：
 
@@ -205,7 +223,7 @@ codegraph_explore: "list all common/reusable components in this project"
 
 ## 输出格式
 
-成功：
+### 单画板成功：
 
 ```
 已完成【{pageName}】-【{artboardName}】画板组件拆解
@@ -224,6 +242,36 @@ components 数组中每个组件必须包含以下字段：
 - rect: [x, y, width, height]
 - excludeRects: [[x1,y1,w1,h1], ...]（所有直接子组件的 rect）
 - children: ['childComponentPath', ...]（直接子组件路径列表）
+```
+
+### 画板组成功（多画板，逐画板输出）：
+
+```
+已完成画板组拆解
+主画板：{mainPageName} - {mainArtboardName}
+子画板：
+- {pageName1} - {artboardName1}
+- {pageName2} - {artboardName2}
+
+---
+
+【{mainPageName}】-【{mainArtboardName}】组件：
+| 组件名称 | 组件路径 | 组件描述 | 类型 | rect | ... |
+| -------- | -------- | -------- | ---- | ---- | --- |
+
+SPLIT_GROUP_MAIN_SUCCESS
+RECORD_STATE: previewPath, width, height, components（主画板自身组件，使用 -r 覆盖）
+RECORD_STATE: subArtboards = [{filePath, pageName, artboardName}, ...]（写入主画板）
+
+---
+
+【{pageName}】-【{artboardName}】组件：
+| 组件名称 | 组件路径 | 组件描述 | 类型 | rect | ... |
+| -------- | -------- | -------- | ---- | ---- | --- |
+
+SPLIT_GROUP_SUB_SUCCESS
+RECORD_STATE: previewPath, width, height, components（子画板自身组件，使用 -r 覆盖）
+RECORD_STATE: mainArtboard = {filePath, pageName, artboardName}（写入子画板）
 ```
 
 失败：

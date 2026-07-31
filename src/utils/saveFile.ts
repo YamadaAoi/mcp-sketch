@@ -11,6 +11,21 @@ export async function fileExists(filePath: string) {
 }
 
 /**
+ * 判断缓存文件是否比源文件新（缓存未被源文件更新后写过）
+ * 源文件或缓存文件不存在时返回 false，视为缓存失效
+ * @param cachePath - 缓存文件路径
+ * @param sourcePath - 源文件路径
+ */
+export async function isFileNewerThan(cachePath: string, sourcePath: string) {
+  const [cacheStat, sourceStat] = await Promise.all([
+    fs.stat(cachePath).catch(() => undefined),
+    fs.stat(sourcePath).catch(() => undefined)
+  ])
+  if (!cacheStat || !sourceStat) return false
+  return cacheStat.mtimeMs >= sourceStat.mtimeMs
+}
+
+/**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
  * @param filePath - json文件路径
  * @param data - 要写入的数据
