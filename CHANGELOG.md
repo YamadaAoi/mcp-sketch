@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.7.0-alpha.2
+
+### Patch Changes
+
+- 处理多画板描述一个功能的场景
+
 ## 1.7.0-alpha.1
 
 ### Minor Changes
