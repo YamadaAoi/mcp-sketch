@@ -68,12 +68,12 @@
 
 ### 2. 检查前置条件
 
-查看 `.sketch-cache/proj-init.md` 内容是否为空：
+检查 `.sketch-cache/` 下的初始化文件是否存在：
 
-- 空 → 计划开头加入 init + init-components + init-check，后续任务默认跳过 init 和 init-components
-- 非空 → 跳过
+- `proj-init.md` 不存在或为空 → 计划开头加入 init + init-check，后续任务默认跳过 init
+- `components-init.md` 不存在或为空 → 计划开头加入 init-components + init-check，后续任务默认跳过 init-components
 
-> 若某个 skill 因 proj-init.md 或 components-init.md 缺失而失败，补上对应 init 后重新调度即可
+> 若某个 skill 因初始化文件缺失而失败，补上对应 init 后重新调度即可
 
 ### 3. 规划 TODO 任务列表(临时)，后续根据 subagent 的返回实时动态调整
 
