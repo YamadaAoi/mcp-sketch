@@ -12,28 +12,30 @@
 
 参数由调用方传入：
 
-- `artboards` — 画板对象数组（JSON 字符串），每个元素包含 `file_path`、`page_name`、`artboard_name` 三个字段，如：
-  ```json
-  [
-    { "file_path": "/path/design.zip", "page_name": "xxx", "artboard_name": "yyy" },
-    ...
-  ]
-  ```
-- `rect`（可选）— 约束区域，格式 `[x, y, width, height]`，应用于所有画板
-- `exclude_rects`（可选）— 排除区域，格式 `[[x, y, width, height], ...]`，应用于所有画板
+- `artboards` — 画板对象数组（JSON 字符串），每个元素包含：
+  - `file_path`（必需）— 设计稿路径
+  - `page_name`（必需）— 页面名称
+  - `artboard_name`（必需）— 画板名称
+  - `rect`（可选）— 该画板的约束区域，格式 `[x, y, width, height]`
+  - `exclude_rects`（可选）— 该画板的排除区域，格式 `[[x, y, width, height], ...]`
 
 ### 步骤 1：逐个解析并落盘图层数据
 
 对数组中每个画板元素依次执行：
 
 ```bash
-npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --persist [--rect "{rect}"] [--exclude_rects "{exclude_rects}"]
+npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" --persist -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]"
 ```
 
-- 工具会自动把全量排序后的图层数据写入 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/layer.json`
-- 有 `rect` 或 `exclude_rects` 时，写入 `{artboard_name}/{hash}/layer.json`（hash 为约束条件的 MD5 前 8 位）
-- 已存在且设计稿未更新时直接复用，不会重复解析
-- 每个画板返回结果中包含**layer.json 的完整路径**
+**参数说明**：
+
+| 参数   | 说明                                                                               |
+| ------ | ---------------------------------------------------------------------------------- |
+| `-f`   | **必传**。Sketch 导出文件路径（zip 或目录）                                        |
+| `--pn` | **必传**。页面名称                                                                 |
+| `--an` | **必传**。画板名称                                                                 |
+| `-r`   | **可选**。组件的矩形区域，格式 `[x, y, width, height]`，传入后只返回该区域内的图层 |
+| `-e`   | **可选**。需要排除的矩形区域列表，格式 `[[x1,y1,w1,h1]]`，子组件占用的区域会被排除 |
 
 ## 输出格式
 

@@ -8,7 +8,6 @@
 - **知人善用**，专业的任务必须**委托给最专业**的`subagent`
   - **不多传prompt**：委托subagent时只传对应skill所需的参数
   - **不规定返回内容**：专业的subagent会根据参数返回专业的内容
-- 使用 `npx -y mcp-sketch state` 工具**记录项目状态**来更好地把控整个流程进度
 - **画板选择**：必须先通过 sketch-pick 让用户选定画板；单选处理单个画板，多选（同一功能的不同状态）按画板组处理
 - **`.sketch-cache` 读写规则**：
   - **状态`progress.json`只能由 Leader 亲自使用 `npx -y mcp-sketch state` 命令记录**，禁止通过其他任何方式直接编辑 `.sketch-cache/` 下的任何文件
@@ -21,7 +20,7 @@
 | skill                      | 归属 subagent    | 必需参数                                                    | 可选参数                      | 说明                                                                                                                                                                     |
 | -------------------------- | ---------------- | ----------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | sketch-pick                | sketch-analyzer  | `FILE_PATHS`                                                | `mode`                        | 提取画板列表供用户选择；用户给了多个设计稿时传多个路径，全部列出供选择；mode=single 单选，mode=multi 多选                                                                |
-| sketch-analyze-artboard    | sketch-analyzer  | `artboards`                                                 | `rect`, `exclude_rects`       | 解析画板图层并缓存图层数据，返回layer.json 路径；artboards 为画板对象数组（`[{file_path, page_name, artboard_name}, ...]`）                                              |
+| sketch-analyze-artboard    | sketch-analyzer  | `artboards`                                                 |                               | 解析画板图层并缓存图层数据，返回layer.json 路径；artboards 为画板对象数组（`[{file_path, page_name, artboard_name, rect?, exclude_rects?}, ...]`）                       |
 | sketch-split               | sketch-analyzer  | `artboards`                                                 | `requirements`                | 读取各画板 layer.json 统筹拆组件，输出完整组件列表；artboards 为画板对象数组（`[{file_path, page_name, artboard_name, layer_path}, ...]`），长度 1 单画板，>1 画板组模式 |
 | sketch-preview             | sketch-analyzer  | `page_name`, `artboard_name`, `file_path`                   |                               | 可用于(insert-)layout-check完成后预览布局效果，通过用户的及时反馈来减少返工                                                                                              |
 | sketch-init                | sketch-architect | —                                                           | `requirements`                | 扫描项目配置生成 proj-init.md（可与 init-components 并行）                                                                                                               |
@@ -95,7 +94,7 @@
 
 1. 从起点 skill 出发，按状态链逐步展开形成初始 todo 列表
 2. **并行规则**：init 与 init-components 可并行；gen-base / draw / layout / insert-layout 按组件并行
-3. **画板组模式**（pick multi）：pick 返回后，将画板列表传给 analyze-artboard（`artboards` 数组），一次调用全部落盘；从返回结果中提取各画板的 `layer.json 路径`，组装含 `layer_path` 的 `artboards` 数组传给 sketch-split 由 split 统筹去重规划
+3. **画板组模式**（pick multi）：pick 返回后，将画板列表传给 analyze-artboard（`artboards` 数组）；从返回结果中提取各画板的 `layer.json 路径`，组装含 `layer_path` 的 `artboards` 数组传给 sketch-split 由 split 统筹去重规划
 
 ### 4. 把控 subagent 执行结果
 
