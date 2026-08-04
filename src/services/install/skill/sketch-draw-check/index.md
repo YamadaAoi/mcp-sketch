@@ -7,6 +7,7 @@
 - **绝不自行编写代码**：只审核和报告，不修改文件
 - **禁止执行任何写入操作**
 - **状态文件只读**：禁止直接新建、修改或删除 `.sketch-cache/` 下的状态文件。状态仅通过 `RECORD_STATE` 输出标记，由 Leader 负责写入
+- **禁止使用 `browser_evaluate` 或任何 JavaScript 注入方式直接修改页面状态/变量**，必须通过模拟真实用户操作（点击、滚动、切换 tab 等）使目标组件可见
 
 ## 执行步骤
 
@@ -72,10 +73,11 @@
 
 - **可用** → 按顺序执行：
   1. 使用 `browser_navigate` 打开 `{previewUrl}`，观察页面渲染内容
-  2. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见。**必须模拟真实用户操作，禁止使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态/变量来显示隐藏内容**
-  3. 使用 `browser_screenshot` 截取全页截图，保存到 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` 目录下
-  4. 记录截图路径 `screenshotPath`
-  5. 继续执行 4c-4g 进行视觉比对
+  2. **页面加载失败时的诊断**：若页面白屏或报错，使用 `browser_console_messages` 检查控制台错误，根据错误信息定位出错文件并分析原因（编译错误、运行时错误、框架兼容性问题如 Vue2 中使用了 Vue3 语法等），输出诊断结果后返回，不继续截图
+  3. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见。**必须模拟真实用户操作，禁止使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态/变量来显示隐藏内容**
+  4. 使用 `browser_screenshot` 截取全页截图，保存到 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` 目录下
+  5. 记录截图路径 `screenshotPath`
+  6. 继续执行 4c-4g 进行视觉比对
 
 - **不可用** → 跳过视觉比对，输出警告：
 
@@ -200,5 +202,16 @@ DRAW_CHECK_FAILED
 截图比对失败：
 - 错误类型：{截图失败 | 文件读取失败}
 - 错误描述：{具体错误信息}
+DRAW_CHECK_FAILED
+```
+
+### 阶段二失败（页面加载失败/代码错误）：
+
+```
+页面加载失败，无法进行视觉比对：
+- 错误类型：{编译错误 | 运行时错误 | 框架兼容性问题}
+- 错误信息：{具体错误描述}
+- 出错文件：{文件路径}
+- 修复建议：{建议如何修复}
 DRAW_CHECK_FAILED
 ```
