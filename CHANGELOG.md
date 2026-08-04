@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 1.7.0-alpha.3
+
+### Patch Changes
+
+- init-check问题修复；leader&split压缩；浏览器探索优化；绘制问题优化
+
 ## 1.7.0-alpha.2
 
 ### Patch Changes

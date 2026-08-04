@@ -4,5 +4,10 @@
   "initialVersions": {
     "mcp-sketch": "1.6.0"
   },
-  "changesets": ["clear-ways-hide", "frank-ways-pay", "funny-bugs-vanish"]
+  "changesets": [
+    "clear-ways-hide",
+    "frank-ways-pay",
+    "funny-bugs-vanish",
+    "great-fans-relax"
+  ]
 }
