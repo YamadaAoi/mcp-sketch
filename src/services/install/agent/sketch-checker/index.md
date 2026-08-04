@@ -35,7 +35,7 @@
 | sketch-init-check                                | 委托subagent：sketch-analyzer 调用skill：sketch-split                                                                                                                                |
 | sketch-split-check                               | 委托subagent：sketch-architect 调用skill：sketch-gen-base                                                                                                                            |
 | sketch-gen-base-check                            | gen-base-check 输出中有 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-insert-layout<br>无 `TARGET_PAGE` → 委托subagent：sketch-architect 调用skill：sketch-layout |
-| sketch-layout-check / sketch-insert-layout-check | 委托subagent：sketch-analyzer 调用skill：sketch-preview，让用户查看布局效果后再继续 draw                                                                                             |
+| sketch-layout-check / sketch-insert-layout-check | 委托subagent：sketch-architect 调用skill：sketch-draw                                                                                                                                |
 | sketch-draw-check                                | 告知用户当前画板已完成，建议在处理下一个画板前手动执行 `/compact` 清理上下文                                                                                                         |
 
 **部分失败（XX_CHECK_FAILED 或包含失败组件）：**

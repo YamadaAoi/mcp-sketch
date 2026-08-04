@@ -32,7 +32,7 @@ skill 执行成功后，根据当前 skill 生成输出：
 | sketch-pick             | 委托subagent：sketch-analyzer 调用skill：sketch-analyze-artboard                                                  |
 | sketch-analyze-artboard | 委托subagent：sketch-analyzer 调用skill：sketch-split                                                             |
 | sketch-split            | 需确认：以上组件拆分是否合理？合理继续，有问题请描述 → 委托subagent：sketch-checker 调用skill：sketch-split-check |
-| sketch-preview          | 预览已完成，等待用户反馈或继续后续流程                                                                            |
+| sketch-preview          | 预览已完成，等待用户反馈                                                                                          |
 
 若 skill 返回 FAILED，不输出 NEXT_STEP，让 Leader 自行判断
 
