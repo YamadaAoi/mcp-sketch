@@ -48,7 +48,7 @@ codegraph init
 Based on design.zip, create a login page
 ```
 
-Flow: pick → split → gen-base → layout → preview → draw → draw-check
+Flow: pick → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
 
 ### Scenario 2: Insert into Existing Page
 
@@ -64,29 +64,40 @@ Based on design.zip, extract the user info card and insert it into /dashboard pa
 
 Provide what you know: design file → artboard name → region coordinates → target page route or component path → insertion context.
 
-Flow: pick → split (insert mode) → gen-base → insert-layout → preview → draw → draw-check
+Flow: pick → analyze-artboard → split (insert mode) → gen-base → insert-layout → preview → draw → draw-check
+
+### Scenario 3: Multiple Artboards Describing One Feature
+
+```
+Based on design.zip, the chat page has three states (empty, message list, typing), process them together
+```
+
+After multi-selecting artboards, analyze-artboard parses all artboards in one call. Split automatically deduplicates shared components (dialog container, title bar, etc.) and keeps only the differences per artboard.
+
+Flow: pick(multi) → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
 
 ## Toolbox
 
-| skill                  | Agent            | Description                                               |
-| ---------------------- | ---------------- | --------------------------------------------------------- |
-| sketch-pick            | sketch-analyzer  | List artboards for selection                              |
-| sketch-split           | sketch-analyzer  | Analyze artboard, split components                        |
-| sketch-preview         | sketch-analyzer  | Start dev server and preview                              |
-| sketch-init            | sketch-architect | Scan project, generate config                             |
-| sketch-init-components | sketch-architect | Analyze component ecosystem, generate component inventory |
-| sketch-gen-base        | sketch-architect | Generate skeleton component code                          |
-| sketch-layout          | sketch-architect | Configure routing and layout                              |
-| sketch-insert-layout   | sketch-architect | Layout section components & insert into target page       |
-| sketch-draw            | sketch-developer | Draw component from design data                           |
-| sketch-code            | sketch-developer | Modify/refactor/insert without design                     |
-| sketch-\*-check        | sketch-checker   | Review quality at each stage                              |
+| skill                   | Agent            | Description                                               |
+| ----------------------- | ---------------- | --------------------------------------------------------- |
+| sketch-pick             | sketch-analyzer  | List artboards for selection                              |
+| sketch-analyze-artboard | sketch-analyzer  | Parse artboard layers, cache layer.json                   |
+| sketch-split            | sketch-analyzer  | Analyze artboard, split components                        |
+| sketch-preview          | sketch-analyzer  | Start dev server and preview                              |
+| sketch-init             | sketch-architect | Scan project, generate config                             |
+| sketch-init-components  | sketch-architect | Analyze component ecosystem, generate component inventory |
+| sketch-gen-base         | sketch-architect | Generate skeleton component code                          |
+| sketch-layout           | sketch-architect | Configure routing and layout                              |
+| sketch-insert-layout    | sketch-architect | Layout section components & insert into target page       |
+| sketch-draw             | sketch-developer | Draw component from design data                           |
+| sketch-code             | sketch-developer | Modify/refactor/insert without design                     |
+| sketch-\*-check         | sketch-checker   | Review quality at each stage                              |
 
 ## State Management
 
 State file: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
-Component state chain: `split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
+Component state chain: `split-done → split-check-done → gen-base-done → gen-base-check-done → (insert-)layout-done → (insert-)layout-check-done → preview-done → draw-done → draw-check-done`
 
 ## Environment Variables
 

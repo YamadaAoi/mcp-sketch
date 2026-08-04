@@ -48,7 +48,7 @@ codegraph init
 根据设计稿 设计稿.zip，创建一个用户登录页
 ```
 
-流程：pick → split → gen-base → layout → preview → draw → draw-check
+流程：pick → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
 
 ### 场景二：插入到现有页面
 
@@ -64,29 +64,40 @@ codegraph init
 
 根据掌握的信息，尽可能提供：设计稿文件 → 画板名 → 坐标区域 → 目标页面路由或组件路径 → 插入位置上下文
 
-流程：pick → split（插入模式）→ gen-base → insert-layout → preview → draw → draw-check
+流程：pick → analyze-artboard → split（插入模式）→ gen-base → insert-layout → preview → draw → draw-check
+
+### 场景三：多画板描述同一功能
+
+```
+根据设计稿 设计稿.zip，聊天页面有三个状态（空状态、消息列表、输入中），需要一起处理
+```
+
+多选画板后，analyze-artboard 一次性解析所有画板，split 自动去重合并公共组件（弹框容器、标题栏等），各画板只保留差异部分
+
+流程：pick(multi) → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
 
 ## 工具箱
 
-| skill                  | 归属 agent       | 说明                            |
-| ---------------------- | ---------------- | ------------------------------- |
-| sketch-pick            | sketch-analyzer  | 提取画板列表供用户选择          |
-| sketch-split           | sketch-analyzer  | 分析画板，拆分组件              |
-| sketch-preview         | sketch-analyzer  | 启动服务并预览页面              |
-| sketch-init            | sketch-architect | 扫描项目，生成配置文档          |
-| sketch-init-components | sketch-architect | 分析组件生态，生成组件清单      |
-| sketch-gen-base        | sketch-architect | 生成基础组件骨架代码            |
-| sketch-layout          | sketch-architect | 配置路由和父组件布局            |
-| sketch-insert-layout   | sketch-architect | 布局 section 组件并插入目标页面 |
-| sketch-draw            | sketch-developer | 根据设计稿绘制组件功能代码      |
-| sketch-code            | sketch-developer | 修改/重构/插入等无设计稿任务    |
-| sketch-\*-check        | sketch-checker   | 审核各阶段输出质量              |
+| skill                   | 归属 agent       | 说明                            |
+| ----------------------- | ---------------- | ------------------------------- |
+| sketch-pick             | sketch-analyzer  | 提取画板列表供用户选择          |
+| sketch-analyze-artboard | sketch-analyzer  | 解析画板图层并缓存 layer.json   |
+| sketch-split            | sketch-analyzer  | 分析画板，拆分组件              |
+| sketch-preview          | sketch-analyzer  | 启动服务并预览页面              |
+| sketch-init             | sketch-architect | 扫描项目，生成配置文档          |
+| sketch-init-components  | sketch-architect | 分析组件生态，生成组件清单      |
+| sketch-gen-base         | sketch-architect | 生成基础组件骨架代码            |
+| sketch-layout           | sketch-architect | 配置路由和父组件布局            |
+| sketch-insert-layout    | sketch-architect | 布局 section 组件并插入目标页面 |
+| sketch-draw             | sketch-developer | 根据设计稿绘制组件功能代码      |
+| sketch-code             | sketch-developer | 修改/重构/插入等无设计稿任务    |
+| sketch-\*-check         | sketch-checker   | 审核各阶段输出质量              |
 
 ## 状态管理
 
 状态文件在 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
 
-组件状态链：`split-done → split-check-done → gen-base-done → gen-base-check-done → layout-done → layout-check-done → draw-done → draw-check-done`
+组件状态链：`split-done → split-check-done → gen-base-done → gen-base-check-done → (insert-)layout-done → (insert-)layout-check-done → preview-done → draw-done → draw-check-done`
 
 ## 环境变量
 
