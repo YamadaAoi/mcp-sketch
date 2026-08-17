@@ -72,9 +72,9 @@
 检查当前是否拥有 Playwright MCP 提供的浏览器工具（如 `browser_navigate`、`browser_screenshot`）：
 
 - **可用** → 按顺序执行：
-  1. 使用 `browser_navigate` 打开 `{previewUrl}`，观察页面渲染内容
-  2. **页面加载失败时的诊断**：若页面白屏或报错，使用 `browser_console_messages` 检查控制台错误，根据错误信息定位出错文件并分析原因（编译错误、运行时错误、框架兼容性问题如 Vue2 中使用了 Vue3 语法等），输出诊断结果后返回，不继续截图
-  3. 若目标组件在首屏不可见（需点击 tab、滚动翻页等），使用 `browser_click`、`browser_hover` 等工具逐步交互直到组件可见。**必须模拟真实用户操作，禁止使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态/变量来显示隐藏内容**
+  1. 使用 `browser_navigate` 打开 `{previewUrl}`，优先通过模拟浏览器交互（点击、滚动、切换 tab 等）找到本次绘制的目标元素，然后截图
+  2. **页面加载失败时的诊断**：若页面白屏或报错，使用 `browser_console_messages` 检查控制台错误，根据错误信息定位出错文件并分析原因（编译错误、运行时错误、框架兼容性问题等），输出诊断结果后返回，不继续截图
+  3. **必须模拟真实用户操作，禁止使用 `browser_evaluate` 或 JavaScript 注入直接修改页面状态/变量来显示隐藏内容**
   4. 使用 `browser_screenshot` 截取全页截图，保存到 `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` 目录下
   5. 记录截图路径 `screenshotPath`
   6. 继续执行 4c-4g 进行视觉比对

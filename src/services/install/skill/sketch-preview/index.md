@@ -44,12 +44,9 @@ npx -y mcp-sketch dev -u "{previewUrl}"
 检查是否拥有 Playwright MCP 工具（如 `browser_navigate`）：
 
 - **不可用** → 输出警告，跳到步骤 5
-- **可用** → 继续：
+- **可用** → `browser_navigate` 打开 `{previewUrl}`，优先通过模拟浏览器交互（点击、滚动、切换 tab 等）找到本次绘制的目标元素并展示给用户
 
-1. `browser_navigate` 打开 `{previewUrl}`
-2. `browser_console_messages` 检查控制台错误，`browser_snapshot` 观察页面状态
-3. **页面加载失败时**：根据控制台错误定位出错文件，分析原因（编译错误、运行时错误、框架兼容性问题如 Vue2 中使用了 Vue3 语法等），输出诊断结果后返回
-4. **目标组件不可见时**（弹框、Tab、折叠面板等）：根据预览图判断触发方式，使用 `browser_click`、`browser_hover`、`browser_scroll` 等逐步交互，每次操作后 `browser_snapshot` 确认组件是否显示
+若页面加载失败（白屏、控制台报错），检查 `browser_console_messages`，根据错误定位出错文件、分析原因（编译错误、运行时错误、框架兼容性问题等），输出诊断结果
 
 ### 步骤 5：输出
 
