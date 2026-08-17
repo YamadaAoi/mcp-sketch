@@ -145,27 +145,6 @@ function waitForServer(targetUrl: string, timeout = 60000, interval = 500) {
   })
 }
 
-/**
- * 启动本地服务
- * @param url - 浏览器要打开的URL
- * @param command - 启动浏览器的命令
- * @returns session
- */
-export async function startServer(url: string, command?: string) {
-  let session: string | undefined
-  const isAccessible = await checkUrlOnce(url)
-  if (!isAccessible) {
-    if (!command) {
-      throw new Error(
-        '❌ local server not started, please provide the start command'
-      )
-    }
-    session = await startBgService(command)
-  }
-
-  return session
-}
-
 export function getSessionDesc(session: string) {
   return `✅ Use the following commands to manage the background dev server:\n- To view real-time logs: tmux attach -t ${session} (Press Ctrl+B, then D to safely detach and return to the terminal)\n- To stop the server: tmux kill-session -t ${session}`
 }
@@ -182,16 +161,21 @@ export async function sketchDev(args: SketchDevInputSchema) {
 
   try {
     const command = getEnv('SERVER_COMMAND')
-    session = await startServer(args.url, command)
-    const result = await waitForServer(args.url)
-    if (!result.success) {
-      throw new Error(
-        `❌ server launch failed or timeout, check command: ${command}`
-      )
-    }
-    response = `✅ dev server launch success !`
-    if (session) {
-      response = `${response}\n${getSessionDesc(session)}`
+    const isAccessible = await checkUrlOnce(args.url)
+    if (isAccessible) {
+      response = `✅ dev server already running at ${args.url}, no need to start again`
+    } else {
+      session = await startBgService(command)
+      const result = await waitForServer(args.url)
+      if (!result.success) {
+        throw new Error(
+          `❌ server launch failed or timeout, check command: ${command}`
+        )
+      }
+      response = `✅ dev server launch success !`
+      if (session) {
+        response = `${response}\n${getSessionDesc(session)}`
+      }
     }
   } catch (error) {
     response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
