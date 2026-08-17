@@ -116,7 +116,7 @@ Create `.env.sketch` in project root:
 > Run `npx -y mcp-sketch <cmd> --help` for full options
 
 - **list** `[-f <path>]` — list artboards
-- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — parse layers/styles/assets
+- **analyze** `-f <path> --pn <page> --an <artboard> [-r <rect>] [-e <rects>] [-l <n>] [-o <n>] [--ap <path>] [--persist]` — parse layers/styles/assets
 - **dev** `-u <url>` — start local dev server
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
 

@@ -1,5 +1,18 @@
 # mcp-sketch
 
+## 1.7.0
+
+### Minor Changes
+
+- 2e00700: 操作浏览器方式调整
+
+### Patch Changes
+
+- ac481fd: 私有组件库，公共组件提取供llm查阅
+- 23dc2ca: 处理多画板描述一个功能的场景
+- 7d7d42b: init-check问题修复；leader&split压缩；浏览器探索优化；绘制问题优化
+- 添加多选画板能力
+
 ## 1.7.0-alpha.3
 
 ### Patch Changes

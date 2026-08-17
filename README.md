@@ -116,7 +116,7 @@ codegraph init
 > `npx -y mcp-sketch <cmd> --help` 查看完整参数
 
 - **list** `[-f <path>]` — 列出画板
-- **analyze** `-f <path> [--pn <page>] [--an <artboard>] [-r <rect>] [-e <rects>] [-l <n>] [-o <n>]` — 解析图层/样式/切图
+- **analyze** `-f <path> --pn <page> --an <artboard> [-r <rect>] [-e <rects>] [-l <n>] [-o <n>] [--ap <path>] [--persist]` — 解析图层/样式/切图
 - **dev** `-u <url>` — 启动本地开发服务
 - **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — 管理画板状态
 
