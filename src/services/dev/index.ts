@@ -4,15 +4,7 @@ import { resolve } from 'path'
 import http from 'http'
 import https from 'https'
 import { platform } from 'os'
-import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
-import { z } from 'zod/v4'
 import { getEnv } from '@/utils/env'
-
-export const sketchDevInputSchema = z.object({
-  url: z.string().describe('Preview URL')
-})
-
-export type SketchDevInputSchema = SchemaOutput<typeof sketchDevInputSchema>
 
 async function startBgService(command: string) {
   const projectPath = getEnv('CWD')
@@ -145,44 +137,41 @@ function waitForServer(targetUrl: string, timeout = 60000, interval = 500) {
   })
 }
 
-export function getSessionDesc(session: string) {
+function getSessionDesc(session: string) {
   return `✅ Use the following commands to manage the background dev server:\n- To view real-time logs: tmux attach -t ${session} (Press Ctrl+B, then D to safely detach and return to the terminal)\n- To stop the server: tmux kill-session -t ${session}`
 }
 
 /**
  * 预览 URL
- * @param args - 输入参数
- * @param args.url - 预览 URL
  * @returns 输出参数，包含预览 URL
  */
-export async function sketchDev(args: SketchDevInputSchema) {
-  let response = 'Sketch Exception'
+export async function sketchDev() {
   let session: string | undefined
 
   try {
     const command = getEnv('SERVER_COMMAND')
-    const isAccessible = await checkUrlOnce(args.url)
+    const previewUrl = getEnv('PREVIEW_URL')
+    if (!previewUrl) {
+      throw new Error('❌ PREVIEW_URL not set')
+    }
+    const isAccessible = await checkUrlOnce(previewUrl)
     if (isAccessible) {
-      response = `✅ dev server already running at ${args.url}, no need to start again`
-    } else {
-      session = await startBgService(command)
-      const result = await waitForServer(args.url)
-      if (!result.success) {
-        throw new Error(
-          `❌ server launch failed or timeout, check command: ${command}`
-        )
-      }
-      response = `✅ dev server launch success !`
-      if (session) {
-        response = `${response}\n${getSessionDesc(session)}`
-      }
+      return `✅ dev server already running at ${previewUrl}`
     }
+    session = await startBgService(command)
+    const result = await waitForServer(previewUrl)
+    if (!result.success) {
+      throw new Error(
+        `❌ server launch failed or timeout, check command: ${command}`
+      )
+    }
+    return session
+      ? `✅ dev server launch success !\n${getSessionDesc(session)}`
+      : `✅ dev server launch success !`
   } catch (error) {
-    response = `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
-    if (session) {
-      response = `${response}\n${getSessionDesc(session)}`
-    }
+    const message = error instanceof Error ? error.message : 'unknown error'
+    throw new Error(
+      session ? `${message}\n${getSessionDesc(session)}` : message
+    )
   }
-
-  return response
 }

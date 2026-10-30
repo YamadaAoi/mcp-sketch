@@ -6,6 +6,7 @@ import { parse } from '@babel/parser'
 import { type Node } from '@babel/traverse'
 import { generate } from '@babel/generator'
 import { logger } from '@/utils/logger'
+import { getEnv } from '@/utils/env'
 import { getSafeTraverse } from './getTraverse'
 
 interface UnifiedFile {
@@ -85,7 +86,7 @@ export interface HtmlSketchArtboard {
 
 export interface SketchImage {
   path: string
-  data: Buffer
+  getData: () => Promise<Buffer>
 }
 
 export interface SketchHtmlFile {
@@ -101,6 +102,23 @@ const DATA_VAR_NAME = 'data'
 const IMAGEFOLDER = 'assets'
 const PREVIEWFOLDER = 'preview'
 const traverse = getSafeTraverse()
+
+/**
+ * 过滤 macOS 打包产生的资源分叉垃圾（__MACOSX 目录与 ._ 开头的文件）
+ */
+function isAppleDoubleJunk(normalizedPath: string) {
+  return (
+    normalizedPath.startsWith('__MACOSX/') ||
+    /(?:^|\/)\._[^/]*$/.test(normalizedPath)
+  )
+}
+
+/**
+ * 判断路径中是否包含指定的顶层资源文件夹（按路径段匹配，避免误伤同名前后缀的包裹文件夹）
+ */
+function isInFolder(normalizedPath: string, folder: string) {
+  return new RegExp(`(?:^|/)${folder}/`).test(normalizedPath)
+}
 
 function getScriptFromHtml(html: string) {
   const $ = cheerio.load(html)
@@ -145,12 +163,19 @@ function getDataFromScript(script: string) {
 }
 
 /**
- * 规范路径
+ * 规范路径（解码 URL 编码、统一分隔符）
+ * 解码失败（如文件名含裸 %）时回退原文
  * @param p - 路径
  * @returns 规范后的路径
  */
 export function normalize(p: string) {
-  return decodeURIComponent(p).replace(/\\/g, '/').replace(/\/+/g, '/')
+  let decoded = p
+  try {
+    decoded = decodeURIComponent(p)
+  } catch {
+    // 含非法 URL 编码序列，保持原文
+  }
+  return decoded.replace(/\\/g, '/').replace(/\/+/g, '/')
 }
 
 async function readLocalDirectory(dirPath: string): Promise<UnifiedDirectory> {
@@ -172,7 +197,9 @@ async function readLocalDirectory(dirPath: string): Promise<UnifiedDirectory> {
 
     for (const entry of entries) {
       const fullPath = path.join(currentPath, entry.name)
-      const relativePath = path.join(relativeBase, entry.name)
+      const relativePath = relativeBase
+        ? `${relativeBase}/${entry.name}`
+        : entry.name
 
       if (entry.isDirectory()) {
         await scan(fullPath, relativePath)
@@ -189,20 +216,75 @@ async function readLocalDirectory(dirPath: string): Promise<UnifiedDirectory> {
   return { files }
 }
 
-export async function openSketchHtmlFile(filePath: string) {
-  let directory: UnifiedDirectory
+/**
+ * 计算设计稿的版本戳：zip 为文件 mtime，目录为内部文件（含子目录）的最新 mtime
+ * 用于进程内解析缓存与 list.json 落盘缓存的失效判断
+ * @param filePath - 设计稿路径（zip 或目录）
+ * @returns 版本戳，路径不存在时返回 undefined
+ */
+export async function getDesignStamp(
+  filePath: string
+): Promise<number | undefined> {
+  const stat = await fs.stat(filePath).catch(() => undefined)
+  if (!stat) return undefined
+  if (stat.isFile()) return stat.mtimeMs
 
-  if (filePath.endsWith('.zip')) {
-    directory = await Open.file(filePath)
-  } else {
-    directory = await readLocalDirectory(filePath)
+  let latest = stat.mtimeMs
+  const walk = async (dir: string) => {
+    const entries = await fs.readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name)
+      const st = await fs.stat(fullPath).catch(() => undefined)
+      if (!st) continue
+      if (st.mtimeMs > latest) latest = st.mtimeMs
+      if (st.isDirectory()) await walk(fullPath)
+    }
+  }
+  await walk(filePath)
+  return latest
+}
+
+/**
+ * 设计稿解析结果的进程内缓存（key 为绝对路径），源文件未更新时复用，避免重复解压/解析
+ * 按 FIFO（进入顺序）淘汰，上限由环境变量 DESIGN_MEMO_MAX 控制（默认 8）
+ */
+const sketchMemo = new Map<string, { stamp: number; value: SketchHtmlFile }>()
+
+function evictMemoIfNeeded() {
+  const max = getEnv('DESIGN_MEMO_MAX')
+  while (sketchMemo.size >= max) {
+    const oldest = sketchMemo.keys().next().value
+    if (oldest === undefined) break
+    sketchMemo.delete(oldest)
+  }
+}
+
+export async function openSketchHtmlFile(filePath: string) {
+  const key = path.resolve(filePath)
+  const zipMode = filePath.endsWith('.zip')
+  const stamp = await getDesignStamp(filePath)
+  if (stamp === undefined) {
+    throw new Error(`无法读取设计稿路径，请检查路径是否存在: ${filePath}`)
   }
 
-  const indexHtmlEntry = directory.files.find(f => f.path.endsWith(INDEXHTML))
+  const hit = sketchMemo.get(key)
+  if (hit && hit.stamp === stamp) return hit.value
+
+  const directory: UnifiedDirectory = zipMode
+    ? await Open.file(filePath)
+    : await readLocalDirectory(filePath)
+
+  const indexHtmlEntry = directory.files
+    .map(f => ({ file: f, normalized: normalize(f.path) }))
+    .find(
+      ({ normalized }) =>
+        !isAppleDoubleJunk(normalized) &&
+        (normalized === INDEXHTML || normalized.endsWith(`/${INDEXHTML}`))
+    )
   if (!indexHtmlEntry) {
     throw new Error(`${INDEXHTML} not found in ${filePath}`)
   }
-  const indexHtml = (await indexHtmlEntry.buffer()).toString('utf8')
+  const indexHtml = (await indexHtmlEntry.file.buffer()).toString('utf8')
   const script = getScriptFromHtml(indexHtml)
   const sketchData = getDataFromScript(script)
 
@@ -214,18 +296,22 @@ export async function openSketchHtmlFile(filePath: string) {
   }
 
   for (const file of directory.files) {
-    const filePath = normalize(file.path)
+    const normalized = normalize(file.path)
+    if (isAppleDoubleJunk(normalized)) continue
     if (
-      filePath.includes(`${IMAGEFOLDER}/`) ||
-      filePath.includes(`${PREVIEWFOLDER}/`)
+      isInFolder(normalized, IMAGEFOLDER) ||
+      isInFolder(normalized, PREVIEWFOLDER)
     ) {
-      const buffer = await file.buffer()
       sketch.images.push({
-        path: filePath,
-        data: buffer
+        path: normalized,
+        getData: () => file.buffer()
       })
     }
   }
 
+  // 设计稿更新后重新解析时，先删除旧条目，保证淘汰顺序按最新进入时间
+  sketchMemo.delete(key)
+  evictMemoIfNeeded()
+  sketchMemo.set(key, { stamp, value: sketch })
   return sketch
 }

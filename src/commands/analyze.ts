@@ -51,7 +51,6 @@ export const analyze = new Command()
     '-o, --offset [OFFSET]',
     'Starting index in sorted layers (optional, default 0)'
   )
-  .option('--persist', 'persist the result to file or not', false)
   .action((opts: Record<string, unknown>) => {
     handleAnalyze(opts).catch(err => {
       logger.error(err, 'sketch-cli analyze')

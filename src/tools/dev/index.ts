@@ -1,26 +1,32 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import type { RegisterToolParams } from '@/types'
 import { logger } from '@/utils/logger'
-import {
-  sketchDev,
-  sketchDevInputSchema,
-  type SketchDevInputSchema
-} from '@/services/dev'
+import { sketchDev } from '@/services/dev'
 
-const toolName = 'sketch_html_dev'
+const toolName = 'sketch_dev'
 
-async function sketchDevTool(
-  args: SketchDevInputSchema
-): Promise<CallToolResult> {
-  logger.debug(args, 'sketchDevTool')
-  const text = await sketchDev(args)
-  return {
-    content: [
-      {
-        type: 'text',
-        text
-      }
-    ]
+async function sketchDevTool(): Promise<CallToolResult> {
+  logger.debug('sketchDevTool')
+  try {
+    const text = await sketchDev()
+    return {
+      content: [
+        {
+          type: 'text',
+          text
+        }
+      ]
+    }
+  } catch (error) {
+    return {
+      isError: true,
+      content: [
+        {
+          type: 'text',
+          text: `tool error: ${error instanceof Error ? error.message : 'unknown error'}`
+        }
+      ]
+    }
   }
 }
 
@@ -29,8 +35,7 @@ export function toolSketchDev(): RegisterToolParams {
     toolName,
     {
       title: toolName,
-      description: 'Start dev server for previewing',
-      inputSchema: sketchDevInputSchema
+      description: 'Start dev server for previewing'
     },
     sketchDevTool
   ]

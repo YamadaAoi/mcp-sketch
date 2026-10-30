@@ -5,7 +5,7 @@ import { logger } from '@/utils/logger'
 
 export function startMcp() {
   const server = new McpServer({
-    name: 'sketch-mcp-server',
+    name: 'mcp-sketch',
     version: __VERSION__
   })
 

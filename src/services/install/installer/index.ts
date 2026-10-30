@@ -11,7 +11,6 @@ interface Platform {
   agent: 'claude' | 'opencode'
   baseDir: string
   fileName: string
-  isNested?: boolean
   meta: Meta[]
 }
 
@@ -19,6 +18,7 @@ export interface InstallConfig {
   name: string
   description: string
   prompt: string
+  references?: Record<string, string>
   platforms: Platform[]
 }
 
@@ -52,67 +52,106 @@ export function generateFrontmatter(meta: Meta[]): string {
   return `---\n${lines.join('\n')}\n---`
 }
 
-function getTargetPath(
+function getTargetDir(
+  cwd: string,
+  config: InstallConfig,
+  platform: Platform
+): string {
+  // .claude/skills/{name}/SKILL.md
+  return path.join(cwd, platform.baseDir, config.name)
+}
+
+function getReferenceTargets(
+  targetDir: string,
+  config: InstallConfig
+): { target: string; content: string }[] {
+  const refDir = path.join(targetDir, 'references')
+  return Object.entries(config.references ?? {})
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+    .map(([name, content]) => ({
+      target: path.join(refDir, `${name}.md`),
+      content
+    }))
+}
+
+function getTargetPaths(
   cwd: string,
   config: InstallConfig,
   platform: string
-): string | null {
+): string[] {
   const cur = config.platforms.find(p => p.agent === platform)
-  if (!cur) return null
+  if (!cur) return []
 
-  const targetDir = cur.isNested
-    ? path.join(cwd, cur.baseDir, config.name)
-    : path.join(cwd, cur.baseDir)
-
-  return path.join(targetDir, cur.fileName)
+  const targetDir = getTargetDir(cwd, config, cur)
+  const mainPath = path.join(targetDir, cur.fileName)
+  return [
+    mainPath,
+    ...getReferenceTargets(targetDir, config).map(r => r.target)
+  ]
 }
 
 async function installByPlatform(
   cwd: string,
   config: InstallConfig,
-  platform: string
+  platform: string,
+  skipFiles?: Set<string>
 ) {
   const cur = config.platforms.find(p => p.agent === platform)
   if (!cur) return
 
-  let targetDir: string
+  const targetDir = getTargetDir(cwd, config, cur)
+  const mainPath = path.join(targetDir, cur.fileName)
+  const refs = getReferenceTargets(targetDir, config).filter(
+    r => !skipFiles?.has(r.target)
+  )
 
-  if (cur.isNested) {
-    // .claude/skills/{name}/SKILL.md
-    targetDir = path.join(cwd, cur.baseDir, config.name)
-  } else {
-    // .claude/agents/{name}.md
-    targetDir = path.join(cwd, cur.baseDir)
-  }
+  const skipMain = skipFiles?.has(mainPath) ?? false
+  if (skipMain && refs.length === 0) return
 
   await fs.mkdir(targetDir, { recursive: true })
 
-  const newMeta = cur.meta.map(m => ({
-    ...m,
-    value: m.value ?? config[m.key as MetaParam] ?? ''
-  }))
+  if (!skipMain) {
+    const newMeta = cur.meta.map(m => ({
+      ...m,
+      value: m.value ?? config[m.key as MetaParam] ?? ''
+    }))
 
-  const frontmatter = generateFrontmatter(newMeta)
-  const fileContent = `${frontmatter}\n\n${config.prompt}`
+    const frontmatter = generateFrontmatter(newMeta)
+    const fileContent = `${frontmatter}\n\n${config.prompt}`
 
-  await fs.writeFile(path.join(targetDir, cur.fileName), fileContent, 'utf8')
+    await fs.writeFile(mainPath, fileContent, 'utf8')
+  }
+
+  if (refs.length) {
+    const refDir = path.join(targetDir, 'references')
+    await fs.mkdir(refDir, { recursive: true })
+
+    await Promise.all(refs.map(r => fs.writeFile(r.target, r.content, 'utf8')))
+  }
+}
+
+interface ConflictResult {
+  config: InstallConfig
+  files: string[]
 }
 
 async function checkConflicts(
   cwd: string,
   platform: string,
   pool: InstallConfig[]
-): Promise<InstallConfig[]> {
-  const conflicts: InstallConfig[] = []
+): Promise<ConflictResult[]> {
+  const conflicts: ConflictResult[] = []
   for (const config of pool) {
-    const target = getTargetPath(cwd, config, platform)
-    if (!target) continue
-    try {
-      await fs.access(target)
-      conflicts.push(config)
-    } catch {
-      // 文件不存在，无冲突
+    const files: string[] = []
+    for (const target of getTargetPaths(cwd, config, platform)) {
+      try {
+        await fs.access(target)
+        files.push(target)
+      } catch {
+        // 文件不存在，无冲突
+      }
     }
+    if (files.length > 0) conflicts.push({ config, files })
   }
   return conflicts
 }
@@ -124,10 +163,12 @@ export async function install(
 ) {
   const conflicts = await checkConflicts(cwd, platform, pool)
 
-  let poolToInstall = pool
+  const skipFiles = new Map<InstallConfig, Set<string>>()
 
   if (conflicts.length > 0) {
-    const names = conflicts.map(c => c.name).join(', ')
+    const names = conflicts
+      .flatMap(c => c.files.map(f => path.relative(cwd, f)))
+      .join(', ')
     const result = await prompts({
       type: 'select',
       name: 'action',
@@ -141,32 +182,31 @@ export async function install(
     })
 
     if (result.action === 'overwrite') {
-      poolToInstall = pool
+      // 覆盖所有冲突文件
     } else if (result.action === 'skip') {
-      poolToInstall = pool.filter(c => !conflicts.includes(c))
+      for (const c of conflicts) skipFiles.set(c.config, new Set(c.files))
     } else if (result.action === 'each') {
-      const keep: InstallConfig[] = []
-      for (const config of pool) {
-        const isConflict = conflicts.includes(config)
-        if (!isConflict) {
-          keep.push(config)
-          continue
+      for (const c of conflicts) {
+        const skip = new Set<string>()
+        for (const file of c.files) {
+          const r = await prompts({
+            type: 'confirm',
+            name: 'overwrite',
+            message: `Overwrite ${path.relative(cwd, file)}?`,
+            initial: false
+          })
+          if (!r.overwrite) skip.add(file)
         }
-        const r = await prompts({
-          type: 'confirm',
-          name: 'overwrite',
-          message: `Overwrite ${config.name}?`,
-          initial: false
-        })
-        if (r.overwrite) keep.push(config)
+        skipFiles.set(c.config, skip)
       }
-      poolToInstall = keep
     } else {
       // 用户中断选择，退出
       return
     }
   }
 
-  const promises = poolToInstall.map(p => installByPlatform(cwd, p, platform))
+  const promises = pool.map(p =>
+    installByPlatform(cwd, p, platform, skipFiles.get(p))
+  )
   await Promise.all(promises)
 }

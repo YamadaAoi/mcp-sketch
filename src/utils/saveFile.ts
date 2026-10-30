@@ -11,21 +11,6 @@ export async function fileExists(filePath: string) {
 }
 
 /**
- * 判断缓存文件是否比源文件新（缓存未被源文件更新后写过）
- * 源文件或缓存文件不存在时返回 false，视为缓存失效
- * @param cachePath - 缓存文件路径
- * @param sourcePath - 源文件路径
- */
-export async function isFileNewerThan(cachePath: string, sourcePath: string) {
-  const [cacheStat, sourceStat] = await Promise.all([
-    fs.stat(cachePath).catch(() => undefined),
-    fs.stat(sourcePath).catch(() => undefined)
-  ])
-  if (!cacheStat || !sourceStat) return false
-  return cacheStat.mtimeMs >= sourceStat.mtimeMs
-}
-
-/**
  * 写入json文件，若文件夹不存在则创建，文件存在则覆盖
  * @param filePath - json文件路径
  * @param data - 要写入的数据
@@ -38,15 +23,9 @@ export async function writeJsonFile(filePath: string, data: object) {
 }
 
 /**
- * 保存图片文件
- * @param data - 图片数据
- * @param dest - 保存路径
+ * 同一目标路径的并发处理去重，避免 MCP 并发调用时重复写同一文件
  */
-export async function saveImage(data: Buffer, dest: string) {
-  const dirPath = path.dirname(dest)
-  await fs.mkdir(dirPath, { recursive: true })
-  await fs.writeFile(dest, data)
-}
+const inflight = new Map<string, Promise<string>>()
 
 /**
  * 处理图片，保存为webp格式
@@ -58,7 +37,23 @@ export async function saveImage(data: Buffer, dest: string) {
  * @param rect - 截取区域
  * @returns 实际文件路径（可能为已存在的webp或原始文件）
  */
-export async function processImage(
+export function processImage(
+  data: Buffer,
+  dest: string,
+  width?: number,
+  rect?: [number, number, number, number]
+): Promise<string> {
+  const pending = inflight.get(dest)
+  if (pending) return pending
+
+  const task = doProcessImage(data, dest, width, rect).finally(() => {
+    inflight.delete(dest)
+  })
+  inflight.set(dest, task)
+  return task
+}
+
+async function doProcessImage(
   data: Buffer,
   dest: string,
   width?: number,

@@ -6,11 +6,16 @@ const envSchema = z.object({
     .default('info'),
   CWD: z.string().default(process.cwd()),
   SERVER_COMMAND: z.string().default('npm run dev'),
-  ASSETS_PATH: z.string().default('src/assets/sketch')
+  PREVIEW_URL: z.string().optional(),
+  ASSETS_PATH: z.string().default('src/assets/sketch'),
+  DESIGN_MEMO_MAX: z.coerce.number().int().min(1).default(8)
 })
 
 export type Env = z.infer<typeof envSchema>
 
+let parsedEnv: Env | undefined
+
 export function getEnv<T extends keyof Env>(key: T): Env[T] {
-  return envSchema.parse(process.env)[key]
+  parsedEnv ??= envSchema.parse(process.env)
+  return parsedEnv[key]
 }

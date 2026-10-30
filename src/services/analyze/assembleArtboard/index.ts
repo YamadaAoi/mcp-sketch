@@ -1,15 +1,15 @@
 import path from 'path'
 import { createHash } from 'node:crypto'
-import { readFile } from 'fs/promises'
 import { pinyin } from 'pinyin-pro'
 import {
   normalize,
   type HtmlArtboard,
   type HtmlLayer,
   type HtmlSketchArtboard,
-  type HtmlSketchLayer
+  type HtmlSketchLayer,
+  type SketchImage
 } from '@/utils/zip'
-import { fileExists, processImage } from '@/utils/saveFile'
+import { processImage } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 import { roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
@@ -20,7 +20,15 @@ function toPinyin(str: string): string {
     /[\u4e00-\u9fa5]+/g,
     m => ` ${pinyin(m, { toneType: 'none' })} `
   )
-  return result.replace(/ +/g, '-').replace(/^-|-$/g, '').toLowerCase()
+  const normalized = result
+    .replace(/ +/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+  // 纯符号命名等场景下可能为空，回退为内容哈希，避免同名图层切图互相覆盖
+  return (
+    normalized ||
+    `name-${createHash('md5').update(str).digest('hex').slice(0, 8)}`
+  )
 }
 
 function filterSketchLayer(lyr: HtmlSketchLayer) {
@@ -102,7 +110,7 @@ function rankLayers(layers: HtmlLayer[]) {
   })
 }
 
-function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
+export function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
   const layer: HtmlSketchLayer = {
     type: lyr.type,
     name: lyr.name,
@@ -124,9 +132,8 @@ function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
 
 /**
  * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 分页。
- * 用于缓存命中时复用 layer.json 中的数据，不重新解析设计稿。
  */
-export function filterCachedLayers(
+export function filterLayers(
   layers: HtmlSketchLayer[],
   rect?: [number, number, number, number],
   excludeRects?: [number, number, number, number][],
@@ -149,7 +156,7 @@ async function compressAssets(
   layers: HtmlLayer[],
   sketchLayers: HtmlSketchLayer[],
   dest: string,
-  images?: Array<{ path: string; data: Buffer }>,
+  images?: SketchImage[],
   pageName?: string,
   artboardName?: string
 ) {
@@ -164,9 +171,10 @@ async function compressAssets(
         const normalizedPath = normalize(e.path)
         const imageData = images?.find(item =>
           item.path.endsWith(normalizedPath)
-        )?.data
+        )
         let imagePath = ''
         if (imageData) {
+          const buffer = await imageData.getData()
           const parsed = path.parse(normalizedPath)
           const pinyinName = toPinyin(parsed.name)
           const destPath = path.join(
@@ -175,7 +183,7 @@ async function compressAssets(
             artboardDir,
             `${pinyinName}${parsed.ext}`
           )
-          imagePath = await processImage(imageData, destPath)
+          imagePath = await processImage(buffer, destPath)
         }
         return {
           ...e,
@@ -187,49 +195,48 @@ async function compressAssets(
 }
 
 export async function processPreview(
-  artboard: HtmlSketchArtboard,
+  artboardInfo: {
+    pageName: string
+    name: string
+    width: number
+    previewPath?: string
+  },
   filePath: string,
   rect?: [number, number, number, number],
   excludeRects?: [number, number, number, number][],
-  images?: Array<{ path: string; data: Buffer }>
+  images?: SketchImage[]
 ) {
-  if (!artboard.previewPath) return
+  if (!artboardInfo.previewPath) return
 
-  const imageData = images?.find(item =>
-    item.path.endsWith(artboard.previewPath!)
-  )?.data
-
-  // 缓存命中时没有 zip 图片缓冲，回退读取已落盘的全量预览文件
-  let sourceBuffer = imageData
-  if (!sourceBuffer && !images && (await fileExists(artboard.previewPath))) {
-    sourceBuffer = await readFile(artboard.previewPath)
-  }
+  const image = images?.find(item =>
+    item.path.endsWith(artboardInfo.previewPath!)
+  )
+  const sourceBuffer = image ? await image.getData() : undefined
   if (!sourceBuffer) return
 
-  const extname = path.extname(artboard.previewPath)
-  const fileName = path.basename(artboard.previewPath, extname)
+  const extname = path.extname(artboardInfo.previewPath)
+  const fileName = path.basename(artboardInfo.previewPath, extname)
   const cwd = getEnv('CWD')
   const designFileName = path.basename(filePath, '.zip')
   const dest = path.resolve(
     cwd,
-    `.sketch-cache/artboards/${designFileName}/${artboard.pageName}/${artboard.name}`,
+    `.sketch-cache/${designFileName}/${artboardInfo.pageName}/${artboardInfo.name}`,
     `${fileName}${rect ? `_${rect.join('_')}` : ''}${excludeRects?.length ? `_exclude_${createHash('md5').update(JSON.stringify(excludeRects)).digest('hex').slice(0, 8)}` : ''}${extname}`
   )
-  artboard.previewPath = await processImage(
+  const previewPath = await processImage(
     sourceBuffer,
     dest,
-    artboard.width,
+    artboardInfo.width,
     rect
   )
+
+  return previewPath
 }
 
 export async function assembleArtboard(
   artboard: HtmlArtboard,
   args: SketchAnalyzeInputSchema,
-  images?: Array<{
-    path: string
-    data: Buffer
-  }>
+  images?: SketchImage[]
 ) {
   const dest = args.assets_path ?? getEnv('ASSETS_PATH')
 

@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import type { HtmlArtboard } from '@/utils/zip'
 import type { SketchAnalyzeInputSchema } from '..'
 
@@ -29,6 +30,14 @@ export function filterArtboards(
   if (!filteredArtboards.length) {
     throw new Error(
       `Page: ${args.page_name ?? '-'} & Artboard: ${args.artboard_name ?? '-'} not found! Tip: Run 'npx -y mcp-sketch list -f "${args.file_path}"' to check available page and artboard names.`
+    )
+  }
+
+  if (filteredArtboards.length > 1) {
+    logger.warn(
+      `multiple artboards matched, using the first one: ${filteredArtboards
+        .map(a => `${a.pageName}/${a.name}`)
+        .join(', ')}`
     )
   }
 

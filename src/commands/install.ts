@@ -10,7 +10,7 @@ async function handleInstall(opts: Record<string, unknown>) {
 export const install = new Command()
   .name('install')
   .description(
-    'Scaffold mcp-sketch skills and agents to generate frontend code from artboards'
+    'Scaffold the mcp-sketch skill to generate frontend code from artboards'
   )
   .action((opts: Record<string, unknown>) => {
     handleInstall(opts).catch(err => {

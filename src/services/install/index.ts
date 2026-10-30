@@ -4,7 +4,6 @@ import prompts from 'prompts'
 import { logger } from '@/utils/logger'
 import { getEnv } from '@/utils/env'
 import { install } from './installer'
-import { AgentPool } from './agent'
 import { SkillPool } from './skill'
 
 export const sketchInstallInputSchema = z.object({})
@@ -31,9 +30,8 @@ export async function sketchInstall(_args: SketchInstallInputSchema) {
     ]
   })
   if (result.agent) {
-    const pool = [...AgentPool, ...SkillPool]
     const cwd = getEnv('CWD')
-    await install(cwd, result.agent as string, pool)
+    await install(cwd, result.agent as string, SkillPool)
   } else {
     logger.error('Agent selection canceled')
     process.exit(1)
