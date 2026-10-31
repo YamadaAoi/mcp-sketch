@@ -50,6 +50,7 @@ AI 直接读设计稿只剩一个痛点：**需要不断试探怎么取数据**�
 **compare — 截图对比**
 
 - 浏览器截图与画板预览图逐像素对比，返回相似度分数与差异放大图，支持"改代码 → 截图 → 对比 → 修正"的量化收敛循环
+- 浏览器截图依赖 Playwright MCP（见下方[配置](#配置-playwright-mcpcompare-截图依赖可选)），由 AI 打开页面、探索渲染结果并截图
 
 ## 与 AI 直接读设计稿相比
 
@@ -116,6 +117,14 @@ skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sket
   }
 }
 ```
+
+### 配置 Playwright MCP（compare 截图依赖，可选）
+
+`compare` 的输入是浏览器截图，推荐配置 Playwright MCP，让 AI 自主打开页面、探索渲染结果并截图：
+
+- [Claude Code 配置](https://playwright.dev/mcp/clients/claude-code)
+- [OpenCode 配置](https://playwright.dev/mcp/clients/other-clients#opencode)
+- [保持登录状态（浏览器扩展方案）](https://playwright.dev/mcp/configuration/browser-extension)
 
 ### 直接使用 CLI
 

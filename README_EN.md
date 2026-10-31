@@ -50,6 +50,7 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 **compare — screenshot diff**
 
 - Pixel-wise comparison between a browser screenshot and the artboard preview, returning a similarity score plus an amplified diff image — enabling a quantified "edit code → screenshot → compare → fix" loop
+- The browser screenshot comes from Playwright MCP (see [configuration below](#configure-playwright-mcp-optional-dependency-for-compare)), with which the AI opens the page, explores the rendered result, and takes screenshots
 
 ## Compared to letting AI read design files directly
 
@@ -116,6 +117,14 @@ Set `MCP_MODE=1` and register it as a local MCP server in your AI tool:
   }
 }
 ```
+
+### Configure Playwright MCP (optional, dependency for compare)
+
+`compare` takes a browser screenshot as input. Playwright MCP is recommended so the AI can open the page, explore the rendered result, and capture screenshots on its own:
+
+- [Claude Code setup](https://playwright.dev/mcp/clients/claude-code)
+- [OpenCode setup](https://playwright.dev/mcp/clients/other-clients#opencode)
+- [Keeping login state (browser extension approach)](https://playwright.dev/mcp/configuration/browser-extension)
 
 ### Use the CLI directly
 
