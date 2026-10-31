@@ -32,8 +32,12 @@ export interface HtmlLayer {
     height?: number
   }
   styleName?: string
+  content?: string
+  opacity?: number
+  rotation?: number
   fills?: unknown[]
   borders?: unknown[]
+  shadows?: unknown[]
   css?: string[]
   radius?: number[]
   exportable?: Array<{
@@ -61,7 +65,12 @@ export interface HtmlSketchLayer {
   type: string
   name: string
   rect: [number | string, number | string, number | string, number | string]
+  /** 原始图层顺序（z-order，值越大层级越高） */
+  index?: number
   styleName?: string
+  content?: string
+  opacity?: number
+  rotation?: number
   css?: string[]
   assets?: Array<{
     name: string

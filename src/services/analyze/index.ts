@@ -27,6 +27,16 @@ export const sketchAnalyzeInputSchema = z.object({
     .array(z.array(z.number()).length(4))
     .describe('exclude rects [x, y, width, height] (optional)')
     .optional(),
+  name: z
+    .string()
+    .describe(
+      'filter layers by name keyword, case-insensitive substring match (optional)'
+    )
+    .optional(),
+  type: z
+    .enum(['text', 'shape', 'slice'])
+    .describe('filter layers by type (optional)')
+    .optional(),
   assets_path: z
     .string()
     .describe(
@@ -93,14 +103,14 @@ export async function sketchAnalyze(args: SketchAnalyzeInputSchema) {
     sketchHtmlData.images
   )
 
-  return JSON.stringify({
-    ...artboard,
-    layers: filterLayers(
-      artboard.layers,
-      rect,
-      excludeRects,
-      args.limit,
-      args.offset
-    )
+  const { layers, total } = filterLayers(artboard.layers, {
+    rect,
+    excludeRects,
+    name: args.name,
+    type: args.type,
+    limit: args.limit,
+    offset: args.offset
   })
+
+  return JSON.stringify({ ...artboard, total, layers })
 }

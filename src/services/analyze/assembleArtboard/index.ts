@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs/promises'
 import { createHash } from 'node:crypto'
 import { pinyin } from 'pinyin-pro'
 import {
@@ -9,9 +10,11 @@ import {
   type HtmlSketchLayer,
   type SketchImage
 } from '@/utils/zip'
-import { processImage } from '@/utils/saveFile'
+import { fileExists, processImage } from '@/utils/saveFile'
+import { getExistingAssetPath, registerAsset } from '@/utils/assetIndex'
 import { getEnv } from '@/utils/env'
-import { roundIfExceeds } from '@/utils/util'
+import { getSharp } from '@/utils/imageProcessor'
+import { isNumber, roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
 
 function toPinyin(str: string): string {
@@ -103,14 +106,34 @@ function calculateLayoutScore(rect: {
 }
 
 function rankLayers(layers: HtmlLayer[]) {
-  return [...layers].sort((a, b) => {
-    const scoreA = calculateLayoutScore(a.rect ?? {})
-    const scoreB = calculateLayoutScore(b.rect ?? {})
-    return scoreB - scoreA
-  })
+  return layers
+    .map((layer, index) => ({ layer, index }))
+    .sort(
+      (a, b) =>
+        calculateLayoutScore(b.layer.rect ?? {}) -
+        calculateLayoutScore(a.layer.rect ?? {})
+    )
 }
 
-export function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
+export function hasValidRect(lyr: HtmlLayer): boolean {
+  const { x, y, width, height } = lyr.rect ?? {}
+  return isNumber(x) && isNumber(y) && isNumber(width) && isNumber(height)
+}
+
+/**
+ * 无信息量的 CSS 默认值声明，返回时过滤以节省 token
+ */
+function isCssNoise(decl: string) {
+  const d = decl.trim().replace(/;$/, '').toLowerCase()
+  return (
+    d === 'letter-spacing: 0' ||
+    d === 'font-weight: 400' ||
+    d === 'line-height: normal' ||
+    d === 'text-align: left'
+  )
+}
+
+export function toSketchLayer(lyr: HtmlLayer, index?: number): HtmlSketchLayer {
   const layer: HtmlSketchLayer = {
     type: lyr.type,
     name: lyr.name,
@@ -121,35 +144,99 @@ export function toSketchLayer(lyr: HtmlLayer): HtmlSketchLayer {
       roundIfExceeds(lyr.rect?.height)!
     ]
   }
+  if (index !== undefined) {
+    layer.index = index
+  }
   if (lyr.styleName) {
     layer.styleName = lyr.styleName
   }
-  if (lyr.css?.length) {
-    layer.css = lyr.css
+  if (lyr.type === 'text' && lyr.content) {
+    layer.content = lyr.content
+  }
+  if (typeof lyr.opacity === 'number' && lyr.opacity !== 1) {
+    layer.opacity = lyr.opacity
+  }
+  if (typeof lyr.rotation === 'number' && lyr.rotation !== 0) {
+    layer.rotation = lyr.rotation
+  }
+  const css = lyr.css?.filter(c => !isCssNoise(c))
+  if (css?.length) {
+    layer.css = css
   }
   return layer
 }
 
+export interface FilterOptions {
+  rect?: [number, number, number, number]
+  excludeRects?: [number, number, number, number][]
+  name?: string
+  type?: 'text' | 'shape' | 'slice'
+  limit?: number
+  offset?: number
+}
+
 /**
- * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 分页。
+ * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 名称过滤 + 分页。
+ * @returns layers 分页结果，total 过滤后（分页前）的总数
  */
 export function filterLayers(
   layers: HtmlSketchLayer[],
-  rect?: [number, number, number, number],
-  excludeRects?: [number, number, number, number][],
-  limit?: number,
-  offset?: number
-) {
+  opts: FilterOptions = {}
+): { layers: HtmlSketchLayer[]; total: number } {
+  const { rect, excludeRects, name, type, limit, offset } = opts
+
   let filtered = layers.filter(l =>
     filterSketchLayerByRect(l, rect, excludeRects)
   )
+
+  if (type) {
+    filtered = filtered.filter(l => l.type === type)
+  }
+
+  if (name) {
+    const keyword = name.toLowerCase()
+    filtered = filtered.filter(l => l.name.toLowerCase().includes(keyword))
+  }
+
+  const total = filtered.length
 
   if (limit !== undefined) {
     const start = offset ?? 0
     filtered = filtered.slice(start, start + limit)
   }
 
-  return filtered
+  return { layers: filtered, total }
+}
+
+function toRelPath(p: string) {
+  return path.relative(
+    getEnv('CWD'),
+    path.isAbsolute(p) ? p : path.resolve(getEnv('CWD'), p)
+  )
+}
+
+/**
+ * 切图编码：sharp 可用时压缩为 webp，否则保留原始格式
+ * 编码到内存而非直接落盘，以便索引丢失时与已存在的同名文件做内容比对
+ */
+async function encodeAsset(buffer: Buffer, ext: string) {
+  const sharp = await getSharp()
+  if (sharp) {
+    return {
+      buffer: await sharp(buffer).webp({ quality: 90, effort: 4 }).toBuffer(),
+      ext: '.webp'
+    }
+  }
+  return { buffer, ext }
+}
+
+async function writeAsset(buffer: Buffer, target: string) {
+  await fs.mkdir(path.dirname(target), { recursive: true })
+  await fs.writeFile(target, buffer)
+  const resolved = path.isAbsolute(target)
+    ? target
+    : path.resolve(getEnv('CWD'), target)
+  return path.relative(getEnv('CWD'), resolved)
 }
 
 async function compressAssets(
@@ -174,16 +261,55 @@ async function compressAssets(
         )
         let imagePath = ''
         if (imageData) {
-          const buffer = await imageData.getData()
-          const parsed = path.parse(normalizedPath)
-          const pinyinName = toPinyin(parsed.name)
-          const destPath = path.join(
-            dest,
-            pageDir,
-            artboardDir,
-            `${pinyinName}${parsed.ext}`
-          )
-          imagePath = await processImage(buffer, destPath)
+          const sourceBuffer = await imageData.getData()
+          const hash = createHash('sha1')
+            .update(sourceBuffer)
+            .digest('hex')
+            .slice(0, 12)
+
+          // 全局去重：同内容切图（跨画板共享的图标等）复用已写入的文件
+          const existing = await getExistingAssetPath(hash, dest)
+          if (existing) {
+            imagePath = existing
+          } else {
+            const parsed = path.parse(normalizedPath)
+            const pinyinName = toPinyin(parsed.name)
+            const encoded = await encodeAsset(sourceBuffer, parsed.ext)
+            const outHash = createHash('sha1')
+              .update(encoded.buffer)
+              .digest('hex')
+              .slice(0, 12)
+            const target = path.join(
+              dest,
+              pageDir,
+              artboardDir,
+              `${pinyinName}${encoded.ext}`
+            )
+            if (await fileExists(target)) {
+              const targetHash = createHash('sha1')
+                .update(await fs.readFile(target))
+                .digest('hex')
+                .slice(0, 12)
+              if (targetHash === outHash) {
+                // 索引丢失自愈：同名文件内容一致，直接复用
+                imagePath = toRelPath(target)
+              } else {
+                // 同名不同内容：追加哈希后缀，避免覆盖成错误的图
+                imagePath = await writeAsset(
+                  encoded.buffer,
+                  path.join(
+                    dest,
+                    pageDir,
+                    artboardDir,
+                    `${pinyinName}-${hash}${encoded.ext}`
+                  )
+                )
+              }
+            } else {
+              imagePath = await writeAsset(encoded.buffer, target)
+            }
+            await registerAsset(hash, dest, imagePath)
+          }
         }
         return {
           ...e,
@@ -230,7 +356,7 @@ export async function processPreview(
     rect
   )
 
-  return previewPath
+  return path.relative(getEnv('CWD'), previewPath)
 }
 
 export async function assembleArtboard(
@@ -240,7 +366,7 @@ export async function assembleArtboard(
 ) {
   const dest = args.assets_path ?? getEnv('ASSETS_PATH')
 
-  const ranked = rankLayers(artboard.layers)
+  const ranked = rankLayers(artboard.layers.filter(hasValidRect))
 
   const newArtboard: HtmlSketchArtboard = {
     previewPath: artboard.imagePath ? normalize(artboard.imagePath) : undefined,
@@ -250,11 +376,11 @@ export async function assembleArtboard(
     objectID: artboard.objectID,
     width: artboard.width,
     height: artboard.height,
-    layers: ranked.map(toSketchLayer)
+    layers: ranked.map(e => toSketchLayer(e.layer, e.index))
   }
 
   await compressAssets(
-    ranked,
+    ranked.map(e => e.layer),
     newArtboard.layers,
     dest,
     images,

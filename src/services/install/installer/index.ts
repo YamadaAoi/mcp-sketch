@@ -32,7 +32,7 @@ function quoteKey(key: string): string {
   return needsQuoting(key) ? `"${key}"` : key
 }
 
-export function generateFrontmatter(meta: Meta[]): string {
+function generateFrontmatter(meta: Meta[]): string {
   const lines = meta.map(item => {
     if (typeof item.value === 'object' && item.value !== null) {
       const nestedLines = Object.entries(item.value).map(([subKey, subVal]) => {

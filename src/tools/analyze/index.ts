@@ -18,6 +18,8 @@ const toolName = 'sketch_analyze'
  * @property {string} artboard_name - 指定画板名称(必填)
  * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height]
  * @property {number[][]} exclude_rects - 指定排除矩形区域(可选)，格式为[[x, y, width, height], ...]
+ * @property {string} name - 按图层名关键词过滤(可选，大小写不敏感的子串匹配)
+ * @property {string} type - 按图层类型过滤(可选)：text | shape | slice
  * @property {string} assets_path - 资产文件路径(可选)
  * @property {number} limit - 返回前 N 个排序后的图层(可选)
  * @property {number} offset - 从排序后的图层起始索引(可选，默认 0)

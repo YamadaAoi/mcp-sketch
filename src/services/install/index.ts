@@ -1,7 +1,6 @@
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
 import prompts from 'prompts'
-import { logger } from '@/utils/logger'
 import { getEnv } from '@/utils/env'
 import { install } from './installer'
 import { SkillPool } from './skill'
@@ -29,11 +28,9 @@ export async function sketchInstall(_args: SketchInstallInputSchema) {
       }
     ]
   })
-  if (result.agent) {
-    const cwd = getEnv('CWD')
-    await install(cwd, result.agent as string, SkillPool)
-  } else {
-    logger.error('Agent selection canceled')
-    process.exit(1)
+  if (!result.agent) {
+    throw new Error('Agent selection canceled')
   }
+  const cwd = getEnv('CWD')
+  await install(cwd, result.agent as string, SkillPool)
 }

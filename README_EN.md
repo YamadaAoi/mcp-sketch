@@ -1,130 +1,91 @@
 # mcp-sketch
 
-[中文](./README.md) | English
+English | [中文](./README.md)
 
-Requires **multi-modal model** (preview image analysis needed). Agents are under iteration — customize prompts and permissions after install
+An MCP server & CLI that parses Sketch Meaxure design exports (zip or folder) into structured layer data, so AI coding agents (Claude Code / OpenCode, etc.) can reproduce design pages efficiently.
 
-> **CodeGraph recommended**: sketch uses the `codegraph_explore` MCP tool to query project code structure. Configure a CodeGraph MCP service in your AI platform for better project context understanding. Falls back to Grep/Read automatically when CodeGraph is unavailable.
+> A multimodal model is recommended (the agent needs to view artboard preview images to understand layout)
 
-## Installation
+## 2.x vs 1.x
+
+The 1.x releases shipped a full agent pipeline (leader / analyzer / developer / checker — multiple agents collaborating to split components, generate code, and review). 2.x drops that approach, for a simple reason: **models keep getting stronger**. Hand the unzipped design files directly to a new-generation model like kimi3 and it reproduces the design quite well — the 1.x multi-agent orchestration was essentially compensation for an era of weaker models, and has now become a burden: complex workflows, tedious state management, and a large surface for errors.
+
+One pain point remains when an AI reads design files directly: **it has to keep probing how to extract data** — locating the entry file, parsing the embedded data variables, digging through files layer by layer, burning tokens back and forth. 2.x does exactly one thing: turn data extraction into tools, and hand rendering decisions back to the model.
+
+> To keep using the 1.x agent pipeline, you need to pin the version in three places:
+>
+> 1. Install: `npx -y mcp-sketch@1 install`
+> 2. MCP config: change the command to `npx -y mcp-sketch@1`
+> 3. Installed agents / skills: their embedded CLI calls resolve to the latest version by default, which is incompatible with the 1.x workflow. Search your project for `npx -y mcp-sketch ` and replace it with `npx -y mcp-sketch@1 ` (covers `.claude/agents/`, `.claude/skills/`, `.opencode/agents/`, `.opencode/skills/`)
+
+## 2.x Capabilities
+
+Four tools, available as both CLI and MCP tools (identical parameters):
+
+| Capability      | CLI                  | MCP tool         |
+| --------------- | -------------------- | ---------------- |
+| Artboard list   | `mcp-sketch list`    | `sketch_list`    |
+| Layer analysis  | `mcp-sketch analyze` | `sketch_analyze` |
+| Dev server      | `mcp-sketch dev`     | `sketch_dev`     |
+| Screenshot diff | `mcp-sketch compare` | `sketch_compare` |
+
+**list — artboard overview**
+
+- Outputs every artboard's name, preview image path, and layer data size; written to `.sketch-cache/{design}/list.json`
+- Includes a design-token aggregation: colors / font sizes / font families / radii / shadows / named styles ranked by usage frequency — ready to use for theme variables, and useful for spotting near-duplicate hex typos in the design
+- Never serves stale cache after the design updates: each call re-checks freshness (zip by file mtime, folder by the latest inner-file mtime) and regenerates if the design is newer than list.json
+
+**analyze — layer analysis**
+
+- Layers returned in descending layout-weight order (area-based), with non-visual layers already filtered out
+- Filtering & pagination: region `rect`, exclusion `exclude_rects`, name keyword `name`, type `type` (text/shape/slice), `limit/offset`, plus a `total` count to know when paging ends
+- Each layer carries: `rect` coordinates, `index` (z-order, for occlusion relationships), text `content`, `css` declarations (fonts/colors/gradients/radii/shadows, default values filtered out), and non-default `opacity`/`rotation`
+- `slice` layers auto-export image assets (compressed to webp), with global content deduplication (icons shared across artboards are stored only once)
+- Artboard preview images are generated automatically; region queries generate a cropped preview of that region
+
+**dev — dev server**
+
+- Starts the dev server in the background (PowerShell on Windows, tmux on Unix-like systems), polls until ready, and returns the URL
+
+**compare — screenshot diff**
+
+- Pixel-wise comparison between a browser screenshot and the artboard preview, returning a similarity score plus an amplified diff image — enabling a quantified "edit code → screenshot → compare → fix" loop
+
+## Compared to letting AI read design files directly
+
+| Dimension    | AI reads unzipped files                        | mcp-sketch                                                         |
+| ------------ | ---------------------------------------------- | ------------------------------------------------------------------ |
+| Unzip/parse  | Must unzip, browse folders for the entry file  | Pass zip or folder directly, zero setup                            |
+| Data access  | Trial and error: read html → find vars → guess | One call returns filtered, sorted, structured data                 |
+| Text content | Guess text by looking at pixels                | Handed over via the `content` field                                |
+| Layer styles | Dig through huge raw JSON                      | `css` declaration array, noise filtered                            |
+| Image assets | Find images and process them yourself          | Auto-exported as webp and globally deduplicated                    |
+| Previews     | Browse the preview folder yourself             | Artboard-level / region-level previews provided                    |
+| Repeat cost  | The whole process repeats every session        | Parsed results cached per design version, list.json reused on disk |
+| Verification | Eyeball two images side by side                | compare similarity score + diff image                              |
+
+In one sentence: **the model renders, the tool feeds it data**. Tokens saved on probing for data are all spent writing code.
+
+## Usage
+
+### Install the skill (recommended)
 
 ```bash
 npx -y mcp-sketch install
 ```
 
-Select your AI platform:
+Select your platform interactively; files are written to:
 
-| Platform        | Agents Directory    | Skills Directory    |
-| --------------- | ------------------- | ------------------- |
-| **Claude Code** | `.claude/agents/`   | `.claude/skills/`   |
-| **OpenCode**    | `.opencode/agents/` | `.opencode/skills/` |
+| Platform        | Skill directory     |
+| --------------- | ------------------- |
+| **Claude Code** | `.claude/skills/`   |
+| **OpenCode**    | `.opencode/skills/` |
 
-### Recommended MCP Services
+The skill teaches the AI when and with which parameters to call the tools above (including two fixed commands: `/sketch init` to learn the project, `/sketch overview` to overview a design). Existing files can be overwritten or skipped per file.
 
-**CodeGraph** — source code analysis for better component planning and code location:
+### Configure the MCP server
 
-```bash
-npm i -g @colbymchenry/codegraph
-codegraph install
-codegraph init
-```
-
-**Playwright MCP** — browser preview and screenshot comparison:
-
-- [Claude Code setup](https://playwright.dev/mcp/clients/claude-code)
-- [OpenCode setup](https://playwright.dev/mcp/clients/other-clients#opencode)
-- [Persistent login state (browser extension)](https://playwright.dev/mcp/configuration/browser-extension)
-
-## Usage
-
-### Switch to Leader
-
-- **OpenCode**: Press `TAB` after startup to switch to `sketch-leader`
-- **Claude Code**: `claude --agent sketch-leader`
-
-### Scenario 1: Create a New Page
-
-```
-Based on design.zip, create a login page
-```
-
-Flow: pick → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
-
-### Scenario 2: Insert into Existing Page
-
-Precision reduces LLM inference errors and rework. Choose the level of detail you have:
-
-```
-Based on design.zip, extract the bottom-right region (rect[220,340,180,120]) of the eWallet artboard as an asset card and insert it into the overview area of /assets page (inside .overview-content of src/views/assets/AssetsOverview.vue)
-```
-
-```
-Based on design.zip, extract the user info card and insert it into /dashboard page
-```
-
-Provide what you know: design file → artboard name → region coordinates → target page route or component path → insertion context.
-
-Flow: pick → analyze-artboard → split (insert mode) → gen-base → insert-layout → preview → draw → draw-check
-
-### Scenario 3: Multiple Artboards Describing One Feature
-
-```
-Based on design.zip, the chat page has three states (empty, message list, typing), process them together
-```
-
-After multi-selecting artboards, analyze-artboard parses all artboards in one call. Split automatically deduplicates shared components (dialog container, title bar, etc.) and keeps only the differences per artboard.
-
-Flow: pick(multi) → analyze-artboard → split → gen-base → layout → preview → draw → draw-check
-
-## Toolbox
-
-| skill                   | Agent            | Description                                               |
-| ----------------------- | ---------------- | --------------------------------------------------------- |
-| sketch-pick             | sketch-analyzer  | List artboards for selection                              |
-| sketch-analyze-artboard | sketch-analyzer  | Parse artboard layers, cache layer.json                   |
-| sketch-split            | sketch-analyzer  | Analyze artboard, split components                        |
-| sketch-preview          | sketch-analyzer  | Start dev server and preview                              |
-| sketch-init             | sketch-architect | Scan project, generate config                             |
-| sketch-init-components  | sketch-architect | Analyze component ecosystem, generate component inventory |
-| sketch-gen-base         | sketch-architect | Generate skeleton component code                          |
-| sketch-layout           | sketch-architect | Configure routing and layout                              |
-| sketch-insert-layout    | sketch-architect | Layout section components & insert into target page       |
-| sketch-draw             | sketch-developer | Draw component from design data                           |
-| sketch-code             | sketch-developer | Modify/refactor/insert without design                     |
-| sketch-\*-check         | sketch-checker   | Review quality at each stage                              |
-
-## State Management
-
-State file: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/progress.json`
-
-Component state chain: `split-done → split-check-done → gen-base-done → gen-base-check-done → (insert-)layout-done → (insert-)layout-check-done → preview-done → draw-done → draw-check-done`
-
-## Environment Variables
-
-Create `.env.sketch` in project root:
-
-| Field            | Required | Default             | Description        |
-| ---------------- | -------- | ------------------- | ------------------ |
-| `SERVER_COMMAND` | yes      | `npm run dev`       | Dev server command |
-| `CWD`            | no       | cwd                 | Project root       |
-| `ASSETS_PATH`    | no       | `src/assets/sketch` | Slice output path  |
-
-> **Linux / macOS / WSL** requires `tmux`: `brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL). None needed on Windows
-
-## Tools
-
-> Run `npx -y mcp-sketch <cmd> --help` for full options
-
-- **list** `[-f <path>]` — list artboards
-- **analyze** `-f <path> --pn <page> --an <artboard> [-r <rect>] [-e <rects>] [-l <n>] [-o <n>] [--ap <path>] [--persist]` — parse layers/styles/assets
-- **dev** `-u <url>` — start local dev server
-- **state** `-f <path> --pn <page> --an <artboard> -c '<yaml>' [-r]` — manage artboard state
-
-Assets output: `src/assets/sketch/`, preview images: `.sketch-cache/artboards/{design_file_name}/{page_name}/{artboard_name}/` (webp)
-
-## MCP Configuration
-
-Set `MCP_MODE=1` to enable MCP mode:
+Set `MCP_MODE=1` and register it as a local MCP server in your AI tool:
 
 - **opencode**
 
@@ -156,6 +117,50 @@ Set `MCP_MODE=1` to enable MCP mode:
 }
 ```
 
-## Demo
+### Use the CLI directly
 
-<img width="359" height="438" alt="example" src="https://github.com/user-attachments/assets/ab7ba022-0cde-4c95-a060-c8f3adae035e" />
+> Without a global install, use `npx -y mcp-sketch <cmd>`; for frequent use, `npm i -g mcp-sketch` is recommended (avoids npx's per-run registry lookup latency)
+
+```bash
+# Artboard overview (generates list.json and all previews)
+mcp-sketch list -f "design.zip"
+
+# Layer analysis: top 20 layers of an artboard
+mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" --limit 20
+
+# Region analysis: the login-box region, excluding a child component's area
+mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -r "[695,200,530,660]" -e "[[700,600,120,40]]"
+
+# Quick lookup by name / type
+mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -n "logo"
+mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -t text
+
+# Screenshot comparison (after capturing one with Playwright etc.)
+mcp-sketch compare -f "design.zip" --pn "PageName" --an "ArtboardName" -s "screenshot.png"
+```
+
+> Run `mcp-sketch <cmd> --help` for full parameter details
+
+## Configuration
+
+`.env.sketch` in the project root (optional):
+
+| Field             | Required | Default             | Description                               |
+| ----------------- | -------- | ------------------- | ----------------------------------------- |
+| `SERVER_COMMAND`  | No       | `npm run dev`       | Command to start the dev server           |
+| `PREVIEW_URL`     | No       | -                   | Dev server URL; required when using `dev` |
+| `CWD`             | No       | Current directory   | Project root                              |
+| `ASSETS_PATH`     | No       | `src/assets/sketch` | Image asset output path                   |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process design parse cache limit       |
+| `LOG_LEVEL`       | No       | `info`              | Log level                                 |
+
+> On **Linux / macOS / WSL**, the `dev` command requires tmux: `brew install tmux` (macOS) / `sudo apt install tmux` (Ubuntu/Debian/WSL). No extra setup needed on Windows
+
+## Output Layout
+
+```
+.sketch-cache/{design}/list.json          # artboard list + design tokens
+.sketch-cache/assets-index.json           # asset content index (global dedup)
+.sketch-cache/{design}/{page}/{artboard}/ # artboard/region previews (webp), compare diff images
+{ASSETS_PATH}/{page}/{artboard}/          # image assets (webp, globally deduped)
+```

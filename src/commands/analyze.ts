@@ -44,6 +44,11 @@ export const analyze = new Command()
     'Assets output path, default: `.env.sketch` ASSETS_PATH or `src/assets/sketch`'
   )
   .option(
+    '-n, --name [NAME]',
+    'Filter layers by name keyword (case-insensitive substring)'
+  )
+  .option('-t, --type [TYPE]', 'Filter layers by type: text | shape | slice')
+  .option(
     '-l, --limit [LIMIT]',
     'Number of top-scored layers to return (optional)'
   )

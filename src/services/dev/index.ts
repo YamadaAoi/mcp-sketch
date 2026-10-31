@@ -166,8 +166,8 @@ export async function sketchDev() {
       )
     }
     return session
-      ? `✅ dev server launch success !\n${getSessionDesc(session)}`
-      : `✅ dev server launch success !`
+      ? `✅ dev server launch success at ${previewUrl}!\n${getSessionDesc(session)}`
+      : `✅ dev server launch success at ${previewUrl}!`
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown error'
     throw new Error(

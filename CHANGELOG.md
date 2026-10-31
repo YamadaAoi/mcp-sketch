@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.0.0
+
+### Major Changes
+
+- 摒弃1.x的多agent模式
+
 ## 1.7.0
 
 ### Minor Changes
