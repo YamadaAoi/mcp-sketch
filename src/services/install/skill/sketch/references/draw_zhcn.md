@@ -60,18 +60,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
   ],
   "layers": [
     [0, "图层名", "text", 10, 20, 100, 30, "文本内容", ["font-size: 14px"], []],
-    [
-      1,
-      "图层名",
-      "slice",
-      0,
-      0,
-      24,
-      24,
-      "",
-      [],
-      [{ "name": "...", "format": "png", "path": "切图路径" }]
-    ]
+    [1, "图层名", "slice", 0, 0, 24, 24, "", [], ["切图路径"]]
   ]
 }
 ```
@@ -84,7 +73,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 - `type: "text"` 的图层第 8 列为文本内容（`content`），样式（字体/字号/颜色/行高等）见 `css` 数组
 - 偶现字段 `extras` 以 `index` 为 key，携带该图层的 `opacity`/`rotation`（仅非默认值时出现）；设计师命名的共享样式聚合见 list.json 的 `tokens.styleNames`
 - `css` 数组承载了图层的主要视觉样式：文本的字体/字号/颜色/行高，形状的背景/渐变/圆角/边框/阴影；无信息量的默认值声明（`letter-spacing: 0` 等）已过滤
-- `type: "slice"` 的图层是包含切图的图层，`assets` 数组内每个 asset 的 `path` 为切图文件路径（相对项目根目录，已压缩为 webp，可直接用于 import）
+- `type: "slice"` 的图层是包含切图的图层，`assets` 数组为切图文件路径数组（相对项目根目录，已压缩为 webp，可直接用于 import）
 
 3. 汇总信息，选择合适的位置编写组件，插入路由（如果需要）
 

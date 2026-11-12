@@ -38,12 +38,12 @@ npx -y mcp-sketch list -f "{file_path}"
 
 ### artboards array
 
-| Field        | Type   | Description                                            |
-| ------------ | ------ | ------------------------------------------------------ |
-| pageName     | string | Page name                                              |
-| artboardName | string | Artboard name                                          |
-| size         | number | Layer data size (bytes)                                |
-| previewPath  | string | Artboard preview image path (relative to project root) |
+| Field        | Type   | Description                                                                                                           |
+| ------------ | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| pageName     | string | Page name                                                                                                             |
+| artboardName | string | Artboard name                                                                                                         |
+| size         | number | Layer data size (bytes), same positional-rows measure as an analyze response; asset paths are excluded (empty arrays) |
+| previewPath  | string | Artboard preview image path (relative to project root)                                                                |
 
 ### tokens object
 

@@ -71,18 +71,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
       ["font-size: 14px"],
       []
     ],
-    [
-      1,
-      "layer name",
-      "slice",
-      0,
-      0,
-      24,
-      24,
-      "",
-      [],
-      [{ "name": "...", "format": "png", "path": "asset path" }]
-    ]
+    [1, "layer name", "slice", 0, 0, 24, 24, "", [], ["asset path"]]
   ]
 }
 ```
@@ -95,7 +84,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 - For `type: "text"` layers, slot 8 is the text content (`content`); styles (font / size / color / line-height, etc.) are in the `css` array
 - The occasional `extras` field is keyed by `index` and carries that layer's `opacity` / `rotation` (only non-default values); the designer-named shared styles are aggregated in `tokens.styleNames` of list.json
 - The `css` array carries the layer's main visual styles: font / size / color / line-height for text; background / gradient / radius / border / shadow for shapes; uninformative default declarations (`letter-spacing: 0`, etc.) are already filtered out
-- `type: "slice"` layers contain exported assets; each asset's `path` in the `assets` array is the asset file path (relative to the project root, already compressed to webp, ready for import)
+- `type: "slice"` layers contain exported assets; the `assets` array holds asset file paths (relative to the project root, already compressed to webp, ready for import)
 
 3. Summarize the information, pick a suitable location to write the component, and insert the route (if needed)
 

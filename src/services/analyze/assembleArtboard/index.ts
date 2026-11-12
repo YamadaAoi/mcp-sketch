@@ -48,6 +48,25 @@ function filterSketchLayer(lyr: HtmlSketchLayer) {
   )
 }
 
+/**
+ * 原始图层（HtmlLayer）是否有视觉输出价值，与 filterSketchLayer（assets 挂载后）的判定一致：
+ * slice 图层在切图未挂载时用 exportable 预判，供 list 的 size 统计等场景在 assemble 前使用，
+ * 保证与 analyze 实际返回的图层集合一致
+ */
+export function isVisualHtmlLayer(lyr: HtmlLayer) {
+  return (
+    (lyr.type === 'slice' && !!lyr.exportable?.length) ||
+    lyr.type === 'text' ||
+    (lyr.type === 'shape' &&
+      lyr.css?.some(
+        s =>
+          s.includes('background') ||
+          s.includes('border') ||
+          s.includes('shadow')
+      ))
+  )
+}
+
 function filterSketchLayerByRect(
   lyr: HtmlSketchLayer,
   rect?: [number, number, number, number],
@@ -206,6 +225,55 @@ export function filterLayers(
   }
 
   return { layers: filtered, total }
+}
+
+/**
+ * 定位数组格式的列声明，行内值严格按此顺序排列
+ * 行内槽位固定：空值按列类型取（content 为 ""，css/assets 为 []）
+ */
+export const LAYER_COLUMNS = [
+  'index',
+  'name',
+  'type',
+  'x',
+  'y',
+  'w',
+  'h',
+  'content',
+  'css',
+  'assets'
+] as const
+
+/**
+ * 图层数据转定位数组：列名声明一次，行内按序取值，省去逐层重复的 key
+ * 低频可选字段（opacity/rotation）不占列，收入按 index 索引的 extras，避免行宽膨胀；
+ * styleName 不输出（css 已承载样式值，设计系统级样式名聚合见 list 的 tokens.styleNames）
+ * assets 只保留切图文件路径（name 与图层名重复，format 是导出时的原始格式而非转码后的 webp，均无价值）
+ * 行宽固定为 LAYER_COLUMNS.length；list 服务也用此函数计算 size，保证数据量口径与 analyze 输出一致
+ */
+export function toPositionalLayers(layers: HtmlSketchLayer[]) {
+  const extras: Record<string, Record<string, number>> = {}
+  const rows = layers.map((l, i) => {
+    const [x = '', y = '', w = '', h = ''] = l.rect ?? []
+    const extra: Record<string, number> = {}
+    if (l.opacity !== undefined) extra.opacity = l.opacity
+    if (l.rotation !== undefined) extra.rotation = l.rotation
+    const index = l.index ?? i
+    if (Object.keys(extra).length) extras[index] = extra
+    return [
+      index,
+      l.name,
+      l.type,
+      x,
+      y,
+      w,
+      h,
+      l.content ?? '',
+      l.css ?? [],
+      l.assets?.map(a => a.path) ?? []
+    ]
+  })
+  return { rows, extras }
 }
 
 function toRelPath(p: string) {

@@ -7,16 +7,16 @@ import {
   openSketchHtmlFile,
   normalize,
   type HtmlArtboard,
-  type HtmlLayer,
   type SketchHtmlFile,
   type SketchImage
 } from '@/utils/zip'
 import { writeJsonFile } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 import {
-  filterLayers,
   hasValidRect,
+  isVisualHtmlLayer,
   processPreview,
+  toPositionalLayers,
   toSketchLayer
 } from '../analyze/assembleArtboard'
 
@@ -59,9 +59,16 @@ async function getListInfo(
   artboard: HtmlArtboard,
   images?: SketchImage[]
 ) {
-  const { layers } = filterLayers(
-    (artboard?.layers ?? []).filter(hasValidRect).map(toSketchLayer)
+  // 与 analyze 输出同集合同口径：slice 图层按 exportable 预判（assets 未挂载），index 取 z-order
+  const valid = (artboard?.layers ?? []).filter(hasValidRect)
+  const layers = valid.flatMap((l, i) =>
+    isVisualHtmlLayer(l) ? [toSketchLayer(l, i)] : []
   )
+  // size 口径与 analyze 输出一致：定位数组行 + extras（供模型估算单次 analyze 返回的数据量）
+  const { rows, extras } = toPositionalLayers(layers)
+  const size =
+    Buffer.byteLength(JSON.stringify(rows)) +
+    (Object.keys(extras).length ? Buffer.byteLength(JSON.stringify(extras)) : 0)
   const previewPath = await processPreview(
     {
       pageName: artboard.pageName,
@@ -79,17 +86,9 @@ async function getListInfo(
   return {
     pageName: artboard.pageName,
     artboardName: artboard.name,
-    size: Buffer.byteLength(JSON.stringify(layers)),
+    size,
     previewPath
   }
-}
-
-function isVisualLayer(lyr: HtmlLayer) {
-  return (
-    (lyr.type === 'slice' && !!lyr.exportable?.length) ||
-    lyr.type === 'text' ||
-    (lyr.type === 'shape' && !!lyr.css?.length)
-  )
 }
 
 const COLOR_RE =
@@ -127,7 +126,7 @@ function aggregateTokens(sketch: SketchHtmlFile): TokensSummary {
 
   for (const artboard of sketch.data.artboards ?? []) {
     for (const lyr of artboard.layers ?? []) {
-      if (!isVisualLayer(lyr) || !lyr.css?.length) continue
+      if (!isVisualHtmlLayer(lyr) || !lyr.css?.length) continue
 
       colors.push(...extract(lyr.css, COLOR_RE))
       fontSizes.push(...extract(lyr.css, FONT_SIZE_RE))

@@ -38,12 +38,12 @@ npx -y mcp-sketch list -f "{file_path}"
 
 ### artboards 数组
 
-| 字段         | 类型   | 描述                               |
-| ------------ | ------ | ---------------------------------- |
-| pageName     | string | 页面名称                           |
-| artboardName | string | 画板名称                           |
-| size         | number | 图层数据量（字节）                 |
-| previewPath  | string | 画板预览图片路径（相对项目根目录） |
+| 字段         | 类型   | 描述                                                                |
+| ------------ | ------ | ------------------------------------------------------------------- |
+| pageName     | string | 页面名称                                                            |
+| artboardName | string | 画板名称                                                            |
+| size         | number | 图层数据量（字节），与 analyze 返回同口径；切图路径不计（按空数组） |
+| previewPath  | string | 画板预览图片路径（相对项目根目录）                                  |
 
 ### tokens 对象
 

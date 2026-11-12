@@ -1,61 +1,15 @@
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
-import { openSketchHtmlFile, type HtmlSketchLayer } from '@/utils/zip'
+import { openSketchHtmlFile } from '@/utils/zip'
 import { getRect } from '@/utils/util'
 import { filterArtboards } from './filterArtboards'
 import {
   assembleArtboard,
   filterLayers,
-  processPreview
+  LAYER_COLUMNS,
+  processPreview,
+  toPositionalLayers
 } from './assembleArtboard'
-
-/**
- * 定位数组格式的列声明，行内值严格按此顺序排列
- * 行内槽位固定：空值按列类型取（content 为 ""，css/assets 为 []）
- */
-const LAYER_COLUMNS = [
-  'index',
-  'name',
-  'type',
-  'x',
-  'y',
-  'w',
-  'h',
-  'content',
-  'css',
-  'assets'
-] as const
-
-/**
- * 图层数据转定位数组：列名声明一次，行内按序取值，省去逐层重复的 key
- * 低频可选字段（opacity/rotation）不占列，收入按 index 索引的 extras，避免行宽膨胀；
- * styleName 不输出（css 已承载样式值，设计系统级样式名聚合见 list 的 tokens.styleNames）
- * 行宽固定为 LAYER_COLUMNS.length
- */
-function toPositionalLayers(layers: HtmlSketchLayer[]) {
-  const extras: Record<string, Record<string, number>> = {}
-  const rows = layers.map((l, i) => {
-    const [x = '', y = '', w = '', h = ''] = l.rect ?? []
-    const extra: Record<string, number> = {}
-    if (l.opacity !== undefined) extra.opacity = l.opacity
-    if (l.rotation !== undefined) extra.rotation = l.rotation
-    const index = l.index ?? i
-    if (Object.keys(extra).length) extras[index] = extra
-    return [
-      index,
-      l.name,
-      l.type,
-      x,
-      y,
-      w,
-      h,
-      l.content ?? '',
-      l.css ?? [],
-      l.assets ?? []
-    ]
-  })
-  return { rows, extras }
-}
 
 /**
  * 解析sketch html文件分析参数
