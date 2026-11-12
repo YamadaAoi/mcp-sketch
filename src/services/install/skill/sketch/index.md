@@ -6,10 +6,10 @@
 
 一般由用户手动调用，如果没有调用，**在需要的时候自己调用**
 
-| 指令               | 读取并执行                 | 描述                 | 参数           |
-| ------------------ | -------------------------- | -------------------- | -------------- |
-| `/sketch init`     | `./references/init.md`     | 了解当前项目         | 无             |
-| `/sketch overview` | `./references/overview.md` | 概览设计稿内画板信息 | 设计稿（路径） |
+| 指令               | 读取并执行                 | 描述                       | 参数           |
+| ------------------ | -------------------------- | -------------------------- | -------------- |
+| `/sketch init`     | `./references/init.md`     | 了解项目并检查 sketch 配置 | 无             |
+| `/sketch overview` | `./references/overview.md` | 概览设计稿内画板信息       | 设计稿（路径） |
 
 ## 设计稿结构
 
@@ -125,7 +125,7 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
 npx -y mcp-sketch dev
 ```
 
-5. 如果本地服务启动成功，且Playwright MCP 工具（如 `browser_navigate`）可用，则探索展示本次绘制的内容，截图后调用 `sketch_compare`（MCP 工具）或以下命令与画板预览图对比，根据相似度分数与差异图修正页面
+5. 如果本地服务启动成功，且浏览器自动化 MCP（如 Playwright，工具如 `browser_navigate`）可用，则探索展示本次绘制的内容，截图后调用 `sketch_compare`（MCP 工具）或以下命令与画板预览图对比，根据相似度分数与差异图修正页面
 
 ```bash
 npx -y mcp-sketch compare -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -s "{screenshot_path}"

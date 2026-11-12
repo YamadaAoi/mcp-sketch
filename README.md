@@ -82,7 +82,7 @@ npx -y mcp-sketch install
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目、`/sketch overview` 概览设计稿两个固定指令），已存在的文件可逐文件选择覆盖或跳过。
+skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目并检查 sketch 相关配置（`.env.sketch`、Playwright MCP）、`/sketch overview` 概览设计稿两个固定指令），已存在的文件可逐文件选择覆盖或跳过。
 
 ### 配置 MCP 服务
 

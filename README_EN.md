@@ -82,7 +82,7 @@ Select your platform interactively; files are written to:
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-The skill teaches the AI when and with which parameters to call the tools above (including two fixed commands: `/sketch init` to learn the project, `/sketch overview` to overview a design). Existing files can be overwritten or skipped per file.
+The skill teaches the AI when and with which parameters to call the tools above (including two fixed commands: `/sketch init` to learn the project and check sketch-related configs (`.env.sketch`, Playwright MCP), `/sketch overview` to overview a design). Existing files can be overwritten or skipped per file.
 
 ### Configure the MCP server
 
