@@ -31,7 +31,7 @@ AI 直接读设计稿只剩一个痛点：**需要不断试探怎么取数据**�
 
 **list — 画板概览**
 
-- 输出全部画板的名称、预览图路径、图层数据量，写入 `.sketch-cache/{design}/list.json`
+- 输出全部画板的名称、预览图路径、图层数据量（`size` 与 analyze 返回同口径，用于估算单次取数量、决定是否按区域分批；切图路径未计入，实际 analyze 返回会略大），写入 `.sketch-cache/{design}/list.json`
 - 附带设计 token 聚合：颜色 / 字号 / 字体 / 圆角 / 阴影 / 命名样式按使用频次排序，可直接用于建立主题变量，也能发现设计稿里的近似色号笔误
 - 设计稿更新后不会返回过期缓存：再次调用时自动比对（zip 按文件 mtime，目录按内部文件最新 mtime），发现设计稿比 list.json 新则重新生成
 
@@ -39,17 +39,18 @@ AI 直接读设计稿只剩一个痛点：**需要不断试探怎么取数据**�
 
 - 图层按布局权重（面积为主）降序返回，已过滤无视觉属性的图层
 - 过滤与分页：区域矩形 `rect`、排除区域 `exclude_rects`、名称关键词 `name`、类型 `type`（text/shape/slice）、`limit/offset`，返回 `total` 总数便于翻页
-- 每个图层携带：`rect` 坐标、`index`（z-order，判断遮挡关系）、文本 `content`、`css` 样式声明（字体/颜色/渐变/圆角/阴影，默认值已过滤）、非默认的 `opacity`/`rotation`
-- `slice` 图层自动导出切图（压缩为 webp），同内容切图全局去重（跨画板共享的图标只存一份）
-- 自动生成画板预览图；区域查询时生成对应区域的裁剪预览
+- 输出为省 token 的定位数组格式：`columns` 一次性声明列序，每个图层一行按位读取（index/name/type/rect/content/css/assets）；偶现的非默认 `opacity`/`rotation` 收录在按 `index` 索引的稀疏 `extras` 里；空值按列类型固定（content 为 `""`，css/assets 为 `[]`）
+- `css` 承载主要样式声明（字体/颜色/渐变/圆角/阴影，默认值噪音已过滤）；`assets` 为纯路径数组（相对项目根目录，已压缩为 webp，可直接 import）
+- `slice` 图层自动导出切图，同内容全局去重（跨画板共享的图标只存一份）；自动生成画板预览图，区域查询时生成对应区域的裁剪预览
 
 **dev — 开发服务**
 
-- 后台启动 dev server（Windows 用 PowerShell，类 Unix 用 tmux），轮询就绪后返回访问地址
+- 后台启动 dev server（Windows 用 PowerShell，类 Unix 用 tmux），轮询配置的 `PREVIEW_URL` 直到可访问；已在运行则直接返回。地址取自配置，不做自动探测
 
 **compare — 截图对比**
 
 - 浏览器截图与画板预览图逐像素对比，返回相似度分数与差异放大图，支持"改代码 → 截图 → 对比 → 修正"的量化收敛循环
+- 差异图按画板归档到 `compare/{timestamp}.webp`，多轮修正结果可回溯对比
 - 浏览器截图依赖 Playwright MCP（见下方[配置](#配置-playwright-mcpcompare-截图依赖可选)），由 AI 打开页面、探索渲染结果并截图
 
 ## 与 AI 直接读设计稿相比
@@ -168,8 +169,10 @@ mcp-sketch compare -f "设计稿.zip" --pn "页面名" --an "画板名" -s "scre
 ## 输出目录
 
 ```
-.sketch-cache/{设计稿名}/list.json          # 画板列表 + 设计 token
-.sketch-cache/assets-index.json             # 切图内容索引（全局去重）
-.sketch-cache/{设计稿名}/{页面}/{画板}/     # 画板/区域预览图（webp）、对比差异图
-{ASSETS_PATH}/{页面}/{画板}/                # 切图（webp，全局去重）
+.sketch-cache/{设计稿名}/list.json                        # 画板列表 + 设计 token
+.sketch-cache/assets-index.json                           # 切图内容索引（全局去重）
+.sketch-cache/{设计稿名}/{页面}/{画板}/                   # 画板/区域预览图（webp）
+.sketch-cache/{设计稿名}/{页面}/{画板}/compare/           # 对比差异图（{timestamp}.webp）
+.sketch-cache/{设计稿名}/{页面}/{画板}/screenshot/        # 浏览器截图（AI 按 skill 约定保存）
+{ASSETS_PATH}/{页面拼音}/{画板拼音}/                      # 切图（webp，全局去重）
 ```

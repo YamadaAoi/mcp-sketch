@@ -31,7 +31,7 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 
 **list — artboard overview**
 
-- Outputs every artboard's name, preview image path, and layer data size; written to `.sketch-cache/{design}/list.json`
+- Outputs every artboard's name, preview image path, and layer data size (`size` uses the same measure as an analyze response, for estimating payload size and deciding whether to fetch per region; asset paths are excluded, so the actual analyze response is slightly larger); written to `.sketch-cache/{design}/list.json`
 - Includes a design-token aggregation: colors / font sizes / font families / radii / shadows / named styles ranked by usage frequency — ready to use for theme variables, and useful for spotting near-duplicate hex typos in the design
 - Never serves stale cache after the design updates: each call re-checks freshness (zip by file mtime, folder by the latest inner-file mtime) and regenerates if the design is newer than list.json
 
@@ -39,17 +39,18 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 
 - Layers returned in descending layout-weight order (area-based), with non-visual layers already filtered out
 - Filtering & pagination: region `rect`, exclusion `exclude_rects`, name keyword `name`, type `type` (text/shape/slice), `limit/offset`, plus a `total` count to know when paging ends
-- Each layer carries: `rect` coordinates, `index` (z-order, for occlusion relationships), text `content`, `css` declarations (fonts/colors/gradients/radii/shadows, default values filtered out), and non-default `opacity`/`rotation`
-- `slice` layers auto-export image assets (compressed to webp), with global content deduplication (icons shared across artboards are stored only once)
-- Artboard preview images are generated automatically; region queries generate a cropped preview of that region
+- Output is a token-efficient positional format: `columns` declares the column order once and each layer is a row array read by position (index/name/type/rect/content/css/assets); occasional non-default `opacity`/`rotation` lives in a sparse `extras` map keyed by `index`; empty values are typed (content is `""`, css/assets are `[]`)
+- `css` carries the main style declarations (fonts/colors/gradients/radii/shadows, default-value noise filtered out); `assets` is a plain path array (relative to the project root, compressed to webp, ready to import)
+- `slice` assets are auto-exported with global content deduplication (icons shared across artboards are stored only once); artboard previews are generated automatically, and region queries generate a cropped preview of that region
 
 **dev — dev server**
 
-- Starts the dev server in the background (PowerShell on Windows, tmux on Unix-like systems), polls until ready, and returns the URL
+- Starts the dev server in the background (PowerShell on Windows, tmux on Unix-like systems) and polls the configured `PREVIEW_URL` until it is reachable; returns immediately if already running. The URL comes from config — no auto-detection
 
 **compare — screenshot diff**
 
 - Pixel-wise comparison between a browser screenshot and the artboard preview, returning a similarity score plus an amplified diff image — enabling a quantified "edit code → screenshot → compare → fix" loop
+- Diff images accumulate per artboard at `compare/{timestamp}.webp`, so refinement rounds stay comparable
 - The browser screenshot comes from Playwright MCP (see [configuration below](#configure-playwright-mcp-optional-dependency-for-compare)), with which the AI opens the page, explores the rendered result, and takes screenshots
 
 ## Compared to letting AI read design files directly
@@ -168,8 +169,10 @@ mcp-sketch compare -f "design.zip" --pn "PageName" --an "ArtboardName" -s "scree
 ## Output Layout
 
 ```
-.sketch-cache/{design}/list.json          # artboard list + design tokens
-.sketch-cache/assets-index.json           # asset content index (global dedup)
-.sketch-cache/{design}/{page}/{artboard}/ # artboard/region previews (webp), compare diff images
-{ASSETS_PATH}/{page}/{artboard}/          # image assets (webp, globally deduped)
+.sketch-cache/{design}/list.json                        # artboard list + design tokens
+.sketch-cache/assets-index.json                         # asset content index (global dedup)
+.sketch-cache/{design}/{page}/{artboard}/               # artboard/region previews (webp)
+.sketch-cache/{design}/{page}/{artboard}/compare/       # compare diff images ({timestamp}.webp)
+.sketch-cache/{design}/{page}/{artboard}/screenshot/    # browser screenshots (saved by the skill)
+{ASSETS_PATH}/{page-pinyin}/{artboard-pinyin}/          # image assets (webp, globally deduped)
 ```
