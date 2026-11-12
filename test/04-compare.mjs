@@ -58,6 +58,12 @@ await runSuite('04-compare: screenshot vs preview similarity', [
       assert(typeof out.diffPath === 'string', 'diffPath string')
       assert(!path.isAbsolute(out.diffPath), 'diffPath relative')
       assert(
+        /^\.sketch-cache[/\\].+[/\\]compare[/\\]\d+\.webp$/.test(
+          out.diffPath.replace(/\\/g, '/')
+        ),
+        `diff stored as compare/<timestamp>.webp (got ${out.diffPath})`
+      )
+      assert(
         fs.existsSync(path.resolve(ws, out.diffPath)),
         'diff image written'
       )
@@ -86,6 +92,34 @@ await runSuite('04-compare: screenshot vs preview similarity', [
         out.comparedRegion.width,
         out.preview.width,
         'screenshot resized to preview width before compare'
+      )
+    }
+  ],
+  [
+    'diff images accumulate in the artboard compare/ folder',
+    async () => {
+      const artboardCache = path.join(
+        ws,
+        '.sketch-cache',
+        '电磁信号保密监测器html',
+        PAGE,
+        '登录'
+      )
+      const compareDir = path.join(artboardCache, 'compare')
+      const before = fs.existsSync(compareDir)
+        ? fs.readdirSync(compareDir).length
+        : 0
+      assert(before >= 1, 'earlier comparisons already wrote diffs')
+
+      const r = runCompare(path.join(ws, 'shot-red.png'))
+      assert(r.status === 0, `exit ${r.status}`)
+      const files = fs
+        .readdirSync(compareDir)
+        .filter(f => /^\d+\.webp$/.test(f))
+      assertEq(files.length, before + 1, 'one new timestamped diff per run')
+      assert(
+        fs.readdirSync(compareDir).every(f => !f.startsWith('compare_')),
+        'no legacy compare_*.webp filenames at artboard root level'
       )
     }
   ],

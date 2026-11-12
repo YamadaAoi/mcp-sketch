@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises'
+import { mkdir, readFile } from 'fs/promises'
 import path from 'path'
 import type { SchemaOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
 import { z } from 'zod/v4'
@@ -112,11 +112,14 @@ export async function sketchCompare(args: SketchCompareInputSchema) {
 
   const cwd = getEnv('CWD')
   const designFileName = path.basename(args.file_path, '.zip')
+  // 差异图统一收敛到 compare/ 子目录（与截图的 screenshot/ 约定对齐），文件名为时间戳
   const diffDest = path.resolve(
     cwd,
     `.sketch-cache/${designFileName}/${artboard.pageName}/${artboard.name}`,
-    `compare_${Date.now()}.webp`
+    'compare',
+    `${Date.now()}.webp`
   )
+  await mkdir(path.dirname(diffDest), { recursive: true })
   await sharp(diffBuf).linear(20, 0).webp({ quality: 90 }).toFile(diffDest)
   const diffPath = path.relative(cwd, diffDest)
 

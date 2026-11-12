@@ -98,13 +98,20 @@ npx -y mcp-sketch dev
 
 5. If the local dev server started successfully and a browser automation MCP is available (e.g. Playwright, tools like `browser_navigate`), explore what was drawn, take a screenshot, then call `sketch_compare` (MCP tool) or the command below to compare it with the artboard preview; refine the page based on the similarity score and the diff image
 
+- If screenshotting is available, save screenshots to `.sketch-cache/{design_file_name}/{page_name}/{artboard_name}/screenshot/{timestamp}.png`
+
 ```bash
 npx -y mcp-sketch compare -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -s "{screenshot_path}"
 ```
 
 Returns `{ score, similarity, diffPath }`: the closer `score` is to 1, the better the match; `diffPath` is the amplified diff image (differences highlighted) for locating mismatched regions
 
-- If screenshotting is available, save screenshots to `.sketch-cache/{design_file_name}/{page_name}/{artboard_name}/screen_shot/{timestamp}.png`
+**Refinement loop** (repeat until the part you drew matches the design):
+
+- Locate mismatched regions via `diffPath`, then judge each difference against the screenshot and the artboard preview:
+  - Real defects (missing or wrong layout / styles / copy / assets in the part you drew): fix them, then re-screenshot and re-compare
+  - Not defects: e.g. adding a component to a legacy page — your component matches the design, while the surrounding legacy page content differs from the artboard. Do NOT touch legacy code just to chase the score; record these differences instead
+- When finished, report the final score and output the recorded not-a-defect list to the user for confirmation
 
 ## Handling Edge Cases
 

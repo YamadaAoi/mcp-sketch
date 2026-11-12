@@ -87,13 +87,20 @@ npx -y mcp-sketch dev
 
 5. 如果本地服务启动成功，且浏览器自动化 MCP（如 Playwright，工具如 `browser_navigate`）可用，则探索展示本次绘制的内容，截图后调用 `sketch_compare`（MCP 工具）或以下命令与画板预览图对比，根据相似度分数与差异图修正页面
 
+- 如果截图功能可用，把图片保存到`.sketch-cache/{design_file_name}/{page_name}/{artboard_name}/screenshot/{timestamp}.png`
+
 ```bash
 npx -y mcp-sketch compare -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -s "{screenshot_path}"
 ```
 
 返回 `{ score, similarity, diffPath }`：`score` 越接近 1 越一致；`diffPath` 为差异放大图（差异处高亮），用于定位还原不一致的区域
 
-- 如果截图功能可用，把图片保存到`.sketch-cache/{design_file_name}/{page_name}/{artboard_name}/screen_shot/{timestamp}.png`
+**修正循环**（可多轮，直到本次绘制的部分与设计稿一致）：
+
+- 结合 `diffPath` 定位不一致区域，对照截图与画板预览逐块判断差异性质：
+  - 确实是问题（本次绘制部分的布局/样式/文案/切图缺失或错误）：修复后重新截图、重新对比
+  - 不算问题：例如在存量页面上加组件——组件部分与设计稿完全一致，存量页面部分本来就和画板不同。不要为了提升分数去改动存量代码，记录这些差异
+- 修正完成后，向用户汇报最终分数，并把记录的"不算问题"差异清单输出给用户确认
 
 ## 意外情况处理
 
