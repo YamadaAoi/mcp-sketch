@@ -219,9 +219,13 @@ export function filterLayers(
 
   const total = filtered.length
 
-  if (limit !== undefined) {
+  // offset 单独使用时从第 offset 层返回到末尾；limit 截取前 limit 层
+  if (limit !== undefined || offset !== undefined) {
     const start = offset ?? 0
-    filtered = filtered.slice(start, start + limit)
+    filtered =
+      limit !== undefined
+        ? filtered.slice(start, start + limit)
+        : filtered.slice(start)
   }
 
   return { layers: filtered, total }

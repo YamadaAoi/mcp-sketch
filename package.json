@@ -16,6 +16,8 @@
     "dev": "tsup && node dist/index.js",
     "watch": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "test": "node test/run-all.mjs",
+    "test:clean": "node test/clean.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
