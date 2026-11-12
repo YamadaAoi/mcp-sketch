@@ -1,62 +1,64 @@
-## 铁律
+## Hard Rules
 
-- **绝不臆测项目技术栈**：必须基于 `package.json` 的依赖进行判断
-- **绝不臆测项目代码风格**：必须基于配置文件（.prettierrc, .eslintrc 等）和现有代码进行判断
-- **绝不臆测项目结构**：必须基于现有文件目录进行判断
-- **绝不读取无关文件**：例如zip、rar等与项目代码无关的文件，不尝试解压或读取
+- **Never guess the tech stack**: judge from the dependencies in `package.json`
+- **Never guess the code style**: judge from config files (.prettierrc, .eslintrc, etc.) and existing code
+- **Never guess the project structure**: judge from the existing directory tree
+- **Don't read irrelevant files**: e.g. zip, rar and other files unrelated to project code; never extract or read them
 
-## 1、确定技术栈
+## 1. Identify the tech stack
 
-读取根目录及各包的 `package.json`，分析 `dependencies` 和 `devDependencies`：
+Read `package.json` at the root and in each package, and analyze `dependencies` and `devDependencies`:
 
-- **基础框架**：React / Vue / Angular 等
-- **核心库**：
-  - 状态管理（Redux / Pinia 等）
-  - 网络请求（Axios / Fetch 等）
-- **构建工具**：Vite / Rollup 等
-- **TypeScript 版本**
+- **Base framework**: React / Vue / Angular, etc.
+- **Core libraries**:
+  - State management (Redux / Pinia, etc.)
+  - HTTP requests (Axios / Fetch, etc.)
+- **Build tooling**: Vite / Rollup, etc.
+- **TypeScript version**
 
-读取根目录及各包的 `package.json`，检查 UI 相关依赖：
+Read `package.json` at the root and in each package, and check UI-related dependencies:
 
-- **公开组件库**（Element Plus、Ant Design、Naive UI 等）：LLM 已大量学习过这些库，在输出中注明组件库名称和版本即可，无需逐个列举组件
-- **私有/未知组件库**：扫描 `node_modules/{lib}/` 的入口，了解可用组件
-- **确定导入方式**：检查现有组件文件的 import 语句，按需导入通常有 `import { Button } from 'xxx'` 或 `unplugin-auto-import` 配置；全部导入通常是 `import XXX from 'xxx'` 后在入口处统一注册/挂载
+- **Public component libraries** (Element Plus, Ant Design, Naive UI, etc.): LLMs have seen plenty of these; just note the library name and version, no need to enumerate components
+- **Private / unknown component libraries**: scan the entry of `node_modules/{lib}/` to learn the available components
+- **Determine the import convention**: check import statements in existing component files — named imports usually look like `import { Button } from 'xxx'` or come from an `unplugin-auto-import` config; full imports usually look like `import XXX from 'xxx'` followed by global registration/mounting at the entry
 
-## 2、确定代码风格与规范
+## 2. Identify code style and conventions
 
-- 读取 `.prettierrc`, `.editorconfig` 等配置，总结缩进、引号、分号规则
-- 读取 `eslint.config.*`, `tsconfig.json`, `stylelint.config` 等，总结命名限制、严格模式等
-- 确定组件命名规范，如果项目内组件命名不统一，则优先使用 **PascalCase**，至少**两个单词**
-- 确定组件编写规范
-  - vue：确定`template`、`script`、`style` 等标签顺序，是否使用`setup`语法糖
-  - react：是否使用函数组件、类组件、hooks 等
-  - angular：是否使用类组件、装饰器等
-  - 其他框架：根据实际情况判断组件编写规范
+- Read `.prettierrc`, `.editorconfig`, etc., and summarize indentation, quotes, and semicolon rules
+- Read `eslint.config.*`, `tsconfig.json`, `stylelint.config`, etc., and summarize naming restrictions, strictness, etc.
+- Determine the component naming convention; if naming is inconsistent in the project, prefer **PascalCase** with **at least two words**
+- Determine the component authoring convention
+  - vue: the order of `template`, `script`, `style` tags; whether the `setup` sugar is used
+  - react: function components, class components, hooks, etc.
+  - angular: class components, decorators, etc.
+  - other frameworks: judge from the actual code
 
-## 3、将重要信息汇总到`AGENTS.md`文件中
+## 3. Summarize the key information into `AGENTS.md`, written in English
 
-## 4、检查 `.env.sketch` 配置
+The summary written into `AGENTS.md` must be **in English**, covering the tech stack, code style, project structure, and the sketch-related configurations checked below
 
-检查项目根目录是否存在 `.env.sketch`（mcp-sketch 的配置文件，可选）：
+## 4. Check the `.env.sketch` configuration
 
-- **已存在**：读取内容，确认 `SERVER_COMMAND` 等关键变量与项目实际情况相符（如能在 `package.json` 的 `scripts` 中找到对应命令），不符时向用户指出
-- **不存在**：结合项目情况（包管理器、`scripts` 中的启动命令、开发服务地址、切图输出目录约定）给出建议配置，**先询问用户是否允许创建，同意后再写入**，不要擅自创建文件
+Check whether `.env.sketch` (the mcp-sketch config file, optional) exists in the project root:
 
-可配置变量：
+- **Exists**: read it and verify that key variables like `SERVER_COMMAND` match the project reality (e.g. the command can be found in the `scripts` of `package.json`); point out mismatches to the user
+- **Missing**: propose a suggested configuration based on the project (package manager, start script in `scripts`, dev server URL, asset output conventions), and **ask the user for permission before creating it**; never create the file on your own
 
-| 变量              | 必填 | 默认值              | 说明                                                |
-| ----------------- | ---- | ------------------- | --------------------------------------------------- |
-| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                                    |
-| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填 |
-| `CWD`             | 否   | 当前目录            | 项目根目录                                          |
-| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                        |
-| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限                            |
-| `LOG_LEVEL`       | 否   | `info`              | 日志级别                                            |
+Configurable variables:
 
-## 5、检查浏览器自动化 MCP 配置
+| Variable          | Required | Default             | Description                                    |
+| ----------------- | -------- | ------------------- | ---------------------------------------------- |
+| `SERVER_COMMAND`  | No       | `npm run dev`       | Command that starts the dev server             |
+| `PREVIEW_URL`     | No       | -                   | Dev server URL; required to use the `dev` tool |
+| `CWD`             | No       | Current directory   | Project root                                   |
+| `ASSETS_PATH`     | No       | `src/assets/sketch` | Asset output path                              |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process cache limit for design parsing      |
+| `LOG_LEVEL`       | No       | `info`              | Log level                                      |
 
-检查当前 AI 客户端的项目级 MCP 配置中是否已有浏览器自动化 MCP（如 Playwright，截图对比流程依赖它探索渲染结果并截图）：
+## 5. Check the browser automation MCP configuration
 
-- **已配置**：跳过
-- **未配置**：向用户说明用途，**询问是否允许代为添加配置，同意后按当前 AI 客户端的方式自行配置**
-- 配置完成后通常需要重启会话生效，提醒用户
+Check whether a browser automation MCP (e.g. Playwright; the screenshot-compare workflow depends on it to explore rendered results and take screenshots) is already configured in the current AI client's project-level MCP config:
+
+- **Configured**: skip
+- **Not configured**: explain the purpose, **ask the user for permission before adding it on their behalf, then configure it the way the current AI client requires**
+- A session restart is usually required for the configuration to take effect; remind the user

@@ -1,17 +1,17 @@
-## 铁律
+## Hard Rules
 
-1. **禁止以任何方式解压任何压缩包**
+1. **Never extract or decompress any archive, in any way**
 
-## 调用 `sketch_list`（MCP 工具）或 `npx -y mcp-sketch list`（CLI）获取设计稿内所有画板信息
+## Call `sketch_list` (MCP tool) or `npx -y mcp-sketch list` (CLI) to get all artboards in the design
 
 ```bash
 npx -y mcp-sketch list -f "{file_path}"
 ```
 
-- 工具直接返回画板列表 JSON，同时写入 `.sketch-cache/{design_file_name}/list.json`（`design_file_name = basename(file_path, '.zip')`）
-- 后续可直接读取 list.json，无需重复调用
+- The tool returns the artboard list JSON directly and also writes `.sketch-cache/{design_file_name}/list.json` (`design_file_name = basename(file_path, '.zip')`)
+- Read list.json directly in subsequent steps; no need to call again
 
-## list.json文件格式
+## list.json format
 
 ```json
 {
@@ -36,20 +36,20 @@ npx -y mcp-sketch list -f "{file_path}"
 }
 ```
 
-### artboards 数组
+### artboards array
 
-| 字段         | 类型   | 描述                               |
-| ------------ | ------ | ---------------------------------- |
-| pageName     | string | 页面名称                           |
-| artboardName | string | 画板名称                           |
-| size         | number | 图层数据量（字节）                 |
-| previewPath  | string | 画板预览图片路径（相对项目根目录） |
+| Field        | Type   | Description                                            |
+| ------------ | ------ | ------------------------------------------------------ |
+| pageName     | string | Page name                                              |
+| artboardName | string | Artboard name                                          |
+| size         | number | Layer data size (bytes)                                |
+| previewPath  | string | Artboard preview image path (relative to project root) |
 
-### tokens 对象
+### tokens object
 
-设计系统聚合，各字段均为 `{ 值: 使用次数 }` 并按频次降序：
+Aggregated design system; every field is `{ value: usage count }` sorted by frequency descending:
 
-- `colors` / `fontSizes` / `fontFamilies` / `radii` / `shadows`：颜色、字号、字体、圆角、阴影
-- `styleNames`：设计师命名的共享样式（前 20 组），`css` 为该样式的代表性 CSS 声明
+- `colors` / `fontSizes` / `fontFamilies` / `radii` / `shadows`: colors, font sizes, font families, radii, shadows
+- `styleNames`: designer-named shared styles (top 20); `css` holds a representative list of CSS declarations for the style
 
-用途：建立项目主题变量时直接取高频值；发现近似色号并存时可向用户确认是否为设计笔误
+Usage: pick high-frequency values directly when building project theme variables; when near-identical colors coexist, ask the user whether one of them is a design typo
