@@ -142,7 +142,7 @@ export function hasValidRect(lyr: HtmlLayer): boolean {
 /**
  * 无信息量的 CSS 默认值声明，返回时过滤以节省 token
  */
-function isCssNoise(decl: string) {
+export function isCssNoise(decl: string) {
   const d = decl.trim().replace(/;$/, '').toLowerCase()
   return (
     d === 'letter-spacing: 0' ||

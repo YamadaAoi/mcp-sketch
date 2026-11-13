@@ -14,6 +14,7 @@ import { writeJsonFile } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 import {
   hasValidRect,
+  isCssNoise,
   isVisualHtmlLayer,
   processPreview,
   toPositionalLayers,
@@ -91,8 +92,11 @@ async function getListInfo(
   }
 }
 
-const COLOR_RE =
-  /(?:^|;)\s*(?:color|background|background-color|border(?:-top|-right|-bottom|-left)?(?:-color)?)\s*:\s*([^;]+)/i
+const COLOR_DECL_RE =
+  /(?:^|;)\s*(color|background|background-color|border(?:-top|-right|-bottom|-left)?(?:-color)?)\s*:\s*([^;]+)/i
+/** 颜色原子：hex / rgb / rgba / hsl / hsla */
+const COLOR_VALUE_RE = /(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\))/
+const COLOR_VALUE_ALL_RE = /(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\))/g
 const FONT_SIZE_RE = /(?:^|;)\s*font-size\s*:\s*([^;]+)/i
 const FONT_FAMILY_RE = /(?:^|;)\s*font-family\s*:\s*([^;]+)/i
 const RADIUS_RE = /(?:^|;)\s*border-radius\s*:\s*([^;]+)/i
@@ -102,6 +106,29 @@ function extract(css: string[], re: RegExp): string[] {
   return css
     .map(decl => decl.match(re)?.[1]?.trim())
     .filter((v): v is string => !!v)
+}
+
+/**
+ * 提取颜色 token：
+ * - color/background 值本身即颜色时保持原样；渐变等复合值取其中的全部颜色原子；命名色等无原子的值保留原文
+ * - border 简写携带宽度/线型（如 `1px solid #C8CBCD`），只取其中的颜色原子，避免非颜色串混入色板
+ */
+function extractColors(css: string[]): string[] {
+  const out: string[] = []
+  for (const decl of css) {
+    const m = decl.match(COLOR_DECL_RE)
+    if (!m) continue
+    const value = m[2].trim()
+    if (m[1].toLowerCase().startsWith('border')) {
+      const atom = value.match(COLOR_VALUE_RE)?.[1]
+      if (atom) out.push(atom)
+    } else {
+      const atoms = [...value.matchAll(COLOR_VALUE_ALL_RE)].map(a => a[0])
+      if (atoms.length) out.push(...atoms)
+      else out.push(value)
+    }
+  }
+  return out
 }
 
 function toCountMap(values: string[]) {
@@ -128,7 +155,7 @@ function aggregateTokens(sketch: SketchHtmlFile): TokensSummary {
     for (const lyr of artboard.layers ?? []) {
       if (!isVisualHtmlLayer(lyr) || !lyr.css?.length) continue
 
-      colors.push(...extract(lyr.css, COLOR_RE))
+      colors.push(...extractColors(lyr.css))
       fontSizes.push(...extract(lyr.css, FONT_SIZE_RE))
       fontFamilies.push(...extract(lyr.css, FONT_FAMILY_RE))
       radii.push(...extract(lyr.css, RADIUS_RE))
@@ -137,7 +164,8 @@ function aggregateTokens(sketch: SketchHtmlFile): TokensSummary {
       if (lyr.styleName) {
         const cur = styleNames.get(lyr.styleName) ?? { count: 0, css: [] }
         cur.count++
-        if (!cur.css.length) cur.css = lyr.css
+        // 代表性 css 与逐层输出同口径：过滤无信息量的默认值声明
+        if (!cur.css.length) cur.css = lyr.css.filter(c => !isCssNoise(c))
         styleNames.set(lyr.styleName, cur)
       }
     }

@@ -110,6 +110,46 @@ await runSuite('01-list: artboard overview & list.json cache', [
     }
   ],
   [
+    'tokens.colors holds color values only (border shorthand normalized)',
+    async () => {
+      const colors = Object.keys(fresh.tokens.colors)
+      assert(colors.length > 0, 'colors non-empty')
+      for (const c of colors) {
+        assert(
+          /^(#[0-9a-fA-F]{3,8}|rgba?\(|hsla?\()/i.test(c),
+          `color-like key expected, got ${JSON.stringify(c)}`
+        )
+      }
+      // fixture 事实：设计稿大量使用 border: 1px solid #C8CBCD（126 处），
+      // 归一后应以纯色值入板，而非 "1px solid #C8CBCD" 整串
+      assert('#C8CBCD' in fresh.tokens.colors, 'border color atom extracted')
+      assert(
+        !colors.some(c => c.includes('solid')),
+        'no border shorthand values leaked into colors'
+      )
+    }
+  ],
+  [
+    'tokens.styleNames css is noise-filtered (same measure as layer output)',
+    async () => {
+      const isNoise = d => {
+        const s = d.trim().replace(/;$/, '').toLowerCase()
+        return (
+          s === 'letter-spacing: 0' ||
+          s === 'font-weight: 400' ||
+          s === 'line-height: normal' ||
+          s === 'text-align: left'
+        )
+      }
+      for (const [name, v] of Object.entries(fresh.tokens.styleNames)) {
+        assert(v.css.length > 0, `styleName ${name} keeps representative css`)
+        for (const d of v.css) {
+          assert(!isNoise(d), `noise ${JSON.stringify(d)} in styleName ${name}`)
+        }
+      }
+    }
+  ],
+  [
     'cache hit: identical output, list.json untouched',
     async () => {
       const before = fs.statSync(listPath).mtimeMs
