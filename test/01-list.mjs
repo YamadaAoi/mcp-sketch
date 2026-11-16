@@ -219,5 +219,28 @@ await runSuite('01-list: artboard overview & list.json cache', [
       assertEq(disk.artboards.length, 10, 'legacy cache replaced')
       assert(!!disk.tokens, 'tokens present after regeneration')
     }
+  ],
+  [
+    'unversioned list.json (old tool output, e.g. border in colors) regenerates',
+    async () => {
+      // 旧版工具的 tokens 摘选会把 border 简写整串塞进 colors；无 v 字段的缓存
+      // 不能在工具升级后继续沿用，必须按新逻辑重建
+      fs.writeFileSync(
+        listPath,
+        JSON.stringify({
+          artboards: [{ pageName: 'x', artboardName: 'y', size: 1 }],
+          tokens: { colors: { '1px solid #C8CBCD': 160 } }
+        })
+      )
+      const r = runList()
+      assert(r.status === 0, `exit ${r.status}`)
+      const disk = JSON.parse(fs.readFileSync(listPath, 'utf8'))
+      assertEq(disk.v, 1, 'version stamp written')
+      assertEq(disk.artboards.length, 10, 'unversioned cache replaced')
+      assert(
+        !Object.keys(disk.tokens.colors).some(c => /solid|border|px/i.test(c)),
+        'border shorthand from stale cache not carried over'
+      )
+    }
   ]
 ])

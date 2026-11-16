@@ -46,9 +46,13 @@ interface TokensSummary {
 }
 
 interface ListFile {
+  /** 缓存结构版本：工具的输出逻辑升级（如 tokens 摘选规则变化）时递增，旧缓存自动失效重建 */
+  v: number
   artboards: ListItem[]
   tokens: TokensSummary
 }
+
+const LIST_VERSION = 1
 
 function getListPath(filePath: string) {
   const designFileName = basename(filePath, '.zip')
@@ -187,8 +191,8 @@ function aggregateTokens(sketch: SketchHtmlFile): TokensSummary {
 
 /**
  * 获取sketch html文件中的所有artboard列表与设计token聚合
- * 结果写入 .sketch-cache/{design}/list.json（{ artboards, tokens }）并返回JSON
- * 设计稿比 list.json 新时（zip 按文件 mtime，目录按内部文件最新 mtime）重新生成，不返回过期缓存
+ * 结果写入 .sketch-cache/{design}/list.json（{ v, artboards, tokens }）并返回JSON
+ * 设计稿比 list.json 新时（zip 按文件 mtime，目录按内部文件最新 mtime）或缓存结构版本不匹配（输出逻辑升级）时重新生成，不返回过期缓存
  * @param args 输入参数
  * @param args.file_path sketch html文件路径
  * @returns 画板列表与token聚合JSON，末尾附 list.json 落盘路径
@@ -205,7 +209,12 @@ export async function sketchList(args: SketchListInputSchema) {
   if (stampValid) {
     try {
       const parsed = JSON.parse(await readFile(listPath, 'utf8')) as ListFile
-      if (Array.isArray(parsed?.artboards) && parsed.tokens) {
+      // v 缺失（旧版工具产出）或不匹配时视为过期：输出逻辑升级不能沿用旧缓存（如 tokens 摘选规则变化）
+      if (
+        parsed?.v === LIST_VERSION &&
+        Array.isArray(parsed?.artboards) &&
+        parsed.tokens
+      ) {
         data = parsed
       }
     } catch {
@@ -219,7 +228,7 @@ export async function sketchList(args: SketchListInputSchema) {
       getListInfo(args.file_path, a, sketchData.images)
     )
     const artboards = await Promise.all(promises)
-    data = { artboards, tokens: aggregateTokens(sketchData) }
+    data = { v: LIST_VERSION, artboards, tokens: aggregateTokens(sketchData) }
     await writeJsonFile(listPath, data)
   }
 
