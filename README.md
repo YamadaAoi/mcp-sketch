@@ -42,6 +42,7 @@ AI 直接读设计稿只剩一个痛点：**需要不断试探怎么取数据**�
 - 输出为省 token 的定位数组格式：`columns` 一次性声明列序，每个图层一行按位读取（index/name/type/rect/content/css/assets）；偶现的非默认 `opacity`/`rotation` 收录在按 `index` 索引的稀疏 `extras` 里；空值按列类型固定（content 为 `""`，css/assets 为 `[]`）
 - `css` 承载主要样式声明（字体/颜色/渐变/圆角/阴影，默认值噪音已过滤）；`assets` 为纯路径数组（相对项目根目录，已压缩为 webp，可直接 import）
 - `slice` 图层自动导出切图，同内容全局去重（跨画板共享的图标只存一份）；自动生成画板预览图，区域查询时生成对应区域的裁剪预览
+- 结果按参数组合落盘缓存于 `.sketch-cache/{design}/analyze/`（文件名含参数摘要，CLI 与 MCP 共用同一份）：命中直接返回；设计稿更新（版本戳变化）或引用文件（预览图/切图）缺失时自动重算
 
 **dev — 开发服务**
 
@@ -49,22 +50,23 @@ AI 直接读设计稿只剩一个痛点：**需要不断试探怎么取数据**�
 
 **compare — 截图对比**
 
-- 浏览器截图与画板预览图逐像素对比，返回相似度分数与差异放大图，支持"改代码 → 截图 → 对比 → 修正"的量化收敛循环
-- 差异图按画板归档到 `compare/{timestamp}.webp`，多轮修正结果可回溯对比
+- 纯两图差异器：`-b` 基准图（设计侧）与 `-s` 实现截图（页面侧）逐像素比对，截图按基准图宽度缩放后取共同高度计算差异，返回相似度分数与差异放大图，支持"改代码 → 截图 → 对比 → 修正"的量化收敛循环；工具本身不含设计栈知识，两侧的区域定位在上游完成
+- 基准图来源：整页比对用 `list` 返回的画板 `previewPath`；单个组件用 `analyze -r` 返回的区域 `previewPath`（已按 rect 裁剪），配合 Playwright 元素截图（`browser_take_screenshot` 传元素选择器）即可做组件级比对
+- 差异图归档到基准图同目录的 `compare/{timestamp}.webp`，多轮修正结果可回溯对比
 - 浏览器截图依赖 Playwright MCP（见下方[配置](#配置-playwright-mcpcompare-截图依赖可选)），由 AI 打开页面、探索渲染结果并截图
 
 ## 与 AI 直接读设计稿相比
 
-| 维度       | AI 直接读解压文件                       | mcp-sketch                                   |
-| ---------- | --------------------------------------- | -------------------------------------------- |
-| 解压/解析  | 需要解压 zip、翻目录找入口              | zip 或目录直接传入，零准备                   |
-| 取数方式   | 反复试探：读 html → 找内嵌变量 → 猜结构 | 一次调用拿到过滤、排序后的结构化图层         |
-| 文本内容   | 看图猜字                                | `content` 字段直接给出                       |
-| 图层样式   | 从原始大 JSON 里捞                      | `css` 声明数组，噪音已过滤                   |
-| 切图       | 找到图片再自己处理                      | 自动导出 webp 并全局去重                     |
-| 预览图     | 自己翻 preview 目录                     | 画板级 / 区域级预览直接给出                  |
-| 重复成本   | 每次会话重复全部过程                    | 解析结果按设计稿版本缓存，list.json 落盘复用 |
-| 还原度检查 | 肉眼对比两张图                          | compare 相似度分数 + 差异图                  |
+| 维度       | AI 直接读解压文件                       | mcp-sketch                                       |
+| ---------- | --------------------------------------- | ------------------------------------------------ |
+| 解压/解析  | 需要解压 zip、翻目录找入口              | zip 或目录直接传入，零准备                       |
+| 取数方式   | 反复试探：读 html → 找内嵌变量 → 猜结构 | 一次调用拿到过滤、排序后的结构化图层             |
+| 文本内容   | 看图猜字                                | `content` 字段直接给出                           |
+| 图层样式   | 从原始大 JSON 里捞                      | `css` 声明数组，噪音已过滤                       |
+| 切图       | 找到图片再自己处理                      | 自动导出 webp 并全局去重                         |
+| 预览图     | 自己翻 preview 目录                     | 画板级 / 区域级预览直接给出                      |
+| 重复成本   | 每次会话重复全部过程                    | 解析按版本缓存，list.json / analyze 结果落盘复用 |
+| 还原度检查 | 肉眼对比两张图                          | compare 相似度分数 + 差异图                      |
 
 一句话：**模型负责还原，工具负责喂料**。省下试探取数的 token，全部花在写代码上。
 
@@ -83,7 +85,7 @@ npx -y mcp-sketch install
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目并检查 sketch 相关配置（`.env.sketch`、浏览器自动化 MCP）、`/sketch overview` 概览设计稿、`/sketch draw` 绘制页面三个固定指令），已存在的文件可逐文件选择覆盖或跳过。
+skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目并检查 sketch 相关配置（`.env.sketch`、`.gitignore` 缓存忽略、浏览器自动化 MCP）、`/sketch overview` 概览设计稿、`/sketch draw` 绘制页面三个固定指令），已存在的文件可逐文件选择覆盖或跳过。
 
 ### 配置 MCP 服务
 
@@ -136,17 +138,17 @@ skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sket
 mcp-sketch list -f "设计稿.zip"
 
 # 图层解析：整个画板前 20 个图层
-mcp-sketch analyze -f "设计稿.zip" --pn "页面名" --an "画板名" --limit 20
+mcp-sketch analyze -f "设计稿.zip" -p "页面名" -a "画板名" -l 20
 
 # 区域解析：登录框区域，排除子组件占位区
-mcp-sketch analyze -f "设计稿.zip" --pn "页面名" --an "画板名" -r "[695,200,530,660]" -e "[[700,600,120,40]]"
+mcp-sketch analyze -f "设计稿.zip" -p "页面名" -a "画板名" -r "[695,200,530,660]" -e "[[700,600,120,40]]"
 
 # 按名称/类型快速定位
-mcp-sketch analyze -f "设计稿.zip" --pn "页面名" --an "画板名" -n "logo"
-mcp-sketch analyze -f "设计稿.zip" --pn "页面名" --an "画板名" -t text
+mcp-sketch analyze -f "设计稿.zip" -p "页面名" -a "画板名" -n "logo"
+mcp-sketch analyze -f "设计稿.zip" -p "页面名" -a "画板名" -t text
 
-# 截图对比（Playwright 等工具截图后）
-mcp-sketch compare -f "设计稿.zip" --pn "页面名" --an "画板名" -s "screenshot.png"
+# 截图对比（-b 基准图：画板/区域预览图；-s 实现截图）
+mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 ```
 
 > `mcp-sketch <cmd> --help` 查看完整参数
@@ -155,14 +157,14 @@ mcp-sketch compare -f "设计稿.zip" --pn "页面名" --an "画板名" -s "scre
 
 项目根目录 `.env.sketch`（可选）：
 
-| 字段              | 必填 | 默认值              | 说明                            |
-| ----------------- | ---- | ------------------- | ------------------------------- |
-| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                |
-| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 时必填 |
-| `CWD`             | 否   | 当前目录            | 项目根目录                      |
-| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                    |
-| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限        |
-| `LOG_LEVEL`       | 否   | `info`              | 日志级别                        |
+| 字段              | 必填 | 默认值              | 说明                                                 |
+| ----------------- | ---- | ------------------- | ---------------------------------------------------- |
+| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                                     |
+| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 时必填                      |
+| `CWD`             | 否   | 当前目录            | 项目根目录                                           |
+| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                         |
+| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存） |
+| `LOG_LEVEL`       | 否   | `info`              | 日志级别                                             |
 
 > **Linux / macOS / WSL** 使用 `dev` 命令需安装 tmux：`brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL)，Windows 无需额外安装
 
@@ -170,7 +172,8 @@ mcp-sketch compare -f "设计稿.zip" --pn "页面名" --an "画板名" -s "scre
 
 ```
 .sketch-cache/{设计稿名}/list.json                        # 画板列表 + 设计 token
-.sketch-cache/assets-index.json                           # 切图内容索引（全局去重）
+.sketch-cache/{设计稿名}/analyze/                          # analyze 结果缓存（{页面}--{画板}--{参数}--{hash}.json）
+.sketch-cache/assets-index.json                           # 切图内容索引（全局去重 + 拼音名 → 原始文件名/图层溯源）
 .sketch-cache/{设计稿名}/{页面}/{画板}/                   # 画板/区域预览图（webp）
 .sketch-cache/{设计稿名}/{页面}/{画板}/compare/           # 对比差异图（{timestamp}.webp）
 .sketch-cache/{设计稿名}/{页面}/{画板}/screenshot/        # 浏览器截图（AI 按 skill 约定保存）

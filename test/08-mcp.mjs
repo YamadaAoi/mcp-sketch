@@ -106,6 +106,36 @@ await runSuite('08-mcp: stdio server handshake & tools', [
     }
   ],
   [
+    'sketch_compare: two-image diff via MCP',
+    async () => {
+      const a = await client.callTool({
+        name: 'sketch_analyze',
+        arguments: {
+          file_path: FIXTURE_ZIP,
+          page_name: PAGE,
+          artboard_name: '登录'
+        }
+      })
+      assert(!a.isError, 'analyze (cache hit) for previewPath')
+      const { previewPath } = JSON.parse(textOf(a))
+      const shot = path.join(ws, 'mcp-shot.png')
+      fs.copyFileSync(path.join(ws, previewPath), shot)
+
+      const res = await client.callTool({
+        name: 'sketch_compare',
+        arguments: { base_image: previewPath, screenshot_path: 'mcp-shot.png' }
+      })
+      assert(!res.isError, 'compare tool succeeded')
+      const d = JSON.parse(textOf(res))
+      assertEq(d.score, 1, 'identical images score 1.0 via MCP')
+      assertEq(d.base, previewPath, 'base path echoed relative to MCP cwd')
+      assert(
+        fs.existsSync(path.join(ws, d.diffPath)),
+        'diff written inside the workspace'
+      )
+    }
+  ],
+  [
     'sketch_dev: PREVIEW_URL missing → isError',
     async () => {
       const res = await client.callTool({

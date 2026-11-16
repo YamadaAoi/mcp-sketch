@@ -10,12 +10,10 @@ import {
 const toolName = 'sketch_compare'
 
 /**
- * 对比浏览器截图与画板预览图，返回相似度分数与差异图路径
+ * 纯两图差异器：基准图（设计侧）与实现截图（页面侧）逐像素比对，返回相似度分数与差异图路径
  * @param {SketchCompareInputSchema} args - 对比参数
- * @property {string} file_path - sketch html文件路径(zip或目录,必填)
- * @property {string} page_name - 指定页面名称(必填)
- * @property {string} artboard_name - 指定画板名称(必填)
- * @property {string} screenshot_path - 浏览器截图文件路径(必填)
+ * @property {string} base_image - 基准图路径(必填)：整页比对用 list 返回的画板 previewPath，组件比对用 analyze -r 返回的区域 previewPath(已按 rect 裁剪)
+ * @property {string} screenshot_path - 实现截图路径(必填)：整页截图或元素截图(如 Playwright)
  * @returns {CallToolResult} - 相似度分数与差异图路径
  */
 async function sketchCompareTool(
@@ -51,7 +49,7 @@ export function toolSketchCompare(): RegisterToolParams {
     {
       title: toolName,
       description:
-        'Compare a browser screenshot with the artboard preview image, return similarity score and diff image',
+        'Diff two images pixel-wise: a design base image (artboard or region preview) vs an implementation screenshot (full-page or element shot), return similarity score and diff image',
       inputSchema: sketchCompareInputSchema
     },
     sketchCompareTool

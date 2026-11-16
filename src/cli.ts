@@ -9,7 +9,7 @@ export function startCli() {
   const program = new Command()
     .name('mcp-sketch')
     .description(
-      'A CLI tool for analyzing Sketch Meaxure exported archives (zip or folder)'
+      'Turn Sketch Meaxure exports (zip or folder) into frontend code: list artboards, extract layer data, export webp assets, and score screenshots against previews. Run `mcp-sketch <command> --help` for usage and examples'
     )
     .version(__VERSION__, '-v, --version', 'Show version number')
 

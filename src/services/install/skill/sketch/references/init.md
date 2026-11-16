@@ -52,10 +52,18 @@ Configurable variables:
 | `PREVIEW_URL`     | No       | -                   | Dev server URL; required to use the `dev` tool |
 | `CWD`             | No       | Current directory   | Project root                                   |
 | `ASSETS_PATH`     | No       | `src/assets/sketch` | Asset output path                              |
-| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process cache limit for design parsing      |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze cached on disk |
 | `LOG_LEVEL`       | No       | `info`              | Log level                                      |
 
-## 5. Check the browser automation MCP configuration
+## 5. Check `.gitignore` for the cache directory
+
+mcp-sketch writes derived data under `.sketch-cache/` (list.json, previews, analyze result caches, asset dedup index) — everything there is regenerable from the design file and generally should not be committed:
+
+- **Already ignored** (`.gitignore` contains `.sketch-cache`): skip
+- **Not ignored**: explain that the cache is regenerable, then **ask the user whether to add `.sketch-cache/` to `.gitignore`**; edit (or create) the file only after the user agrees, and append only — never touch existing entries
+- Exported assets under `ASSETS_PATH` (e.g. `src/assets/sketch`) are real source files and must NOT be ignored
+
+## 6. Check the browser automation MCP configuration
 
 Check whether a browser automation MCP (e.g. Playwright; the screenshot-compare workflow depends on it to explore rendered results and take screenshots) is already configured in the current AI client's project-level MCP config:
 

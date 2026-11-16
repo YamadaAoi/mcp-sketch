@@ -46,7 +46,7 @@ await runSuite('05-folder: design folder input (wrapped & flat)', [
       assertEq(data.artboards.length, 10, 'wrapped folder artboards')
 
       const a = cli(
-        ['analyze', '-f', wrappedDesign, '--pn', PAGE, '--an', '登录'],
+        ['analyze', '-f', wrappedDesign, '-p', PAGE, '-a', '登录'],
         { cwd: ws }
       )
       assert(a.status === 0, `analyze exit ${a.status}`)
@@ -61,10 +61,9 @@ await runSuite('05-folder: design folder input (wrapped & flat)', [
       const data = parseJsonOutput(r.stdout)
       assertEq(data.artboards.length, 10, 'flat folder artboards')
 
-      const a = cli(
-        ['analyze', '-f', flatDesign, '--pn', PAGE, '--an', '登录'],
-        { cwd: ws }
-      )
+      const a = cli(['analyze', '-f', flatDesign, '-p', PAGE, '-a', '登录'], {
+        cwd: ws
+      })
       assert(a.status === 0, `analyze exit ${a.status}`)
       assertEq(JSON.parse(a.stdout).total, 15, 'flat 登录 total')
     }

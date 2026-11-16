@@ -42,6 +42,7 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 - Output is a token-efficient positional format: `columns` declares the column order once and each layer is a row array read by position (index/name/type/rect/content/css/assets); occasional non-default `opacity`/`rotation` lives in a sparse `extras` map keyed by `index`; empty values are typed (content is `""`, css/assets are `[]`)
 - `css` carries the main style declarations (fonts/colors/gradients/radii/shadows, default-value noise filtered out); `assets` is a plain path array (relative to the project root, compressed to webp, ready to import)
 - `slice` assets are auto-exported with global content deduplication (icons shared across artboards are stored only once); artboard previews are generated automatically, and region queries generate a cropped preview of that region
+- Results are cached on disk per parameter combination under `.sketch-cache/{design}/analyze/` (the filename carries a param digest; CLI and MCP share the same cache): a hit returns directly, and the cache recomputes automatically when the design stamp changes or referenced files (previews/assets) are missing
 
 **dev — dev server**
 
@@ -49,22 +50,23 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 
 **compare — screenshot diff**
 
-- Pixel-wise comparison between a browser screenshot and the artboard preview, returning a similarity score plus an amplified diff image — enabling a quantified "edit code → screenshot → compare → fix" loop
-- Diff images accumulate per artboard at `compare/{timestamp}.webp`, so refinement rounds stay comparable
+- A pure two-image differ: `-b` base image (design side) vs `-s` implementation screenshot (page side), pixel-wise — the screenshot is scaled to the base width and the common height is diffed, returning a similarity score plus an amplified diff image, enabling a quantified "edit code → screenshot → compare → fix" loop; the tool itself carries no design-stack knowledge, localization happens upstream on each side
+- Base image sources: the artboard `previewPath` from `list` for a whole page; the region `previewPath` from `analyze -r` (already cropped to the rect) for a single component, paired with a Playwright element screenshot (`browser_take_screenshot` with an element selector) for component-level diffing
+- Diff images accumulate next to the base image at `compare/{timestamp}.webp`, so refinement rounds stay comparable
 - The browser screenshot comes from Playwright MCP (see [configuration below](#configure-playwright-mcp-optional-dependency-for-compare)), with which the AI opens the page, explores the rendered result, and takes screenshots
 
 ## Compared to letting AI read design files directly
 
-| Dimension    | AI reads unzipped files                        | mcp-sketch                                                         |
-| ------------ | ---------------------------------------------- | ------------------------------------------------------------------ |
-| Unzip/parse  | Must unzip, browse folders for the entry file  | Pass zip or folder directly, zero setup                            |
-| Data access  | Trial and error: read html → find vars → guess | One call returns filtered, sorted, structured data                 |
-| Text content | Guess text by looking at pixels                | Handed over via the `content` field                                |
-| Layer styles | Dig through huge raw JSON                      | `css` declaration array, noise filtered                            |
-| Image assets | Find images and process them yourself          | Auto-exported as webp and globally deduplicated                    |
-| Previews     | Browse the preview folder yourself             | Artboard-level / region-level previews provided                    |
-| Repeat cost  | The whole process repeats every session        | Parsed results cached per design version, list.json reused on disk |
-| Verification | Eyeball two images side by side                | compare similarity score + diff image                              |
+| Dimension    | AI reads unzipped files                        | mcp-sketch                                                            |
+| ------------ | ---------------------------------------------- | --------------------------------------------------------------------- |
+| Unzip/parse  | Must unzip, browse folders for the entry file  | Pass zip or folder directly, zero setup                               |
+| Data access  | Trial and error: read html → find vars → guess | One call returns filtered, sorted, structured data                    |
+| Text content | Guess text by looking at pixels                | Handed over via the `content` field                                   |
+| Layer styles | Dig through huge raw JSON                      | `css` declaration array, noise filtered                               |
+| Image assets | Find images and process them yourself          | Auto-exported as webp and globally deduplicated                       |
+| Previews     | Browse the preview folder yourself             | Artboard-level / region-level previews provided                       |
+| Repeat cost  | The whole process repeats every session        | Parses cached per version; list.json & analyze results reused on disk |
+| Verification | Eyeball two images side by side                | compare similarity score + diff image                                 |
 
 In one sentence: **the model renders, the tool feeds it data**. Tokens saved on probing for data are all spent writing code.
 
@@ -83,7 +85,7 @@ Select your platform interactively; files are written to:
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-The skill teaches the AI when and with which parameters to call the tools above (including three fixed commands: `/sketch init` to learn the project and check sketch-related configs (`.env.sketch`, browser automation MCP), `/sketch overview` to overview a design, `/sketch draw` to draw a page). Existing files can be overwritten or skipped per file.
+The skill teaches the AI when and with which parameters to call the tools above (including three fixed commands: `/sketch init` to learn the project and check sketch-related configs (`.env.sketch`, `.gitignore` cache ignore, browser automation MCP), `/sketch overview` to overview a design, `/sketch draw` to draw a page). Existing files can be overwritten or skipped per file.
 
 ### Configure the MCP server
 
@@ -136,17 +138,17 @@ Set `MCP_MODE=1` and register it as a local MCP server in your AI tool:
 mcp-sketch list -f "design.zip"
 
 # Layer analysis: top 20 layers of an artboard
-mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" --limit 20
+mcp-sketch analyze -f "design.zip" -p "PageName" -a "ArtboardName" -l 20
 
 # Region analysis: the login-box region, excluding a child component's area
-mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -r "[695,200,530,660]" -e "[[700,600,120,40]]"
+mcp-sketch analyze -f "design.zip" -p "PageName" -a "ArtboardName" -r "[695,200,530,660]" -e "[[700,600,120,40]]"
 
 # Quick lookup by name / type
-mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -n "logo"
-mcp-sketch analyze -f "design.zip" --pn "PageName" --an "ArtboardName" -t text
+mcp-sketch analyze -f "design.zip" -p "PageName" -a "ArtboardName" -n "logo"
+mcp-sketch analyze -f "design.zip" -p "PageName" -a "ArtboardName" -t text
 
-# Screenshot comparison (after capturing one with Playwright etc.)
-mcp-sketch compare -f "design.zip" --pn "PageName" --an "ArtboardName" -s "screenshot.png"
+# Screenshot comparison (-b base image: artboard/region preview; -s implementation screenshot)
+mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 ```
 
 > Run `mcp-sketch <cmd> --help` for full parameter details
@@ -155,14 +157,14 @@ mcp-sketch compare -f "design.zip" --pn "PageName" --an "ArtboardName" -s "scree
 
 `.env.sketch` in the project root (optional):
 
-| Field             | Required | Default             | Description                               |
-| ----------------- | -------- | ------------------- | ----------------------------------------- |
-| `SERVER_COMMAND`  | No       | `npm run dev`       | Command to start the dev server           |
-| `PREVIEW_URL`     | No       | -                   | Dev server URL; required when using `dev` |
-| `CWD`             | No       | Current directory   | Project root                              |
-| `ASSETS_PATH`     | No       | `src/assets/sketch` | Image asset output path                   |
-| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process design parse cache limit       |
-| `LOG_LEVEL`       | No       | `info`              | Log level                                 |
+| Field             | Required | Default             | Description                                         |
+| ----------------- | -------- | ------------------- | --------------------------------------------------- |
+| `SERVER_COMMAND`  | No       | `npm run dev`       | Command to start the dev server                     |
+| `PREVIEW_URL`     | No       | -                   | Dev server URL; required when using `dev`           |
+| `CWD`             | No       | Current directory   | Project root                                        |
+| `ASSETS_PATH`     | No       | `src/assets/sketch` | Image asset output path                             |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze results disk-cached |
+| `LOG_LEVEL`       | No       | `info`              | Log level                                           |
 
 > On **Linux / macOS / WSL**, the `dev` command requires tmux: `brew install tmux` (macOS) / `sudo apt install tmux` (Ubuntu/Debian/WSL). No extra setup needed on Windows
 
@@ -170,7 +172,8 @@ mcp-sketch compare -f "design.zip" --pn "PageName" --an "ArtboardName" -s "scree
 
 ```
 .sketch-cache/{design}/list.json                        # artboard list + design tokens
-.sketch-cache/assets-index.json                         # asset content index (global dedup)
+.sketch-cache/{design}/analyze/                          # analyze result cache ({page}--{artboard}--{params}--{hash}.json)
+.sketch-cache/assets-index.json                         # asset content index (global dedup + pinyin → original file/layer-name origins)
 .sketch-cache/{design}/{page}/{artboard}/               # artboard/region previews (webp)
 .sketch-cache/{design}/{page}/{artboard}/compare/       # compare diff images ({timestamp}.webp)
 .sketch-cache/{design}/{page}/{artboard}/screenshot/    # browser screenshots (saved by the skill)

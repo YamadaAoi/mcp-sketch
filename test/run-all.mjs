@@ -21,7 +21,8 @@ const ALL = [
   '05-folder',
   '06-errors',
   '07-install',
-  '08-mcp'
+  '08-mcp',
+  '09-analyze-cache'
 ]
 
 const argv = process.argv.slice(2)

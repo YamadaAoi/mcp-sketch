@@ -3,7 +3,10 @@ import { sketchCompare, sketchCompareInputSchema } from '@/services/compare'
 import { logger } from '@/utils/logger'
 
 async function handleCompare(opts: Record<string, unknown>) {
-  const args = sketchCompareInputSchema.parse(opts)
+  const args = sketchCompareInputSchema.parse({
+    base_image: opts.base_image,
+    screenshot_path: opts.screenshot_path
+  })
   const text = await sketchCompare(args)
   console.log(text)
 }
@@ -11,17 +14,22 @@ async function handleCompare(opts: Record<string, unknown>) {
 export const compare = new Command()
   .name('compare')
   .description(
-    'Compare a browser screenshot with the artboard preview image, return similarity score and diff image'
+    'Diff two images pixel-wise: a design base image vs an implementation screenshot (0~1 similarity + diff image), enabling an "edit code → screenshot → compare" convergence loop'
   )
   .requiredOption(
-    '-f, --file_path <PATH>',
-    'Sketch HTML export path (zip or folder)'
+    '-b, --base_image <PATH>',
+    'Base image path (design side): the artboard previewPath from `list` for a whole page, or the region previewPath from `analyze -r` for a component'
   )
-  .requiredOption('--pn, --page_name <PAGENAME>', 'Page name')
-  .requiredOption('--an, --artboard_name <ARTBOARDNAME>', 'Artboard name')
   .requiredOption(
     '-s, --screenshot_path <PATH>',
-    'Browser screenshot file path to compare'
+    'Implementation screenshot path (page side): a full-page or element screenshot (e.g. from Playwright)'
+  )
+  .addHelpText(
+    'after',
+    `
+Examples:
+  $ mcp-sketch compare -b "{preview_image_path}" -s "{screenshot_path}"        # whole page: base = artboard preview (from list), screenshot = full page
+  $ mcp-sketch compare -b "{region_preview_path}" -s "{element_shot_path}"     # component: base = analyze -r previewPath (pre-cropped), screenshot = element shot`
   )
   .action((opts: Record<string, unknown>) => {
     handleCompare(opts).catch(err => {

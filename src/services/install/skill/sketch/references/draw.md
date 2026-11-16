@@ -14,27 +14,48 @@
 
 - When drawing an artboard from this design for the first time, you may read all preview images of the design to understand the project
 - The `tokens` field is the aggregated design system (colors / font sizes / font families / radii / shadows / style names sorted by usage frequency); use it when building theme variables or checking design conventions — optional
-- Combine the preview images and the data size to understand the page layout and split it into components sensibly
-- Call `sketch_analyze` (MCP tool) or `npx -y mcp-sketch analyze` (CLI) to fetch precise layer data
-  - If the artboard's data is very large, reading it all at once is not worth it; split it by component region and call per region
+- **Read the artboard preview before fetching any data**: vision gives what the data cannot — semantics (what each icon actually is) and functional-partition intuition; layer data read without the preview is hard to interpret. Split the page into components based on the preview
+- If the artboard's `size` is small (a simple artboard like a login page), read the whole artboard in one analyze call and skip the progressive stages below — the extra round trips aren't worth it for so little data
+
+3. Fetch layer data progressively — **only fetch data for the component you are about to write, never for components not yet written** (every analyze response lands in your context; data for unwritten components only bloats it). Call `sketch_analyze` (MCP tool) or `npx -y mcp-sketch analyze` (CLI)
+
+**Stage 1 — skeleton**: top-weighted layers form the layout skeleton (sidebar / card areas / table panels) and provide the coordinates for later region reads
 
 ```bash
-npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -r "[x,y,w,h]" -e "[[x1,y1,w1,h1]]" -n "{name}" -t "{type}" --limit {n} --offset {m}
+npx -y mcp-sketch analyze -f "{file_path}" -p "{page_name}" -a "{artboard_name}" -l 20
 ```
+
+Ranking is area-weighted: large layout containers first, detail layers last — a skeleton view, not an importance ranking
+
+**Stage 2 — resource inventory**: one call each for the full asset list and the full copy list
+
+```bash
+npx -y mcp-sketch analyze -f "{file_path}" -p "{page_name}" -a "{artboard_name}" -t "slice"
+npx -y mcp-sketch analyze -f "{file_path}" -p "{page_name}" -a "{artboard_name}" -t "text"
+```
+
+The slice inventory carries every asset's path / size / owning-layer rect — identify each against the preview; asset paths are already-exported webp files ready to import. The text list is useful for i18n or copy proofreading
+
+**Stage 3 — region deep-read**: fetch a region's data only when you are about to write it; take the rect from the stage-1 skeleton
+
+- **Rect semantics**: `layers` holds layers fully inside the rect; slight straddles — layers inside the rect expanded by ~10px but not inside the rect itself — come back separately in the `adjacent` field (export jitter or a few px of overflow; judge whether each belongs to your component by its rect). Page-level containers (e.g. the full-canvas background) are in neither — they show up in the stage-1 skeleton
+- `-e` marks regions already done, `-n` locates a specific element by name (details in the parameter table below)
+- Deep-read every region once with analyze; do not reconstruct a region from the preview plus skeleton geometry alone
+- For simple regions (plain stat panels) or unclear boundaries, continue paging the weight ranking with `-l`/`-o` instead of rect reads
 
 **Parameters**:
 
-| Arg        | Description                                                                                                                                                                  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-f`       | **Required**. Design export path (zip or folder)                                                                                                                             |
-| `--pn`     | **Required**. Page name                                                                                                                                                      |
-| `--an`     | **Required**. Artboard name                                                                                                                                                  |
-| `-r`       | **Optional**. Rectangular region of a component, format `[x, y, width, height]`; only layers **fully inside** the region are returned, boundary-crossing layers are excluded |
-| `-e`       | **Optional**. List of rectangular regions to exclude, format `[[x1,y1,w1,h1]]`; regions occupied by sub-components get excluded                                              |
-| `-n`       | **Optional**. Filter layers by name keyword (case-insensitive substring match), for quickly locating specific layers (e.g. logo, close button)                               |
-| `-t`       | **Optional**. Filter layers by type: `text` / `shape` / `slice`; e.g. use `text` to get the full copy list of an artboard                                                    |
-| `--limit`  | Number of layers to return. Estimate from artboard complexity: 10~15 for simple artboards, 20~30 for complex ones                                                            |
-| `--offset` | Start returning from the m-th layer (default 0). Top-ranked layers are usually large layout containers; low-ranked ones are detail elements                                  |
+| Arg  | Description                                                                                              |
+| ---- | -------------------------------------------------------------------------------------------------------- |
+| `-f` | **Required**. Design export path (zip or folder)                                                         |
+| `-p` | **Required**. Page name                                                                                  |
+| `-a` | **Required**. Artboard name                                                                              |
+| `-r` | **Optional**. Component region `[x, y, width, height]`; result semantics see "Rect semantics" in stage 3 |
+| `-e` | **Optional**. Regions already done, `[[x1,y1,w1,h1], ...]`; only layers fully inside are dropped         |
+| `-n` | **Optional**. Filter by layer-name keyword (case-insensitive substring), e.g. logo, close button         |
+| `-t` | **Optional**. Filter by type: `text` / `shape` / `slice`                                                 |
+| `-l` | **Optional**. Layers to return; simple artboards 10~15, complex ones 20~30                               |
+| `-o` | **Optional**. Return starting from the m-th layer (default 0)                                            |
 
 **Response** (layer data is positional: the column order is declared once by `columns`, each row is read by position):
 
@@ -72,45 +93,59 @@ npx -y mcp-sketch analyze -f "{file_path}" --pn "{page_name}" --an "{artboard_na
       []
     ],
     [1, "layer name", "slice", 0, 0, 24, 24, "", [], ["asset path"]]
-  ]
+  ],
+  "adjacent": [[2, "layer name", "text", 8, 20, 104, 30, "", [], []]]
 }
 ```
 
 - Each row in `layers` has 10 slots in the same order as `columns`: `index` (z-order), `name`, `type`, `x`/`y`/`w`/`h` (i.e. rect), `content`, `css`, `assets`
 - Empty values are typed per column: `content` is `""`, `css`/`assets` are `[]`; slots are never omitted
 - `layers` is sorted by layout weight descending (base score is area, layers with aspect ratio ≥ 30 get extra weight), and layers without visual properties are already filtered out
-- `total` is the layer count after filtering (before pagination); use it with `--limit/--offset` to tell whether all pages have been read
+- `total` is the layer count after filtering (before pagination); use it with `-l`/`-o` to tell whether all pages have been read
 - `index` is the original layer order (z-order, higher means closer to the top); use it to reason about occlusion between layers
 - For `type: "text"` layers, slot 8 is the text content (`content`); styles (font / size / color / line-height, etc.) are in the `css` array
 - The occasional `extras` field is keyed by `index` and carries that layer's `opacity` / `rotation` (only non-default values); the designer-named shared styles are aggregated in `tokens.styleNames` of list.json
+- `adjacent` is returned only by rect queries (semantics see "Rect semantics" in stage 3); its rows use the same `columns`, are not counted in `total`, and are not affected by `-l`/`-o`
 - The `css` array carries the layer's main visual styles: font / size / color / line-height for text; background / gradient / radius / border / shadow for shapes; uninformative default declarations (`letter-spacing: 0`, etc.) are already filtered out
-- `type: "slice"` layers contain exported assets; the `assets` array holds asset file paths (relative to the project root, already compressed to webp, ready for import)
+- `type: "slice"` layers contain exported assets; the `assets` array holds asset file paths (relative to the project root, already compressed to webp, ready for import); asset file names are pinyin-transliterated and usually meaningless — remap them to semantic names in code, and trace an asset's original export file name / layer / page / artboard in the `names` section of `.sketch-cache/assets-index.json`
 
-3. Summarize the information, pick a suitable location to write the component, and insert the route (if needed)
+4. Summarize the information, pick a suitable location to write the component, and insert the route (if needed)
 
-- Mind the **existing UI library** and **existing common components** in the project; don't reinvent the wheel
+- Reuse the project's **existing UI library** and **existing common components**; do not reimplement equivalents
 
-4. If a `.env.sketch` config file exists in the project root with `SERVER_COMMAND` and `PREVIEW_URL` configured, call `sketch_dev` (MCP tool) or run the command below to start the dev server
+**Delegating independent components to subagents** (when a subagent mechanism is available): strongly independent components can be drawn in parallel, each subagent's context carrying only its own region's data — faster, and each context stays small
+
+- Candidates: components with clear visual boundaries and self-contained functionality (table panel / form / stat-card group / modal), each living in its own file; interleaved regions or components sharing layout logic stay with the main agent
+- The main agent fixes these once, before dispatching: each component's region rect (from the stage-1 skeleton, used as-is — straddles are already covered, see "Rect semantics" in stage 3), the shared conventions — theme variables from `tokens`, UI-library usage, naming/import style — and a distinct target file per subagent. Parallel subagents cannot see each other; conventions decided independently will drift
+- Each subagent prompt must be self-contained (a fresh context knows nothing about this session): design file path, page name, artboard name, the pre-computed rect with a ready-to-run analyze command (stage 3), the preview image path, the project conventions above, the assigned target file, and scope fences — only write the assigned file; routes / theme / page-shell layout belong to the main agent
+- The main agent keeps: page-shell layout, route insertion, cross-component consistency, and **all screenshot comparing** (step 6) — subagents do not screenshot or compare on their own. Whether design content corresponds to the rendered page (scroll fold, viewport size, lazy-load; see step 6) is page-level knowledge a component subagent lacks, and a misleading score sends its fixes astray. Once all components are done, the main agent compares, then fixes flagged regions individually — a region's fix can be dispatched back to its subagent along with the diff image
+
+5. If a `.env.sketch` config file exists in the project root with `SERVER_COMMAND` and `PREVIEW_URL` configured, call `sketch_dev` (MCP tool) or run the command below to start the dev server
 
 ```bash
 npx -y mcp-sketch dev
 ```
 
-5. If the local dev server started successfully and a browser automation MCP is available (e.g. Playwright, tools like `browser_navigate`), explore what was drawn, take a screenshot, then call `sketch_compare` (MCP tool) or the command below to compare it with the artboard preview; refine the page based on the similarity score and the diff image
+6. If the local dev server started successfully and a browser automation MCP is available (e.g. Playwright, tools like `browser_navigate`), explore what was drawn, take a screenshot, then call `sketch_compare` (MCP tool) or the command below to diff it against the base image; refine the page based on the similarity score and the diff image
 
 - If screenshotting is available, save screenshots to `.sketch-cache/{design_file_name}/{page_name}/{artboard_name}/screenshot/{timestamp}.png`
+- The screenshot must cover the whole rendered page: the design lays out below-the-fold content directly, while the real page may need scrolling to show it — capture a full-page screenshot (or set the viewport to the artboard size), and scroll through once first if content lazy-loads; a viewport-only screenshot silently skips below-fold content and over-reports the score
 
 ```bash
-npx -y mcp-sketch compare -f "{file_path}" --pn "{page_name}" --an "{artboard_name}" -s "{screenshot_path}"
+npx -y mcp-sketch compare -b "{preview_image_path}" -s "{screenshot_path}"
 ```
 
+`compare` is a pure two-image differ with no knowledge of the design file: the screenshot is scaled to the base image's width, then diffed pixel-wise. Each side is localized upstream — `-b` is the base image (design side), `-s` is the implementation screenshot (page side). For a whole-page compare, `-b` is the artboard's `previewPath` from step 2 and `-s` is the full-page screenshot above
+
 Returns `{ score, similarity, diffPath }`: the closer `score` is to 1, the better the match; `diffPath` is the amplified diff image (differences highlighted) for locating mismatched regions
+
+Focused re-check of a single component (e.g. during the refinement loop below): run a region `analyze` on that component's rect and use the returned `previewPath` — an already-cropped region preview — as `-b`; take the matching element screenshot (e.g. Playwright `browser_take_screenshot` with `target` set to the component's wrapper selector) as `-s`. Both sides are already localized to the component, so the score is not diluted by surrounding content
 
 **Refinement loop** (repeat until the part you drew matches the design):
 
 - Locate mismatched regions via `diffPath`, then judge each difference against the screenshot and the artboard preview:
   - Real defects (missing or wrong layout / styles / copy / assets in the part you drew): fix them, then re-screenshot and re-compare
-  - Not defects: e.g. adding a component to a legacy page — your component matches the design, while the surrounding legacy page content differs from the artboard. Do NOT touch legacy code just to chase the score; record these differences instead
+  - Not defects: e.g. adding a component to a legacy page — your component matches the design, while the surrounding legacy page content differs from the artboard. Do not modify legacy code merely to raise the score; record these differences instead
 - When finished, report the final score and output the recorded not-a-defect list to the user for confirmation
 
 ## Handling Edge Cases
@@ -123,6 +158,6 @@ Consult `.sketch-cache/{design_file_name}/list.json` (run `/sketch overview` fir
 
 Three possibilities:
 
-- When designing, shared functional regions of different artboards (page header, nav bar, content area, etc.) are usually drawn in detail in only one artboard, with other artboards reusing those layers. Check the preview images of other artboards for the same functional region; the layer data may be found there.
-- Some designers keep slice-type layers in a separate slice artboard. Check the preview images for a slice artboard; the data may be found in the corresponding region there.
-- Or the designer simply didn't draw that region. Try to restore the region's layout from the preview image.
+- Shared functional regions (page header, nav bar, content area, etc.) are usually drawn in detail in only one artboard, with other artboards reusing those layers — look for the same functional region in other artboards' previews, and read the layer data there
+- Some designers keep slice-type layers in a separate slice artboard — check the previews for a slice artboard, and read the data from the corresponding region there
+- The designer did not draw that region — restore its layout from the preview image

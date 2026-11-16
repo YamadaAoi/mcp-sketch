@@ -163,7 +163,7 @@ export async function hasSharp() {
 /** analyze 快捷方式：登录画板 + 追加参数 */
 export function analyzeLogin(ws, extra = []) {
   const r = cli(
-    ['analyze', '-f', FIXTURE_ZIP, '--pn', PAGE, '--an', '登录', ...extra],
+    ['analyze', '-f', FIXTURE_ZIP, '-p', PAGE, '-a', '登录', ...extra],
     { cwd: ws }
   )
   if (r.status !== 0) {

@@ -2,8 +2,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   cli,
+  parseJsonOutput,
   makeWorkspace,
   assert,
+  assertEq,
   runSuite,
   FIXTURE_ZIP,
   PAGE
@@ -42,9 +44,9 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
             'analyze',
             '-f',
             path.join(ws, 'missing.zip'),
-            '--pn',
+            '-p',
             PAGE,
-            '--an',
+            '-a',
             '登录'
           ],
           { cwd: ws }
@@ -57,7 +59,7 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
     'analyze: nonexistent artboard → exit 1 with not-found hint',
     async () => {
       assertFails(
-        cli(['analyze', '-f', FIXTURE_ZIP, '--pn', PAGE, '--an', '不存在'], {
+        cli(['analyze', '-f', FIXTURE_ZIP, '-p', PAGE, '-a', '不存在'], {
           cwd: ws
         }),
         'nonexistent artboard',
@@ -74,9 +76,9 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
             'analyze',
             '-f',
             FIXTURE_ZIP,
-            '--pn',
+            '-p',
             PAGE,
-            '--an',
+            '-a',
             '登录',
             '-r',
             'not-json'
@@ -96,9 +98,9 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
             'analyze',
             '-f',
             FIXTURE_ZIP,
-            '--pn',
+            '-p',
             PAGE,
-            '--an',
+            '-a',
             '登录',
             '-r',
             '[1,2]'
@@ -114,17 +116,7 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
     async () => {
       assertFails(
         cli(
-          [
-            'analyze',
-            '-f',
-            FIXTURE_ZIP,
-            '--pn',
-            PAGE,
-            '--an',
-            '登录',
-            '-t',
-            'foo'
-          ],
+          ['analyze', '-f', FIXTURE_ZIP, '-p', PAGE, '-a', '登录', '-t', 'foo'],
           { cwd: ws }
         ),
         'invalid type'
@@ -159,25 +151,54 @@ await runSuite('06-errors: invalid inputs exit 1 with messages', [
     }
   ],
   [
-    'compare: missing screenshot → exit 1',
+    'compare: missing -s → exit 1 naming the required option',
     async () => {
       assertFails(
-        cli(
-          [
-            'compare',
-            '-f',
-            FIXTURE_ZIP,
-            '--pn',
-            PAGE,
-            '--an',
-            '登录',
-            '-s',
-            path.join(ws, 'nope.png')
-          ],
-          { cwd: ws }
-        ),
-        'compare missing screenshot'
+        cli(['compare', '-b', path.join(ws, 'shot.png')], { cwd: ws }),
+        'compare missing screenshot',
+        '-s, --screenshot_path'
       )
+    }
+  ],
+  [
+    'analyze: legacy --pn/--an aliases still work',
+    async () => {
+      const r = cli(
+        ['analyze', '-f', FIXTURE_ZIP, '--pn', PAGE, '--an', '登录'],
+        { cwd: ws }
+      )
+      assert(
+        r.status === 0,
+        `legacy alias exit ${r.status}\n${r.stderr.slice(0, 500)}`
+      )
+      assertEq(parseJsonOutput(r.stdout).total, 15, 'legacy alias total')
+    }
+  ],
+  [
+    'analyze: missing -p/-a → exit 1 naming the canonical flags',
+    async () => {
+      assertFails(
+        cli(['analyze', '-f', FIXTURE_ZIP], { cwd: ws }),
+        'missing page/artboard',
+        '-p, --page'
+      )
+    }
+  ],
+  [
+    'analyze: --help shows canonical flags + examples, hides legacy aliases',
+    async () => {
+      const r = cli(['analyze', '--help'], { cwd: ws })
+      assertEq(r.status, 0, '--help exit 0')
+      const out = r.stdout
+      for (const frag of [
+        '-p, --page <NAME>',
+        '-a, --artboard <NAME>',
+        '-r, --rect',
+        'Examples:'
+      ]) {
+        assert(out.includes(frag), `--help should contain "${frag}"`)
+      }
+      assert(!out.includes('--pn'), '--help should not advertise legacy --pn')
     }
   ]
 ])

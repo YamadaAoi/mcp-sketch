@@ -11,11 +11,17 @@ async function handleList(opts: Record<string, unknown>) {
 export const list = new Command()
   .name('list')
   .description(
-    'List the artboards from the Sketch Meaxure export archive (zip or folder).'
+    'List every artboard with its preview path and data size, plus design tokens (colors/fonts/radii/shadows/named styles); writes .sketch-cache/{design}/list.json — start here to pick page/artboard names'
   )
   .requiredOption(
     '-f, --file_path <PATH>',
-    'Sketch HTML export path (zip or folder)'
+    'Sketch Meaxure export path (zip or folder)'
+  )
+  .addHelpText(
+    'after',
+    `
+Examples:
+  $ mcp-sketch list -f "design.zip"`
   )
   .action((opts: Record<string, unknown>) => {
     handleList(opts).catch(err => {

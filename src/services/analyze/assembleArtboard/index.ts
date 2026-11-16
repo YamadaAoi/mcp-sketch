@@ -11,7 +11,12 @@ import {
   type SketchImage
 } from '@/utils/zip'
 import { fileExists, processImage } from '@/utils/saveFile'
-import { getExistingAssetPath, registerAsset } from '@/utils/assetIndex'
+import {
+  getExistingAssetPath,
+  registerAsset,
+  registerAssetName,
+  type AssetNameOrigin
+} from '@/utils/assetIndex'
 import { getEnv } from '@/utils/env'
 import { getSharp } from '@/utils/imageProcessor'
 import { isNumber, roundIfExceeds } from '@/utils/util'
@@ -67,6 +72,32 @@ export function isVisualHtmlLayer(lyr: HtmlLayer) {
   )
 }
 
+/**
+ * 区域查询的边界容差：rect 查询时，完全落于 rect 外扩该容差内、又不完全落于 rect 内的
+ * 压线图层单独收入 adjacent 字段返回（导出坐标抖动、元素溢出几像素的常见情形）
+ */
+const RECT_TOLERANCE = 10
+
+/** 图层完全落于 rect 内（含边界重合）——区域查询主列表的判定 */
+function isLayerFullyInside(
+  lyr: HtmlSketchLayer,
+  rect: [number, number, number, number]
+) {
+  const r = lyr.rect
+  if (r?.length !== 4) return false
+  const [x, y, w, h] = r.map(Number)
+  return (
+    x >= rect[0] &&
+    x < rect[0] + rect[2] &&
+    y >= rect[1] &&
+    y < rect[1] + rect[3] &&
+    x + w > rect[0] &&
+    x + w <= rect[0] + rect[2] &&
+    y + h > rect[1] &&
+    y + h <= rect[1] + rect[3]
+  )
+}
+
 function filterSketchLayerByRect(
   lyr: HtmlSketchLayer,
   rect?: [number, number, number, number],
@@ -74,21 +105,10 @@ function filterSketchLayerByRect(
 ) {
   const r = lyr.rect
   if (r?.length !== 4) return false
+
+  if (rect && !isLayerFullyInside(lyr, rect)) return false
+
   const [x, y, w, h] = r.map(Number)
-
-  if (rect) {
-    const isInRect =
-      x >= rect[0] &&
-      x < rect[0] + rect[2] &&
-      y >= rect[1] &&
-      y < rect[1] + rect[3] &&
-      x + w > rect[0] &&
-      x + w <= rect[0] + rect[2] &&
-      y + h > rect[1] &&
-      y + h <= rect[1] + rect[3]
-    if (!isInRect) return false
-  }
-
   if (excludeRects?.length) {
     const rRight = x + w
     const rBottom = y + h
@@ -196,12 +216,13 @@ export interface FilterOptions {
 
 /**
  * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 名称过滤 + 分页。
- * @returns layers 分页结果，total 过滤后（分页前）的总数
+ * @returns layers 分页结果，total 过滤后（分页前）的总数；
+ * adjacent 区域查询时完全落于 rect 外扩 RECT_TOLERANCE 内、又不完全落于 rect 内的压线图层（未分页）
  */
 export function filterLayers(
   layers: HtmlSketchLayer[],
   opts: FilterOptions = {}
-): { layers: HtmlSketchLayer[]; total: number } {
+): { layers: HtmlSketchLayer[]; total: number; adjacent: HtmlSketchLayer[] } {
   const { rect, excludeRects, name, type, limit, offset } = opts
 
   let filtered = layers.filter(l =>
@@ -217,6 +238,31 @@ export function filterLayers(
     filtered = filtered.filter(l => l.name.toLowerCase().includes(keyword))
   }
 
+  // 压线图层：完全落于 rect 外扩容差内、又不完全落于 rect 内的图层，
+  // 单独成列表供调用方判断归属；exclude/type/name 与主列表同口径
+  let adjacent: HtmlSketchLayer[] = []
+  if (rect) {
+    const inflated: [number, number, number, number] = [
+      rect[0] - RECT_TOLERANCE,
+      rect[1] - RECT_TOLERANCE,
+      rect[2] + RECT_TOLERANCE * 2,
+      rect[3] + RECT_TOLERANCE * 2
+    ]
+    adjacent = layers.filter(
+      l => isLayerFullyInside(l, inflated) && !isLayerFullyInside(l, rect)
+    )
+    adjacent = adjacent.filter(l =>
+      filterSketchLayerByRect(l, undefined, excludeRects)
+    )
+    if (type) {
+      adjacent = adjacent.filter(l => l.type === type)
+    }
+    if (name) {
+      const keyword = name.toLowerCase()
+      adjacent = adjacent.filter(l => l.name.toLowerCase().includes(keyword))
+    }
+  }
+
   const total = filtered.length
 
   // offset 单独使用时从第 offset 层返回到末尾；limit 截取前 limit 层
@@ -228,7 +274,7 @@ export function filterLayers(
         : filtered.slice(start)
   }
 
-  return { layers: filtered, total }
+  return { layers: filtered, total, adjacent }
 }
 
 /**
@@ -328,11 +374,19 @@ async function compressAssets(
     sketchLayers[i].assets = await Promise.all(
       l.exportable.map(async e => {
         const normalizedPath = normalize(e.path)
+        const parsed = path.parse(normalizedPath)
         const imageData = images?.find(item =>
           item.path.endsWith(normalizedPath)
         )
         let imagePath = ''
         if (imageData) {
+          // 拼音文件名的溯源（同内容去重后一个文件可对应多个图层）
+          const origin: AssetNameOrigin = {
+            name: parsed.base,
+            page: pageName ?? '',
+            artboard: artboardName ?? '',
+            layer: l.name
+          }
           const sourceBuffer = await imageData.getData()
           const hash = createHash('sha1')
             .update(sourceBuffer)
@@ -343,8 +397,8 @@ async function compressAssets(
           const existing = await getExistingAssetPath(hash, dest)
           if (existing) {
             imagePath = existing
+            await registerAssetName(imagePath, origin)
           } else {
-            const parsed = path.parse(normalizedPath)
             const pinyinName = toPinyin(parsed.name)
             const encoded = await encodeAsset(sourceBuffer, parsed.ext)
             const outHash = createHash('sha1')
@@ -380,7 +434,7 @@ async function compressAssets(
             } else {
               imagePath = await writeAsset(encoded.buffer, target)
             }
-            await registerAsset(hash, dest, imagePath)
+            await registerAsset(hash, dest, imagePath, origin)
           }
         }
         return {

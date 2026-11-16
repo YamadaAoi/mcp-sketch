@@ -11,13 +11,14 @@ const toolName = 'sketch_analyze'
 
 /**
  * 根据路径寻找并分析sketch导出的html文件(zip或目录)，提取设计结构信息
- * 每次都读取压缩包解析，直接返回JSON（预览图输出到 .sketch-cache/{design}/{page}/{artboard}/，切图输出到 ASSETS_PATH）
+ * 结果按参数组合落盘缓存于 .sketch-cache/{design}/analyze/（CLI/MCP 共用），命中直接返回；
+ * 未命中时解析设计稿并写缓存（预览图输出到 .sketch-cache/{design}/{page}/{artboard}/，切图输出到 ASSETS_PATH）
  * @param {SketchAnalyzeInputSchema} args - sketch文件分析参数
  * @property {string} file_path - sketch html文件路径(zip或目录,必填)
  * @property {string} page_name - 指定页面名称(必填)
  * @property {string} artboard_name - 指定画板名称(必填)
- * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height]
- * @property {number[][]} exclude_rects - 指定排除矩形区域(可选)，格式为[[x, y, width, height], ...]
+ * @property {number[]} rect - 指定解析矩形区域(可选)，格式为[x, y, width, height]，完全落于区域内的图层进 layers，轻微压线（超出边界 10px 内）的图层单独收入 adjacent 字段
+ * @property {number[][]} exclude_rects - 指定排除矩形区域(可选)，格式为[[x, y, width, height], ...]，完全落于区域内才排除
  * @property {string} name - 按图层名关键词过滤(可选，大小写不敏感的子串匹配)
  * @property {string} type - 按图层类型过滤(可选)：text | shape | slice
  * @property {string} assets_path - 资产文件路径(可选)

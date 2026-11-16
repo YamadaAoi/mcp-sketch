@@ -256,6 +256,8 @@ export async function getDesignStamp(
 /**
  * 设计稿解析结果的进程内缓存（key 为绝对路径），源文件未更新时复用，避免重复解压/解析
  * 按 FIFO（进入顺序）淘汰，上限由环境变量 DESIGN_MEMO_MAX 控制（默认 8）
+ * 注：analyze 的最终输出另有按参数组合的落盘缓存（services/analyze/cache），
+ * 这一层让同会话内不同参数组合的多次查询共享一次解析，两层互补
  */
 const sketchMemo = new Map<string, { stamp: number; value: SketchHtmlFile }>()
 

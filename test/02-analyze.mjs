@@ -17,7 +17,7 @@ import {
 const ws = makeWorkspace('02-analyze')
 let full = null
 
-/** 与源码 filterSketchLayerByRect 同谓词：仅保留完全落入 rect 的层 */
+/** 与源码 isLayerFullyInside 同谓词：完全落入 rect（含边界重合） */
 function insideRect(row, rect) {
   const [x, y, w, h] = [row[3], row[4], row[5], row[6]]
   return (
@@ -30,6 +30,18 @@ function insideRect(row, rect) {
     y + h > rect[1] &&
     y + h <= rect[1] + rect[3]
   )
+}
+
+/** 压线图层：完全落入 rect 外扩 10px、又不完全落入 rect 本身 */
+const RECT_TOLERANCE = 10
+function adjacentOf(rows, rect) {
+  const inflated = [
+    rect[0] - RECT_TOLERANCE,
+    rect[1] - RECT_TOLERANCE,
+    rect[2] + RECT_TOLERANCE * 2,
+    rect[3] + RECT_TOLERANCE * 2
+  ]
+  return rows.filter(r => insideRect(r, inflated) && !insideRect(r, rect))
 }
 
 /** 与源码同谓词：完全被 exclude rect 包含的层剔除 */
@@ -167,19 +179,65 @@ await runSuite('02-analyze: positional format & filters', [
     }
   ],
   [
-    'rect filter: only fully-inside layers, order preserved, cropped preview',
+    'rect filter: fully-inside layers + separate adjacent straddles',
     async () => {
       const rect = [0, 0, 960, 1080]
       const expected = full.layers.filter(r => insideRect(r, rect))
       assert(expected.length > 0 && expected.length < 15, 'rect selects a part')
       const d = analyzeLogin(ws, ['-r', JSON.stringify(rect)])
       assertEq(d.total, expected.length, 'rect total')
-      assertEq(d.layers, expected, 'rect rows equal predicate subset')
+      assertEq(
+        d.layers,
+        expected,
+        'layers equal fully-inside subset (original predicate)'
+      )
       assert(
         typeof d.previewPath === 'string' &&
           fs.existsSync(path.resolve(ws, d.previewPath)),
         'cropped preview written'
       )
+
+      // adjacent：完全落入 rect+10px、又不完全落入 rect 的压线图层，行格式同 columns
+      const expectedAdj = adjacentOf(full.layers, rect)
+      assertEq(d.adjacent ?? [], expectedAdj, 'adjacent equals tolerance ring')
+      const layerIdx = new Set(d.layers.map(r => r[0]))
+      assert(
+        (d.adjacent ?? []).every(r => !layerIdx.has(r[0])),
+        'adjacent disjoint from layers'
+      )
+      assertEq(d.total, d.layers.length + 0, 'total counts layers only')
+
+      // 按底板自身边界查询：底板进 layers，adjacent 为空（字段缺省）
+      const card = full.layers.find(r => r[1] === '登录框')
+      const cardRect = [card[3], card[4], card[5], card[6]]
+      const c = analyzeLogin(ws, ['-r', JSON.stringify(cardRect)])
+      assert(
+        c.layers.some(r => r[1] === '登录框'),
+        'region-matched panel returned in layers'
+      )
+      assertEq(c.adjacent ?? [], [], 'no adjacent for exact-match rect')
+
+      // rect 内缩 5px：底板压线 → 进 adjacent
+      const inset = [
+        cardRect[0] + 5,
+        cardRect[1] + 5,
+        cardRect[2] - 10,
+        cardRect[3] - 10
+      ]
+      const s = analyzeLogin(ws, ['-r', JSON.stringify(inset)])
+      assert(
+        !s.layers.some(r => r[1] === '登录框'),
+        'straddling panel not in layers'
+      )
+      assert(
+        (s.adjacent ?? []).some(r => r[1] === '登录框'),
+        'straddling panel returned in adjacent'
+      )
+
+      // 任意子区域：页面级容器既不进 layers 也不进 adjacent
+      const sub = analyzeLogin(ws, ['-r', '[400,300,300,200]'])
+      assertEq(sub.layers, [], 'arbitrary sub-rect: no layers')
+      assertEq(sub.adjacent ?? [], [], 'full-canvas background in neither list')
     }
   ],
   [
@@ -225,9 +283,9 @@ await runSuite('02-analyze: positional format & filters', [
             'analyze',
             '-f',
             FIXTURE_ZIP,
-            '--pn',
+            '-p',
             a.pageName,
-            '--an',
+            '-a',
             a.artboardName
           ],
           { cwd: ws }
