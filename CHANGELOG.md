@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.1.0
+
+### Minor Changes
+
+- analyze 输出重构；切图索引升级 v2；compare 简化为纯两图差异器；
+
 ## 2.0.1
 
 ### Patch Changes
