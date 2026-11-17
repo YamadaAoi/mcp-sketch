@@ -13,6 +13,7 @@ import {
 import { writeJsonFile } from '@/utils/saveFile'
 import { getEnv } from '@/utils/env'
 import {
+  collapseDuplicateLayers,
   hasValidRect,
   isCssNoise,
   isVisualHtmlLayer,
@@ -52,7 +53,7 @@ interface ListFile {
   tokens: TokensSummary
 }
 
-const LIST_VERSION = 1
+const LIST_VERSION = 2
 
 function getListPath(filePath: string) {
   const designFileName = basename(filePath, '.zip')
@@ -66,14 +67,25 @@ async function getListInfo(
 ) {
   // 与 analyze 输出同集合同口径：slice 图层按 exportable 预判（assets 未挂载），index 取 z-order
   const valid = (artboard?.layers ?? []).filter(hasValidRect)
-  const layers = valid.flatMap((l, i) =>
-    isVisualHtmlLayer(l) ? [toSketchLayer(l, i)] : []
-  )
-  // size 口径与 analyze 输出一致：定位数组行 + extras（供模型估算单次 analyze 返回的数据量）
-  const { rows, extras } = toPositionalLayers(layers)
+  const layers = valid.flatMap((l, i) => {
+    if (!isVisualHtmlLayer(l)) return []
+    const s = toSketchLayer(l, i)
+    // 挂原始 exportable 引用参与折叠签名与字节估算（不导出、不落盘）：
+    // 区分同尺寸异内容的切图，避免过度折叠；字节量与 analyze 的真实切图路径同量级
+    if (l.exportable?.length) s.assets = l.exportable
+    return [s]
+  })
+  // size 口径与 analyze 输出一致：重复折叠后的宿主行 + extras + clones（供模型估算单次 analyze 返回的数据量）
+  const collapsed = collapseDuplicateLayers(layers)
+  const { rows, extras } = toPositionalLayers(collapsed.layers)
   const size =
     Buffer.byteLength(JSON.stringify(rows)) +
-    (Object.keys(extras).length ? Buffer.byteLength(JSON.stringify(extras)) : 0)
+    (Object.keys(extras).length
+      ? Buffer.byteLength(JSON.stringify(extras))
+      : 0) +
+    (Object.keys(collapsed.clones).length
+      ? Buffer.byteLength(JSON.stringify(collapsed.clones))
+      : 0)
   const previewPath = await processPreview(
     {
       pageName: artboard.pageName,

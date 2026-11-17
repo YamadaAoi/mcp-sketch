@@ -13,6 +13,7 @@ import {
 import {
   assembleArtboard,
   filterLayers,
+  isLayerDedupEnabled,
   LAYER_COLUMNS,
   processPreview,
   toPositionalLayers
@@ -113,7 +114,8 @@ export async function sketchAnalyze(args: SketchAnalyzeInputSchema) {
     type: args.type,
     limit: args.limit,
     offset: args.offset,
-    assets_path: args.assets_path ?? getEnv('ASSETS_PATH')
+    assets_path: args.assets_path ?? getEnv('ASSETS_PATH'),
+    layer_dedup: isLayerDedupEnabled()
   }
   const cachePath = getAnalyzeCachePath(file_path, cacheKey)
   const cached = await readAnalyzeCache(cachePath, stamp)
@@ -135,7 +137,7 @@ export async function sketchAnalyze(args: SketchAnalyzeInputSchema) {
     sketchHtmlData.images
   )
 
-  const { layers, total, adjacent } = filterLayers(artboard.layers, {
+  const { layers, total, adjacent, clones } = filterLayers(artboard.layers, {
     rect,
     excludeRects,
     name: args.name,
@@ -164,7 +166,8 @@ export async function sketchAnalyze(args: SketchAnalyzeInputSchema) {
     columns: LAYER_COLUMNS,
     layers: rows,
     ...(adjacentRows.length ? { adjacent: adjacentRows } : {}),
-    ...(Object.keys(extras).length ? { extras } : {})
+    ...(Object.keys(extras).length ? { extras } : {}),
+    ...(Object.keys(clones).length ? { clones } : {})
   }
 
   await writeAnalyzeCache(cachePath, stamp, cacheKey, response)

@@ -101,11 +101,12 @@ The slice inventory carries every asset's path / size / owning-layer rect — id
 - Each row in `layers` has 10 slots in the same order as `columns`: `index` (z-order), `name`, `type`, `x`/`y`/`w`/`h` (i.e. rect), `content`, `css`, `assets`
 - Empty values are typed per column: `content` is `""`, `css`/`assets` are `[]`; slots are never omitted
 - `layers` is sorted by layout weight descending (base score is area, layers with aspect ratio ≥ 30 get extra weight), and layers without visual properties are already filtered out
-- `total` is the layer count after filtering (before pagination); use it with `-l`/`-o` to tell whether all pages have been read
+- `total` is the row count after filtering and duplicate-collapse (before pagination); use it with `-l`/`-o` to tell whether all pages have been read
 - `index` is the original layer order (z-order, higher means closer to the top); use it to reason about occlusion between layers
 - For `type: "text"` layers, slot 8 is the text content (`content`); styles (font / size / color / line-height, etc.) are in the `css` array
 - The occasional `extras` field is keyed by `index` and carries that layer's `opacity` / `rotation` (only non-default values); the designer-named shared styles are aggregated in `tokens.styleNames` of list.json
 - `adjacent` is returned only by rect queries (semantics see "Rect semantics" in stage 3); its rows use the same `columns`, are not counted in `total`, and are not affected by `-l`/`-o`
+- `clones` carries duplicate collapse: when 3+ layers are identical except position and copy (table cells, list rows), one host row stays in `layers` and its copies become `[index, x, y]` tuples (`content` appended when non-empty) keyed by the host's `index` — style/name repeat once while every position, z-order and text survives; the host counts as one row in `total`. Set `LAYER_DEDUP=off` in `.env.sketch` to disable
 - The `css` array carries the layer's main visual styles: font / size / color / line-height for text; background / gradient / radius / border / shadow for shapes; uninformative default declarations (`letter-spacing: 0`, etc.) are already filtered out
 - `type: "slice"` layers contain exported assets; the `assets` array holds asset file paths (relative to the project root, already compressed to webp, ready for import); asset file names are pinyin-transliterated and usually meaningless — remap them to semantic names in code, and trace an asset's original export file name / layer / page / artboard in the `names` section of `.sketch-cache/assets-index.json`
 

@@ -50,6 +50,7 @@
 | `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填  |
 | `CWD`             | 否   | 当前目录            | 项目根目录                                           |
 | `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                         |
+| `LAYER_DEDUP`     | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭          |
 | `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存） |
 | `LOG_LEVEL`       | 否   | `info`              | 日志级别                                             |
 

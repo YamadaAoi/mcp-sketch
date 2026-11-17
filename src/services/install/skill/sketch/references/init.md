@@ -46,14 +46,15 @@ Check whether `.env.sketch` (the mcp-sketch config file, optional) exists in the
 
 Configurable variables:
 
-| Variable          | Required | Default             | Description                                    |
-| ----------------- | -------- | ------------------- | ---------------------------------------------- |
-| `SERVER_COMMAND`  | No       | `npm run dev`       | Command that starts the dev server             |
-| `PREVIEW_URL`     | No       | -                   | Dev server URL; required to use the `dev` tool |
-| `CWD`             | No       | Current directory   | Project root                                   |
-| `ASSETS_PATH`     | No       | `src/assets/sketch` | Asset output path                              |
-| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze cached on disk |
-| `LOG_LEVEL`       | No       | `info`              | Log level                                      |
+| Variable          | Required | Default             | Description                                         |
+| ----------------- | -------- | ------------------- | --------------------------------------------------- |
+| `SERVER_COMMAND`  | No       | `npm run dev`       | Command that starts the dev server                  |
+| `PREVIEW_URL`     | No       | -                   | Dev server URL; required to use the `dev` tool      |
+| `CWD`             | No       | Current directory   | Project root                                        |
+| `ASSETS_PATH`     | No       | `src/assets/sketch` | Asset output path                                   |
+| `LAYER_DEDUP`     | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze cached on disk      |
+| `LOG_LEVEL`       | No       | `info`              | Log level                                           |
 
 ## 5. Check `.gitignore` for the cache directory
 

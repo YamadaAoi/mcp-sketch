@@ -17,7 +17,7 @@ import { LAYER_COLUMNS } from './assembleArtboard'
  */
 
 /** 缓存结构版本：analyze 输出结构变化时递增，旧缓存整体失效 */
-const ANALYZE_CACHE_VERSION = 1
+const ANALYZE_CACHE_VERSION = 2
 
 const ASSETS_COL = LAYER_COLUMNS.indexOf('assets')
 
@@ -33,6 +33,8 @@ export interface AnalyzeCacheKey {
   offset?: number
   /** 实际生效的切图输出目录（参数优先，缺省取 ASSETS_PATH）——影响输出中的切图路径 */
   assets_path: string
+  /** 重复图层折叠是否开启（LAYER_DEDUP=off|0|false 关闭）——影响输出行数与 clones 字段；与 assets_path 同理只参与 hash 与文件内 key，不进文件名 */
+  layer_dedup: boolean
 }
 
 interface AnalyzeCacheFile {

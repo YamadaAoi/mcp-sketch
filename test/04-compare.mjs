@@ -123,6 +123,31 @@ await runSuite('04-compare: two-image diff (base vs screenshot)', [
     }
   ],
   [
+    'wider screenshot downscales to base width before compare',
+    async () => {
+      const shot = path.join(ws, 'shot-wide.png')
+      await sharp({
+        create: { width: 3840, height: 800, channels: 3, background: '#00ff00' }
+      })
+        .png()
+        .toFile(shot)
+
+      const r = runCompare(previewAbs, shot)
+      assert(r.status === 0, `exit ${r.status}\n${r.stderr.slice(0, 800)}`)
+      const out = JSON.parse(r.stdout)
+      assert(
+        out.baseSize.width < 3840,
+        `base narrower than the wide shot (got ${out.baseSize.width})`
+      )
+      assertEq(
+        out.comparedRegion.width,
+        out.baseSize.width,
+        'wide screenshot downscaled to base width'
+      )
+      assert(out.score < 0.99, `score < 0.99 (got ${out.score})`)
+    }
+  ],
+  [
     'diff images accumulate in the base image compare/ folder',
     async () => {
       const compareDir = path.join(path.dirname(previewAbs), 'compare')

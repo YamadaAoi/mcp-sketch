@@ -90,11 +90,12 @@ npx -y mcp-sketch analyze -f "{file_path}" -p "{page_name}" -a "{artboard_name}"
 - `layers` 每行 10 个槽位、顺序与 `columns` 一致：`index`（z-order）、`name`、`type`、`x`/`y`/`w`/`h`（即 rect）、`content`、`css`、`assets`
 - 空值按列类型固定：`content` 为 `""`，`css`/`assets` 为 `[]`，槽位永不省略
 - `layers` 已按布局权重从高到低排序（基础分为面积，长宽比≥30的图层额外加权），且已过滤掉不含视觉属性的图层
-- `total` 为过滤后（分页前）的图层总数，配合 `-l`/`-o` 判断是否翻完
+- `total` 为过滤并折叠重复后的行数（分页前），配合 `-l`/`-o` 判断是否翻完
 - `index` 为原始图层顺序（z-order，值越大层级越高），用于判断图层的遮挡关系
 - `type: "text"` 的图层第 8 列为文本内容（`content`），样式（字体/字号/颜色/行高等）见 `css` 数组
 - 偶现字段 `extras` 以 `index` 为 key，携带该图层的 `opacity`/`rotation`（仅非默认值时出现）；设计师命名的共享样式聚合见 list.json 的 `tokens.styleNames`
 - `adjacent` 仅在区域查询时返回（语义见上方「rect 语义」）；行格式与 `columns` 一致，不计入 `total`，不受 `-l`/`-o` 分页影响
+- `clones` 承载重复折叠：成员数 ≥3、除位置与文案外完全相同的图层（表格单元格/列表项等）只保留一行宿主在 `layers`，其余折叠为按宿主 `index` 索引的 `[index, x, y]` 元组（文案非空时附加在第 4 位）——名称/样式只重复一次，位置/层级/文案全部保留；宿主在 `total` 中计一行。`.env.sketch` 配 `LAYER_DEDUP=off` 可关闭
 - `css` 数组承载了图层的主要视觉样式：文本的字体/字号/颜色/行高，形状的背景/渐变/圆角/边框/阴影；无信息量的默认值声明（`letter-spacing: 0` 等）已过滤
 - `type: "slice"` 的图层是包含切图的图层，`assets` 数组为切图文件路径数组（相对项目根目录，已压缩为 webp，可直接用于 import）；切图文件名经拼音转写、通常无语义——在代码里重映射为语义名再用，原始导出文件名/图层/页面/画板可按 `.sketch-cache/assets-index.json` 的 `names` 段溯源
 

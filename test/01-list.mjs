@@ -235,7 +235,7 @@ await runSuite('01-list: artboard overview & list.json cache', [
       const r = runList()
       assert(r.status === 0, `exit ${r.status}`)
       const disk = JSON.parse(fs.readFileSync(listPath, 'utf8'))
-      assertEq(disk.v, 1, 'version stamp written')
+      assertEq(disk.v, 2, 'version stamp written')
       assertEq(disk.artboards.length, 10, 'unversioned cache replaced')
       assert(
         !Object.keys(disk.tokens.colors).some(c => /solid|border|px/i.test(c)),

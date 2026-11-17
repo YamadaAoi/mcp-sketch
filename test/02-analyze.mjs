@@ -272,11 +272,18 @@ await runSuite('02-analyze: positional format & filters', [
     }
   ],
   [
-    'all 10 artboards: analyze OK, row width 10, extras only opacity/rotation',
+    'all 10 artboards: analyze OK, row width 10, extras only opacity/rotation, size band',
     async () => {
       const lr = cli(['list', '-f', FIXTURE_ZIP], { cwd: ws })
       const list = parseJsonOutput(lr.stdout)
       let artboardsWithExtras = 0
+      // size 口径带：与 analyze 实际字节（layers+extras+clones）比值落在 [0.8, 1.05]。
+      // fixture 实测 0.84–0.96（切图按原始引用估算，与导出路径字节略有出入）；
+      // 下界抓住"size 漏算 clones/extras"类回归，上界抓住"重复计量"类膨胀。
+      // 重名画板（用户管理 ×2）analyze 只取第一个，size 校验跳过后续同名项。
+      const bytes = x => Buffer.byteLength(JSON.stringify(x))
+      const sizeChecked = new Set()
+      const ratios = []
       for (const a of list.artboards) {
         const r = cli(
           [
@@ -299,6 +306,20 @@ await runSuite('02-analyze: positional format & filters', [
         for (const row of d.layers) {
           assertEq(row.length, COLS.length, `${a.artboardName} row width`)
         }
+        if (!sizeChecked.has(a.artboardName)) {
+          sizeChecked.add(a.artboardName)
+          const actual =
+            bytes(d.layers) +
+            (d.extras ? bytes(d.extras) : 0) +
+            (d.clones ? bytes(d.clones) : 0)
+          const ratio = a.size / actual
+          ratios.push(ratio)
+          assert(
+            ratio >= 0.8 && ratio <= 1.05,
+            `${a.artboardName} size ${a.size} within [0.8, 1.05] × actual ` +
+              `${actual} (ratio ${ratio.toFixed(3)})`
+          )
+        }
         if ('extras' in d) {
           artboardsWithExtras++
           const rowIndexes = new Set(d.layers.map(row => row[0]))
@@ -318,7 +339,107 @@ await runSuite('02-analyze: positional format & filters', [
         }
       }
       console.log(
-        `        (info) artboards with extras: ${artboardsWithExtras}/10`
+        `        (info) artboards with extras: ${artboardsWithExtras}/10; ` +
+          `size/actual ratio ${Math.min(...ratios).toFixed(2)}–${Math.max(...ratios).toFixed(2)}`
+      )
+    }
+  ],
+  [
+    'duplicate collapse: table artboard folds to host rows + clones (lossless)',
+    async () => {
+      const run = (extra = [], env = {}) => {
+        const r = cli(
+          [
+            'analyze',
+            '-f',
+            FIXTURE_ZIP,
+            '-p',
+            PAGE,
+            '-a',
+            '用户管理',
+            ...extra
+          ],
+          { cwd: ws, env }
+        )
+        assert(r.status === 0, `exit ${r.status}\n${r.stderr.slice(0, 400)}`)
+        return JSON.parse(r.stdout)
+      }
+
+      // 简单页不触发（≥3 阈值）：登录无 clones 字段，total 不变
+      assert(!('clones' in full), 'simple artboard carries no clones field')
+
+      const d = run()
+      const groups = Object.keys(d.clones)
+      const cloneCount = groups.reduce((s, k) => s + d.clones[k].length, 0)
+      assert(d.total === d.layers.length, 'total equals collapsed row count')
+      assert(
+        cloneCount > 200,
+        `heavy collapse on table artboard (${cloneCount})`
+      )
+      // 无损守恒：宿主行 + 克隆 === 关闭开关时的物理行数
+      const off = run([], { LAYER_DEDUP: 'off' })
+      assertEq(off.clones, undefined, 'switch off: no clones field')
+      assertEq(
+        d.layers.length + cloneCount,
+        off.layers.length,
+        'rows + clones === physical layer count (lossless)'
+      )
+      assertEq(off.total, off.layers.length, 'switch off: total is physical')
+      // 克隆表键全部指向 layers 内的宿主行 index
+      const idx = new Set(d.layers.map(r => String(r[0])))
+      assert(
+        groups.every(k => idx.has(k)),
+        'clones keys are host row indexes'
+      )
+      // 元组形态：[index, x, y] / [index, x, y, content]
+      const tuples = groups.flatMap(k => d.clones[k])
+      assert(
+        tuples.every(t => t.length === 3 || t.length === 4),
+        'clone tuples are 3 or 4 slots'
+      )
+      assert(
+        tuples.some(t => t.length === 4),
+        'some clones carry content (same style, per-copy text)'
+      )
+      // 折叠先于分页：limit 作用于宿主行，total 不变
+      const p = run(['-l', '10'])
+      assertEq(p.layers.length, 10, 'pagination slices collapsed rows')
+      assertEq(p.total, d.total, 'total stable across pagination')
+
+      // 开关解析：off/0/false 三种写法等价关闭（缺省与任意其他值开启）
+      for (const v of ['0', 'false']) {
+        const o = run([], { LAYER_DEDUP: v })
+        assertEq(o.clones, undefined, `LAYER_DEDUP=${v} disables collapse`)
+        assertEq(o.total, off.total, `LAYER_DEDUP=${v} total is physical`)
+      }
+
+      // 子集守恒：rect / -t 过滤后的折叠同样无损（on 行+克隆 === off 行，同参数对比）
+      const count = x =>
+        Object.values(x.clones ?? {}).reduce((s, a) => s + a.length, 0)
+      const bb = off.layers.reduce(
+        (b, r) => ({
+          x: Math.min(b.x, r[3]),
+          y: Math.min(b.y, r[4]),
+          r: Math.max(b.r, r[3] + r[5]),
+          b: Math.max(b.b, r[4] + r[6])
+        }),
+        { x: Infinity, y: Infinity, r: -Infinity, b: -Infinity }
+      )
+      const half = [bb.x, bb.y, Math.round((bb.r - bb.x) / 2), bb.b - bb.y]
+      const subOn = run(['-r', JSON.stringify(half)])
+      const subOff = run(['-r', JSON.stringify(half)], { LAYER_DEDUP: 'off' })
+      assert(subOn.layers.length > 10, 'rect subset selects a meaningful part')
+      assertEq(
+        subOn.layers.length + count(subOn),
+        subOff.layers.length,
+        'subset collapse is lossless (rect)'
+      )
+      const tOn = run(['-t', 'text'])
+      const tOff = run(['-t', 'text'], { LAYER_DEDUP: 'off' })
+      assertEq(
+        tOn.layers.length + count(tOn),
+        tOff.layers.length,
+        'subset collapse is lossless (-t text)'
       )
     }
   ]

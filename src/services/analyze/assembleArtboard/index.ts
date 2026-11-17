@@ -205,6 +205,110 @@ export function toSketchLayer(lyr: HtmlLayer, index?: number): HtmlSketchLayer {
   return layer
 }
 
+/**
+ * 克隆折叠的最小组成员数：不足该值的重复组不折叠（简单页保持原有输出形态）
+ */
+export const DEDUP_MIN_GROUP = 3
+
+/** 克隆元组：[index, x, y]，文案非空时再附加 content */
+export type CloneTuple = (string | number)[]
+
+/** 重复图层折叠开关：.env.sketch 配 LAYER_DEDUP=off|0|false 关闭，缺省开启 */
+export function isLayerDedupEnabled() {
+  const v = String(getEnv('LAYER_DEDUP') ?? '')
+    .trim()
+    .toLowerCase()
+  return !(v === 'off' || v === '0' || v === 'false')
+}
+
+/**
+ * 重复图层折叠（无损压缩）：type/尺寸/样式/切图完全相同、仅位置与文案不同的图层成组，
+ * 成员数 ≥ DEDUP_MIN_GROUP 的组保留首个（权重最高）成员为宿主行，其余折叠进 clones
+ * 坐标表（按宿主行 index 索引，与 extras 同款稀疏表）。大面积重复（表格单元格、
+ * 列表项等）场景输出可省约一半；达到阈值的组以成员分之和整体参与排序——重复整体
+ * 作为一块大内容提权，骨架读取（-l）时表格类结构不会沉底；未达阈值的组不折叠也
+ * 不提权，成员按各自原位保留（无折叠触发时输出次序与折叠前完全一致）
+ * @param layers 已按权重降序排列、index 已赋值（z 序）的图层
+ */
+export function collapseDuplicateLayers(layers: HtmlSketchLayer[]): {
+  layers: HtmlSketchLayer[]
+  clones: Record<string, CloneTuple[]>
+} {
+  const clones: Record<string, CloneTuple[]> = {}
+  if (!isLayerDedupEnabled()) return { layers, clones }
+
+  const score = (l: HtmlSketchLayer) =>
+    calculateLayoutScore({
+      width: Number(l.rect?.[2]),
+      height: Number(l.rect?.[3])
+    })
+
+  const entries: { members: HtmlSketchLayer[]; score: number }[] = []
+  const byKey = new Map<string, (typeof entries)[number]>()
+  for (const l of layers) {
+    // 分组签名不含名称与文案：同款异位/异文正是克隆语义；index/x/y 天然除外；
+    // opacity/rotation 参与签名——视觉表现必须完全一致才可折叠（否则克隆会丢样式差异）
+    const key =
+      l.rect?.length === 4
+        ? JSON.stringify([
+            l.type,
+            l.rect[2],
+            l.rect[3],
+            l.css ?? [],
+            l.assets?.map(a => a.path) ?? [],
+            l.opacity ?? 1,
+            l.rotation ?? 0
+          ])
+        : undefined
+    const hit = key ? byKey.get(key) : undefined
+    if (hit) {
+      hit.members.push(l)
+      hit.score += score(l)
+      continue
+    }
+    const entry = { members: [l], score: score(l) }
+    entries.push(entry)
+    if (key) byKey.set(key, entry)
+  }
+
+  // 排序单元：达到阈值的组以成员分之和作为一个单元（大内容提权）；
+  // 未达阈值的组逐成员各成一个单元（分值不变 → 稳定排序下保持原位次序）
+  const units: {
+    host: HtmlSketchLayer
+    members?: HtmlSketchLayer[]
+    score: number
+  }[] = []
+  for (const e of entries) {
+    if (e.members.length >= DEDUP_MIN_GROUP) {
+      units.push({ host: e.members[0], members: e.members, score: e.score })
+    } else {
+      for (const m of e.members) units.push({ host: m, score: score(m) })
+    }
+  }
+
+  // 单元分降序；并列保持原次序（稳定排序）
+  const ordered = units
+    .map((u, i) => ({ u, i }))
+    .sort((a, b) => b.u.score - a.u.score || a.i - b.i)
+    .map(({ u }) => u)
+
+  const out: HtmlSketchLayer[] = []
+  for (const u of ordered) {
+    out.push(u.host)
+    if (!u.members) continue
+    // 宿主 index 缺失时退化为行位置，与 toPositionalLayers 的 index 回退口径一致
+    clones[String(u.host.index ?? out.length - 1)] = u.members
+      .slice(1)
+      .map(m => {
+        const [x = 0, y = 0] = m.rect ?? []
+        return m.content
+          ? [m.index ?? 0, x, y, m.content]
+          : [m.index ?? 0, x, y]
+      })
+  }
+  return { layers: out, clones }
+}
+
 export interface FilterOptions {
   rect?: [number, number, number, number]
   excludeRects?: [number, number, number, number][]
@@ -215,14 +319,21 @@ export interface FilterOptions {
 }
 
 /**
- * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 名称过滤 + 分页。
- * @returns layers 分页结果，total 过滤后（分页前）的总数；
- * adjacent 区域查询时完全落于 rect 外扩 RECT_TOLERANCE 内、又不完全落于 rect 内的压线图层（未分页）
+ * 对已解析的图层（HtmlSketchLayer）做类型过滤 + 区域过滤 + 名称过滤 + 重复折叠 + 分页。
+ * 重复折叠先于分页：limit/offset 作用于折叠后的宿主行
+ * @returns layers 分页结果（宿主行），total 折叠后（分页前）的行数，
+ * clones 重复折叠表（按宿主行 index 索引；未触发折叠时为空对象），
+ * adjacent 区域查询时完全落于 rect 外扩 RECT_TOLERANCE 内、又不完全落于 rect 内的压线图层（未分页、未折叠）
  */
 export function filterLayers(
   layers: HtmlSketchLayer[],
   opts: FilterOptions = {}
-): { layers: HtmlSketchLayer[]; total: number; adjacent: HtmlSketchLayer[] } {
+): {
+  layers: HtmlSketchLayer[]
+  total: number
+  adjacent: HtmlSketchLayer[]
+  clones: Record<string, CloneTuple[]>
+} {
   const { rect, excludeRects, name, type, limit, offset } = opts
 
   let filtered = layers.filter(l =>
@@ -263,18 +374,20 @@ export function filterLayers(
     }
   }
 
-  const total = filtered.length
+  const collapsed = collapseDuplicateLayers(filtered)
+  const total = collapsed.layers.length
 
   // offset 单独使用时从第 offset 层返回到末尾；limit 截取前 limit 层
+  let paged = collapsed.layers
   if (limit !== undefined || offset !== undefined) {
     const start = offset ?? 0
-    filtered =
+    paged =
       limit !== undefined
-        ? filtered.slice(start, start + limit)
-        : filtered.slice(start)
+        ? collapsed.layers.slice(start, start + limit)
+        : collapsed.layers.slice(start)
   }
 
-  return { layers: filtered, total, adjacent }
+  return { layers: paged, total, adjacent, clones: collapsed.clones }
 }
 
 /**

@@ -35,7 +35,7 @@ await runSuite('09-analyze-cache: param-keyed result cache on disk', [
       assert(name.includes('--all--'), 'no-param entry marked all')
 
       const entry = readCache(name)
-      assertEq(entry.v, 1, 'cache structure version')
+      assertEq(entry.v, 2, 'cache structure version')
       assert(typeof entry.stamp === 'number', 'stamp present')
       assertEq(entry.response.total, 15, 'cached response holds full result')
 
@@ -226,6 +226,35 @@ await runSuite('09-analyze-cache: param-keyed result cache on disk', [
       assert(
         fs.existsSync(path.join(ws, 'alt-assets')),
         'assets written to alt dir'
+      )
+    }
+  ],
+  [
+    'LAYER_DEDUP switch gets its own cache entry (key.layer_dedup)',
+    async () => {
+      const before = new Set(cacheFiles())
+      const r = cli(['analyze', '-f', FIXTURE_ZIP, '-p', PAGE, '-a', '登录'], {
+        cwd: ws,
+        env: { LAYER_DEDUP: 'off' }
+      })
+      assert(r.status === 0, `exit ${r.status}\n${r.stderr.slice(0, 500)}`)
+      assertEq(JSON.parse(r.stdout).total, 15, 'switch-off run succeeds')
+
+      // 新增文件按集合差分取（walkFiles 字母序不保证新文件排在末尾）
+      const after = cacheFiles()
+      const added = after.filter(f => !before.has(f))
+      assertEq(added.length, 1, 'separate cache file')
+      const entry = readCache(added[0])
+      assertEq(
+        entry.key.layer_dedup,
+        false,
+        'off variant keys layer_dedup false'
+      )
+      assert(
+        after
+          .filter(f => before.has(f))
+          .every(f => readCache(f).key.layer_dedup === true),
+        'default variants key it true'
       )
     }
   ]
