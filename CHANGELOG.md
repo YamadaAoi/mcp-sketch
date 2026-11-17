@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.1.1
+
+### Patch Changes
+
+- analyze 重复图层无损折叠
+
 ## 2.1.0
 
 ### Minor Changes
