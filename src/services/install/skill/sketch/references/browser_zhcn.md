@@ -11,6 +11,8 @@ npx -y @playwright/cli <命令>  # 免安装直接用（npx）
 
 本页只收录本项目常用命令；需要更多能力时，任何命令加 `--help` 查看完整参数，不带命令的 `playwright-cli --help` 列出全部命令。
 
+私有 npm 仓库（镜像）同步滞后时，`@latest` 可能拉取失败而旧版本可用；且镜像里存在的版本也可能装不上——依赖包同样滞后，包同步齐不代表依赖树同步齐。先执行 `npm view @playwright/cli versions --json` 查看仓库里实际有哪些版本，从最新的一个开始用 `npx -y @playwright/cli@<version> --version` 探测，失败（依赖解析 404）就依次降版重试——版本越旧依赖树越老，被同步齐的概率越高。
+
 ## 打开浏览器访问本地服务
 
 ```bash

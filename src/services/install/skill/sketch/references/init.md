@@ -48,16 +48,15 @@ Check whether `.env.sketch` (the mcp-sketch config file, optional) exists in the
 
 Configurable variables:
 
-| Variable            | Required | Default             | Description                                                                  |
-| ------------------- | -------- | ------------------- | ---------------------------------------------------------------------------- |
-| `SERVER_COMMAND`    | No       | `npm run dev`       | Command that starts the dev server                                           |
-| `PREVIEW_URL`       | No       | -                   | Dev server URL; required to use the `dev` tool                               |
-| `CWD`               | No       | Current directory   | Project root                                                                 |
-| `ASSETS_PATH`       | No       | `src/assets/sketch` | Asset output path                                                            |
-| `LAYER_DEDUP`       | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables                          |
-| `SLICE_BOARD_RATIO` | No       | `0.9`               | Slice-board flag threshold; `sliceBoard` set when the slice share exceeds it |
-| `DESIGN_MEMO_MAX`   | No       | `8`                 | In-process parse cache; analyze cached on disk                               |
-| `LOG_LEVEL`         | No       | `info`              | Log level                                                                    |
+| Variable          | Required | Default             | Description                                         |
+| ----------------- | -------- | ------------------- | --------------------------------------------------- |
+| `SERVER_COMMAND`  | No       | `npm run dev`       | Command that starts the dev server                  |
+| `PREVIEW_URL`     | No       | -                   | Dev server URL; required to use the `dev` tool      |
+| `CWD`             | No       | Current directory   | Project root                                        |
+| `ASSETS_PATH`     | No       | `src/assets/sketch` | Asset output path                                   |
+| `LAYER_DEDUP`     | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables |
+| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze cached on disk      |
+| `LOG_LEVEL`       | No       | `info`              | Log level                                           |
 
 ## 5. Check `.gitignore` for the cache directory
 
@@ -71,7 +70,7 @@ mcp-sketch writes derived data under `.sketch-cache/` (list.json, previews, anal
 
 The screenshot-compare workflow uses playwright-cli to open the page, explore the rendered result, and take screenshots — plain CLI, no MCP configuration, no session restart:
 
-- **Check availability**: run `playwright-cli --version` (global install) or `npx -y @playwright/cli --version` (no install, via npx)
+- **Check availability**: run `playwright-cli --version` (global install) or `npx -y @playwright/cli --version` (no install, via npx); an npx fetch failure usually means a private registry mirror lagging behind (latest not synced while older versions exist) — the fallback retry is in `references/browser.md`
 - **Recommend installing browsers**: based on the working invocation, suggest the user run `playwright-cli install` (global) or `npx -y @playwright/cli install` (npx) once — the default chromium depends on this binary; the download is large, so the user decides, never run it on their behalf
 - A system browser channel (`--browser=msedge` or `chrome` on `open`) skips the browser download
 - The two invocations are command-equivalent: replace `playwright-cli` with `npx -y @playwright/cli`

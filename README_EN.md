@@ -37,30 +37,28 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 
 **list — artboard overview**
 
-- Outputs every artboard's name, preview image path, and layer data size (`size` estimates the analyze payload with the same measure, for estimating payload size and deciding whether to fetch per region; assets are approximated by their original export references, slightly off from the exported path bytes); written to `.sketch-cache/{design}/list.json`
+- Outputs every artboard's name, preview image path, and layer data size (`size` estimates the analyze payload with the same measure, for estimating payload size and deciding whether to fetch per region); written to `.sketch-cache/{design}/list.json`
 - Includes a design-token aggregation: colors / font sizes / font families / radii / shadows / named styles ranked by usage frequency — ready to use for theme variables, and useful for spotting near-duplicate hex typos in the design
-- Artboards whose visual layers are more than the threshold (default 90%) slices get flagged `sliceBoard: true` — a common designer habit of collecting all slices in one artboard; such artboards are not pages to reproduce; threshold adjustable via `SLICE_BOARD_RATIO`
-- Never serves stale cache after the design updates: each call re-checks freshness (zip by file mtime, folder by the latest inner-file mtime) and regenerates if the design is newer than list.json
+- Artboards whose slice share is an outlier across the design (≥ max(10%, 3× the median share of all artboards) get flagged `sliceBoard: true` — suspected, confirmed by the AI from the preview image; a common designer habit of collecting all slices in one artboard, and such artboards are not pages to reproduce
+- Never serves stale cache after the design updates: regenerates automatically if the design is newer than list.json
 
 **analyze — layer analysis**
 
 - Layers returned in descending layout-weight order (area-based), with non-visual layers already filtered out
 - Filtering & pagination: region `rect`, exclusion `exclude_rects`, name keyword `name`, type `type` (text/shape/slice), `limit/offset`, plus a `total` count to know when paging ends
-- Output is a token-efficient positional format: `columns` declares the column order once and each layer is a row array read by position (index/name/type/rect/content/css/assets); occasional non-default `opacity`/`rotation` lives in a sparse `extras` map keyed by `index`; empty values are typed (content is `""`, css/assets are `[]`)
-- Heavily repeated layers (table cells, list items, etc.) collapse automatically: groups of 3+ members identical except position and copy keep one host row, with the rest folded into a `clones` coordinate table keyed by the host's `index` (`[index, x, y]`, content appended when non-empty) — lossless compression that roughly halves output on table-heavy artboards; set `LAYER_DEDUP=off|0|false` in `.env.sketch` to disable
+- Output is a token-efficient positional format: `columns` declares the column order once and each layer is a row array read by position
+- Heavily repeated layers (table cells, list items, etc.) collapse automatically — lossless compression that roughly halves output on table-heavy artboards
 - `css` carries the main style declarations (fonts/colors/gradients/radii/shadows, default-value noise filtered out); `assets` is a plain path array (relative to the project root, compressed to webp, ready to import)
 - `slice` assets are auto-exported with global content deduplication (icons shared across artboards are stored only once); artboard previews are generated automatically, and region queries generate a cropped preview of that region
-- Results are cached on disk per parameter combination under `.sketch-cache/{design}/analyze/` (the filename carries a param digest; CLI and MCP share the same cache): a hit returns directly, and the cache recomputes automatically when the design stamp changes or referenced files (previews/assets) are missing
 
 **dev — dev server**
 
-- Starts the dev server in the background (PowerShell on Windows, tmux on Unix-like systems) and polls the configured `PREVIEW_URL` until it is reachable; returns immediately if already running. The URL comes from config — no auto-detection
+- Starts the dev server in the background and polls the configured `PREVIEW_URL` until it is reachable; returns immediately if already running
 
 **compare — screenshot diff**
 
-- A pure two-image differ: `-b` base image (design side) vs `-s` implementation screenshot (page side), pixel-wise — the screenshot is scaled to the base width and the common height is diffed, returning a similarity score plus an amplified diff image, enabling a quantified "edit code → screenshot → compare → fix" loop; the tool itself carries no design-stack knowledge, localization happens upstream on each side
+- A pure two-image differ: `-b` base image (design side) vs `-s` implementation screenshot (page side), pixel-wise — returning a similarity score plus an amplified diff image, enabling a quantified "edit code → screenshot → compare → fix" loop
 - Base image sources: the artboard `previewPath` from `list` for a whole page; the region `previewPath` from `analyze -r` (already cropped to the rect) for a single component, paired with a playwright-cli element screenshot (`screenshot "{selector}"`) for component-level diffing
-- Diff images accumulate next to the base image at `compare/{timestamp}.webp`, so refinement rounds stay comparable
 - The browser screenshot is taken with playwright-cli (plain CLI, no MCP configuration or session restart; see [setup below](#install-playwright-cli-optional-dependency-for-compare))
 
 ## Usage
@@ -127,8 +125,9 @@ playwright-cli install      # installs the default chromium browser (large downl
 npx -y @playwright/cli install
 ```
 
+- When a private registry mirror lags behind and fetching `@latest` fails, check available versions with `npm view @playwright/cli versions --json` and retry with an older one via `npx -y @playwright/cli@<version>`
 - A system browser channel (`--browser=msedge` or `chrome` on `open`) skips the browser download
-- Reusing login state: `attach --extension=chrome` attaches to the user's browser with the Playwright extension installed, or `open --persistent` keeps a persistent profile
+- Pages behind login: `attach --extension=chrome` attaches to your own browser, or `open --persistent` keeps a persistent profile
 
 ### Use the CLI directly
 
@@ -158,16 +157,14 @@ mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 
 `.env.sketch` in the project root (optional):
 
-| Field               | Required | Default             | Description                                                                  |
-| ------------------- | -------- | ------------------- | ---------------------------------------------------------------------------- |
-| `SERVER_COMMAND`    | No       | `npm run dev`       | Command to start the dev server                                              |
-| `PREVIEW_URL`       | No       | -                   | Dev server URL; required when using `dev`                                    |
-| `CWD`               | No       | Current directory   | Project root                                                                 |
-| `ASSETS_PATH`       | No       | `src/assets/sketch` | Image asset output path                                                      |
-| `LAYER_DEDUP`       | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables                          |
-| `SLICE_BOARD_RATIO` | No       | `0.9`               | Slice-board flag threshold; `sliceBoard` set when the slice share exceeds it |
-| `DESIGN_MEMO_MAX`   | No       | `8`                 | In-process parse cache; analyze results disk-cached                          |
-| `LOG_LEVEL`         | No       | `info`              | Log level                                                                    |
+| Field            | Required | Default             | Description                                         |
+| ---------------- | -------- | ------------------- | --------------------------------------------------- |
+| `SERVER_COMMAND` | No       | `npm run dev`       | Command to start the dev server                     |
+| `PREVIEW_URL`    | No       | -                   | Dev server URL; required when using `dev`           |
+| `CWD`            | No       | Current directory   | Project root                                        |
+| `ASSETS_PATH`    | No       | `src/assets/sketch` | Image asset output path                             |
+| `LAYER_DEDUP`    | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables |
+| `LOG_LEVEL`      | No       | `info`              | Log level                                           |
 
 > On **Linux / macOS / WSL**, the `dev` command requires tmux: `brew install tmux` (macOS) / `sudo apt install tmux` (Ubuntu/Debian/WSL). No extra setup needed on Windows
 
@@ -185,12 +182,6 @@ mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 
 ## 2.x vs 1.x
 
-The 1.x releases shipped a full agent pipeline (leader / analyzer / developer / checker — multiple agents collaborating to split components, generate code, and review). 2.x drops that approach, for a simple reason: **models keep getting stronger**. Hand the unzipped design files directly to a new-generation model like kimi3 and it reproduces the design quite well — the 1.x multi-agent orchestration was essentially compensation for an era of weaker models, and has now become a burden: complex workflows, tedious state management, and a large surface for errors.
+The 1.x releases shipped a full multi-agent pipeline (component splitting, code generation, review); 2.x drops it — models are now strong enough to reproduce a design directly from the unzipped files, and the only remaining pain point is data extraction. 2.x does exactly that one thing: turn extraction into tools, and hand rendering decisions back to the model.
 
-One pain point remains when an AI reads design files directly: **it has to keep probing how to extract data** — locating the entry file, parsing the embedded data variables, digging through files layer by layer, burning tokens back and forth. 2.x does exactly one thing: turn data extraction into tools, and hand rendering decisions back to the model.
-
-> To keep using the 1.x agent pipeline, you need to pin the version in three places:
->
-> 1. Install: `npx -y mcp-sketch@1 install`
-> 2. MCP config: change the command to `npx -y mcp-sketch@1`
-> 3. Installed agents / skills: their embedded CLI calls resolve to the latest version by default, which is incompatible with the 1.x workflow. Search your project for `npx -y mcp-sketch ` and replace it with `npx -y mcp-sketch@1 ` (covers `.claude/agents/`, `.claude/skills/`, `.opencode/agents/`, `.opencode/skills/`)
+> To keep using 1.x: pin `npx -y mcp-sketch@1` in installs and MCP config, and globally replace `npx -y mcp-sketch ` inside installed agents / skills with `npx -y mcp-sketch@1 `

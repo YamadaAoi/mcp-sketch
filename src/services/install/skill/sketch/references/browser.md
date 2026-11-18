@@ -11,6 +11,8 @@ Plain CLI driving the browser: no MCP configuration, no session restart.
 
 This page covers only the commands this project commonly uses; for anything more, append `--help` to any command for its full options, or run bare `playwright-cli --help` to list every command.
 
+When a private npm registry (mirror) lags behind, fetching `@latest` may fail while older versions exist; a version present in the mirror can still fail to install too — its dependencies lag the same way, and the package being synced does not imply its dependency tree is. Run `npm view @playwright/cli versions --json` to see what the registry actually has, then probe from the newest one with `npx -y @playwright/cli@<version> --version`, stepping down to older versions on each failure (dependency-resolution 404) — the older the version, the older its dependency tree, and the likelier it is fully synced
+
 ## Open the browser and visit the local dev server
 
 ```bash

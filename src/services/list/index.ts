@@ -35,7 +35,7 @@ interface ListItem {
   artboardName: string
   size: number
   previewPath?: string
-  /** 疑似切图画板（视觉图层中切图占比 > SLICE_BOARD_RATIO）：设计师集中放置切图的收集板，非待还原页面 */
+  /** 疑似切图画板（切图占比在全部画板中断档领先：≥ max(10%, 中位数×3)）：设计师集中放置切图的收集板，非待还原页面；启发式标记，结合预览图确认 */
   sliceBoard?: true
 }
 
@@ -49,15 +49,37 @@ interface TokensSummary {
 }
 
 interface ListFile {
-  /** 缓存结构版本：工具的输出逻辑升级（如 tokens 摘选规则变化）时递增，旧缓存自动失效重建 */
+  /** 缓存结构版本：工具的输出逻辑升级（如 tokens 摘选规则变化、sliceBoard 判定换算法）时递增，旧缓存自动失效重建 */
   v: number
-  /** 生成本缓存时生效的切图画板阈值（SLICE_BOARD_RATIO）：改阈值后旧缓存自动失效重建 */
-  sliceBoardRatio: number
   artboards: ListItem[]
   tokens: TokensSummary
 }
 
-const LIST_VERSION = 2
+const LIST_VERSION = 3
+
+/** 断档线下限：占比低于此值连疑似都不算（防"全员趋零"的设计里，小差距虽达 3×中位数但不构成切图板信号） */
+const SLICE_SHARE_FLOOR = 0.1
+/** 断档倍率：占比达到全部画板中位数的该倍数才算断档领先 */
+const SLICE_SHARE_K = 3
+
+function median(values: number[]): number {
+  if (!values.length) return 0
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = sorted.length >> 1
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+}
+
+/**
+ * 疑似切图画板断档判定（纯函数，供 10-slice-flag 单测直调）：
+ * 占比 ≥ max(SLICE_SHARE_FLOOR, 全部画板占比中位数 × SLICE_SHARE_K) 判疑似
+ * - 相对中位数自适应各设计自身分布：断档领先才标，多块切图画板可同时标中
+ * - 无切图板 / 全是切图板 / 单画板 / 两画板等无对照的场景自动一个不标
+ * - 固定常数不可用：切图板常带大量文字标注图层（如 142 层中仅 32 层切图，占比 0.22），任何绝对阈值都会被真实设计击穿
+ */
+export function flagSliceOutliers(shares: number[]): boolean[] {
+  const threshold = Math.max(SLICE_SHARE_FLOOR, SLICE_SHARE_K * median(shares))
+  return shares.map(s => s >= threshold)
+}
 
 function getListPath(filePath: string) {
   const designFileName = basename(filePath, '.zip')
@@ -90,12 +112,10 @@ async function getListInfo(
     (Object.keys(collapsed.clones).length
       ? Buffer.byteLength(JSON.stringify(collapsed.clones))
       : 0)
-  // 切图画板判定：占比基于视觉图层集合（与 analyze 返回同集合），折叠前统计；
-  // 阈值取 SLICE_BOARD_RATIO（默认 0.9），占比大于阈值（严格大于）才标记
+  // 切图占比基于视觉图层集合（与 analyze 返回同集合），折叠前统计；
+  // 疑似标记由全部画板占比的断档判定统一给出（见 sketchList 内）
   const sliceCount = layers.filter(l => l.type === 'slice').length
-  const sliceBoard =
-    layers.length > 0 &&
-    sliceCount / layers.length > getEnv('SLICE_BOARD_RATIO')
+  const sliceShare = layers.length > 0 ? sliceCount / layers.length : 0
   const previewPath = await processPreview(
     {
       pageName: artboard.pageName,
@@ -115,9 +135,8 @@ async function getListInfo(
     artboardName: artboard.name,
     size
   }
-  if (sliceBoard) item.sliceBoard = true
   if (previewPath) item.previewPath = previewPath
-  return item
+  return { item, sliceShare }
 }
 
 const COLOR_DECL_RE =
@@ -233,11 +252,9 @@ export async function sketchList(args: SketchListInputSchema) {
   if (stampValid) {
     try {
       const parsed = JSON.parse(await readFile(listPath, 'utf8')) as ListFile
-      // v 缺失（旧版工具产出）或不匹配时视为过期：输出逻辑升级不能沿用旧缓存（如 tokens 摘选规则变化）；
-      // sliceBoardRatio 不一致（改了 SLICE_BOARD_RATIO）同理过期：flag 需按新阈值重算
+      // v 缺失（旧版工具产出）或不匹配时视为过期：输出逻辑升级不能沿用旧缓存（如 tokens 摘选规则、sliceBoard 判定算法变化）
       if (
         parsed?.v === LIST_VERSION &&
-        parsed.sliceBoardRatio === getEnv('SLICE_BOARD_RATIO') &&
         Array.isArray(parsed?.artboards) &&
         parsed.tokens
       ) {
@@ -253,10 +270,15 @@ export async function sketchList(args: SketchListInputSchema) {
     const promises = (sketchData?.data?.artboards ?? []).map(a =>
       getListInfo(args.file_path, a, sketchData.images)
     )
-    const artboards = await Promise.all(promises)
+    const infos = await Promise.all(promises)
+    // 断档判定需要全部画板的占比：统一按中位数断档线标记
+    const flags = flagSliceOutliers(infos.map(i => i.sliceShare))
+    const artboards = infos.map(({ item }, i) => {
+      if (flags[i]) item.sliceBoard = true
+      return item
+    })
     data = {
       v: LIST_VERSION,
-      sliceBoardRatio: getEnv('SLICE_BOARD_RATIO'),
       artboards,
       tokens: aggregateTokens(sketchData)
     }

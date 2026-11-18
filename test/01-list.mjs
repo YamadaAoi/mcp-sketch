@@ -235,7 +235,7 @@ await runSuite('01-list: artboard overview & list.json cache', [
       const r = runList()
       assert(r.status === 0, `exit ${r.status}`)
       const disk = JSON.parse(fs.readFileSync(listPath, 'utf8'))
-      assertEq(disk.v, 2, 'version stamp written')
+      assertEq(disk.v, 3, 'version stamp written')
       assertEq(disk.artboards.length, 10, 'unversioned cache replaced')
       assert(
         !Object.keys(disk.tokens.colors).some(c => /solid|border|px/i.test(c)),
@@ -244,50 +244,35 @@ await runSuite('01-list: artboard overview & list.json cache', [
     }
   ],
   [
-    'sliceBoard flag: threshold via SLICE_BOARD_RATIO (default 0.9 → none, 0.3 → two flagged)',
+    'sliceBoard: adaptive outlier detection — icon-dense fixture flags nothing, v=3, no threshold field',
     async () => {
       const ws2 = makeWorkspace('01-list-slice')
-      const run = env =>
-        cli(['list', '-f', FIXTURE_ZIP], { cwd: ws2, ...(env ? { env } : {}) })
+      const run = () => cli(['list', '-f', FIXTURE_ZIP], { cwd: ws2 })
 
-      // 默认阈值 0.9：fixture 切图占比最高 0.33（登录），无标记、字段不出现
-      const d1 = parseJsonOutput(run().stdout, 'default threshold run')
+      // fixture 为图标密集型设计：全部画板切图占比 0.16–0.36，无离群画板，
+      // 断档线（中位数×3）高于全部占比 → 一个不标（正向路径由 10-slice-flag 纯函数矩阵覆盖）
+      const r1 = run()
+      assert(r1.status === 0, `exit ${r1.status}`)
+      const d1 = parseJsonOutput(r1.stdout, 'default run')
       assert(
         d1.artboards.every(a => !('sliceBoard' in a)),
-        'default threshold 0.9 flags nothing'
+        'icon-dense design flags nothing'
       )
 
-      // 阈值 0.3：登录 5/15≈0.33 与 设备管理-证书升级 23/76≈0.30 被标记，其余不标
-      const r2 = run({ SLICE_BOARD_RATIO: '0.3' })
-      assert(r2.status === 0, `exit ${r2.status}`)
-      const d2 = parseJsonOutput(r2.stdout, 'threshold 0.3 run')
-      const flagged = [
-        ...new Set(
-          d2.artboards
-            .filter(a => a.sliceBoard === true)
-            .map(a => a.artboardName)
-        )
-      ]
-      assertEq(flagged, ['登录', '设备管理-证书升级'], 'flagged set at 0.3')
-
-      // 生效阈值写入 list.json；改阈值使缓存失效重算，同阈值复跑命中缓存
+      // 判定常量内置：list.json 只记 v=3（判定算法版本），不再有 sliceBoardRatio 字段
       const diskPath = path.join(
         ws2,
         '.sketch-cache',
         FIXTURE_NAME,
         'list.json'
       )
-      assertEq(
-        JSON.parse(fs.readFileSync(diskPath, 'utf8')).sliceBoardRatio,
-        0.3,
-        'effective threshold recorded in list.json'
-      )
-      const r3 = run({ SLICE_BOARD_RATIO: '0.3' })
-      assertEq(
-        parseJsonOutput(r3.stdout, 'same threshold re-run').artboards,
-        d2.artboards,
-        'same threshold re-run serves identical artboards'
-      )
+      const disk = JSON.parse(fs.readFileSync(diskPath, 'utf8'))
+      assertEq(disk.v, 3, 'version stamp for new detection scheme')
+      assert(!('sliceBoardRatio' in disk), 'threshold field removed')
+
+      // 复跑命中缓存：输出一致
+      const d2 = parseJsonOutput(run().stdout, 're-run')
+      assertEq(d2.artboards, d1.artboards, 're-run serves identical artboards')
     }
   ]
 ])

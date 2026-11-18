@@ -48,16 +48,15 @@
 
 可配置变量：
 
-| 变量                | 必填 | 默认值              | 说明                                                  |
-| ------------------- | ---- | ------------------- | ----------------------------------------------------- |
-| `SERVER_COMMAND`    | 否   | `npm run dev`       | dev 服务启动命令                                      |
-| `PREVIEW_URL`       | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填   |
-| `CWD`               | 否   | 当前目录            | 项目根目录                                            |
-| `ASSETS_PATH`       | 否   | `src/assets/sketch` | 切图输出路径                                          |
-| `LAYER_DEDUP`       | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭           |
-| `SLICE_BOARD_RATIO` | 否   | `0.9`               | 切图画板标记阈值，切图占比大于该值时标记 `sliceBoard` |
-| `DESIGN_MEMO_MAX`   | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存）  |
-| `LOG_LEVEL`         | 否   | `info`              | 日志级别                                              |
+| 变量              | 必填 | 默认值              | 说明                                                 |
+| ----------------- | ---- | ------------------- | ---------------------------------------------------- |
+| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                                     |
+| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填  |
+| `CWD`             | 否   | 当前目录            | 项目根目录                                           |
+| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                         |
+| `LAYER_DEDUP`     | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭          |
+| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存） |
+| `LOG_LEVEL`       | 否   | `info`              | 日志级别                                             |
 
 ## 5、检查 `.gitignore` 中的缓存目录忽略
 
@@ -71,7 +70,7 @@ mcp-sketch 会把派生数据写入 `.sketch-cache/`（list.json、预览图、a
 
 截图对比流程用 playwright-cli 打开页面、探索渲染结果并截图，纯命令行驱动，无需配置 MCP、无需重启会话：
 
-- **检查可用性**：执行 `playwright-cli --version`（全局安装）或 `npx -y @playwright/cli --version`（npx 免安装）
+- **检查可用性**：执行 `playwright-cli --version`（全局安装）或 `npx -y @playwright/cli --version`（npx 免安装）；npx 拉取失败多为私有镜像仓库同步滞后（最新版未同步而旧版可用），降级重试见 `references/browser.md`
 - **推荐安装浏览器**：按可用的方式建议用户执行一次 `playwright-cli install`（全局）或 `npx -y @playwright/cli install`（npx）——默认浏览器 chromium 依赖这份二进制；下载量大，由用户决定是否执行，不代跑
 - 使用系统浏览器通道（`open` 时配 `--browser=msedge` 或 `chrome`）可跳过浏览器安装
 - 两种调用方式命令等价：把 `playwright-cli` 换成 `npx -y @playwright/cli` 即可
