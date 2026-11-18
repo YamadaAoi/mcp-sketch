@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.1.2
+
+### Patch Changes
+
+- list识别切图画板；绘制流程优化；playwright改用cli
+
 ## 2.1.1
 
 ### Patch Changes
