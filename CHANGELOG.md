@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.1.3
+
+### Patch Changes
+
+- sliceBoard 切图画板检测方案重做；draw 工作流：删除 subagent 委托；内网镜像降级重试
+
 ## 2.1.2
 
 ### Patch Changes
