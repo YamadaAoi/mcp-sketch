@@ -1,5 +1,6 @@
 import type { InstallConfig } from '../installer'
 import SketchPrompt from './sketch/index.md'
+import browserReference from './sketch/references/browser.md'
 import initReference from './sketch/references/init.md'
 import overviewReference from './sketch/references/overview.md'
 import drawReference from './sketch/references/draw.md'
@@ -19,7 +20,8 @@ export const SkillPool: InstallConfig[] = [
     references: {
       init: initReference,
       overview: overviewReference,
-      draw: drawReference
+      draw: drawReference,
+      browser: browserReference
     },
     platforms: [
       {

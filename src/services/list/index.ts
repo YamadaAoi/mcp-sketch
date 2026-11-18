@@ -35,6 +35,8 @@ interface ListItem {
   artboardName: string
   size: number
   previewPath?: string
+  /** 疑似切图画板（视觉图层中切图占比 > SLICE_BOARD_RATIO）：设计师集中放置切图的收集板，非待还原页面 */
+  sliceBoard?: true
 }
 
 interface TokensSummary {
@@ -49,6 +51,8 @@ interface TokensSummary {
 interface ListFile {
   /** 缓存结构版本：工具的输出逻辑升级（如 tokens 摘选规则变化）时递增，旧缓存自动失效重建 */
   v: number
+  /** 生成本缓存时生效的切图画板阈值（SLICE_BOARD_RATIO）：改阈值后旧缓存自动失效重建 */
+  sliceBoardRatio: number
   artboards: ListItem[]
   tokens: TokensSummary
 }
@@ -86,6 +90,12 @@ async function getListInfo(
     (Object.keys(collapsed.clones).length
       ? Buffer.byteLength(JSON.stringify(collapsed.clones))
       : 0)
+  // 切图画板判定：占比基于视觉图层集合（与 analyze 返回同集合），折叠前统计；
+  // 阈值取 SLICE_BOARD_RATIO（默认 0.9），占比大于阈值（严格大于）才标记
+  const sliceCount = layers.filter(l => l.type === 'slice').length
+  const sliceBoard =
+    layers.length > 0 &&
+    sliceCount / layers.length > getEnv('SLICE_BOARD_RATIO')
   const previewPath = await processPreview(
     {
       pageName: artboard.pageName,
@@ -100,12 +110,14 @@ async function getListInfo(
     undefined,
     images
   )
-  return {
+  const item: ListItem = {
     pageName: artboard.pageName,
     artboardName: artboard.name,
-    size,
-    previewPath
+    size
   }
+  if (sliceBoard) item.sliceBoard = true
+  if (previewPath) item.previewPath = previewPath
+  return item
 }
 
 const COLOR_DECL_RE =
@@ -221,9 +233,11 @@ export async function sketchList(args: SketchListInputSchema) {
   if (stampValid) {
     try {
       const parsed = JSON.parse(await readFile(listPath, 'utf8')) as ListFile
-      // v 缺失（旧版工具产出）或不匹配时视为过期：输出逻辑升级不能沿用旧缓存（如 tokens 摘选规则变化）
+      // v 缺失（旧版工具产出）或不匹配时视为过期：输出逻辑升级不能沿用旧缓存（如 tokens 摘选规则变化）；
+      // sliceBoardRatio 不一致（改了 SLICE_BOARD_RATIO）同理过期：flag 需按新阈值重算
       if (
         parsed?.v === LIST_VERSION &&
+        parsed.sliceBoardRatio === getEnv('SLICE_BOARD_RATIO') &&
         Array.isArray(parsed?.artboards) &&
         parsed.tokens
       ) {
@@ -240,7 +254,12 @@ export async function sketchList(args: SketchListInputSchema) {
       getListInfo(args.file_path, a, sketchData.images)
     )
     const artboards = await Promise.all(promises)
-    data = { v: LIST_VERSION, artboards, tokens: aggregateTokens(sketchData) }
+    data = {
+      v: LIST_VERSION,
+      sliceBoardRatio: getEnv('SLICE_BOARD_RATIO'),
+      artboards,
+      tokens: aggregateTokens(sketchData)
+    }
     await writeJsonFile(listPath, data)
   }
 

@@ -60,6 +60,7 @@ function checkSkillFiles(ws, agent) {
     files,
     [
       `${base}/sketch/SKILL.md`,
+      `${base}/sketch/references/browser.md`,
       `${base}/sketch/references/draw.md`,
       `${base}/sketch/references/init.md`,
       `${base}/sketch/references/overview.md`
@@ -102,7 +103,7 @@ function checkSkillFiles(ws, agent) {
   )
   const body = skillMd.slice(end + 4).replace(/^\n\n/, '')
   assertEq(body, expectedPrompt, 'SKILL.md body equals canonical prompt')
-  for (const ref of ['init', 'overview', 'draw']) {
+  for (const ref of ['browser', 'init', 'overview', 'draw']) {
     const installed = fs.readFileSync(
       path.join(ws, base, 'sketch', 'references', `${ref}.md`),
       'utf8'
@@ -117,7 +118,7 @@ function checkSkillFiles(ws, agent) {
 
 await runSuite('07-install: skill scaffolding (claude & opencode)', [
   [
-    'claude: 4 files under .claude/skills, frontmatter + canonical content',
+    'claude: 5 files under .claude/skills, frontmatter + canonical content',
     async () => {
       const ws = makeWorkspace('07-install-claude')
       const r = stubRun(ws, 'claude')
@@ -126,7 +127,7 @@ await runSuite('07-install: skill scaffolding (claude & opencode)', [
     }
   ],
   [
-    'opencode: 4 files under .opencode/skills, frontmatter + canonical content',
+    'opencode: 5 files under .opencode/skills, frontmatter + canonical content',
     async () => {
       const ws = makeWorkspace('07-install-opencode')
       const r = stubRun(ws, 'opencode')

@@ -242,5 +242,52 @@ await runSuite('01-list: artboard overview & list.json cache', [
         'border shorthand from stale cache not carried over'
       )
     }
+  ],
+  [
+    'sliceBoard flag: threshold via SLICE_BOARD_RATIO (default 0.9 → none, 0.3 → two flagged)',
+    async () => {
+      const ws2 = makeWorkspace('01-list-slice')
+      const run = env =>
+        cli(['list', '-f', FIXTURE_ZIP], { cwd: ws2, ...(env ? { env } : {}) })
+
+      // 默认阈值 0.9：fixture 切图占比最高 0.33（登录），无标记、字段不出现
+      const d1 = parseJsonOutput(run().stdout, 'default threshold run')
+      assert(
+        d1.artboards.every(a => !('sliceBoard' in a)),
+        'default threshold 0.9 flags nothing'
+      )
+
+      // 阈值 0.3：登录 5/15≈0.33 与 设备管理-证书升级 23/76≈0.30 被标记，其余不标
+      const r2 = run({ SLICE_BOARD_RATIO: '0.3' })
+      assert(r2.status === 0, `exit ${r2.status}`)
+      const d2 = parseJsonOutput(r2.stdout, 'threshold 0.3 run')
+      const flagged = [
+        ...new Set(
+          d2.artboards
+            .filter(a => a.sliceBoard === true)
+            .map(a => a.artboardName)
+        )
+      ]
+      assertEq(flagged, ['登录', '设备管理-证书升级'], 'flagged set at 0.3')
+
+      // 生效阈值写入 list.json；改阈值使缓存失效重算，同阈值复跑命中缓存
+      const diskPath = path.join(
+        ws2,
+        '.sketch-cache',
+        FIXTURE_NAME,
+        'list.json'
+      )
+      assertEq(
+        JSON.parse(fs.readFileSync(diskPath, 'utf8')).sliceBoardRatio,
+        0.3,
+        'effective threshold recorded in list.json'
+      )
+      const r3 = run({ SLICE_BOARD_RATIO: '0.3' })
+      assertEq(
+        parseJsonOutput(r3.stdout, 'same threshold re-run').artboards,
+        d2.artboards,
+        'same threshold re-run serves identical artboards'
+      )
+    }
   ]
 ])

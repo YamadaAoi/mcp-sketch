@@ -39,6 +39,7 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 
 - Outputs every artboard's name, preview image path, and layer data size (`size` estimates the analyze payload with the same measure, for estimating payload size and deciding whether to fetch per region; assets are approximated by their original export references, slightly off from the exported path bytes); written to `.sketch-cache/{design}/list.json`
 - Includes a design-token aggregation: colors / font sizes / font families / radii / shadows / named styles ranked by usage frequency — ready to use for theme variables, and useful for spotting near-duplicate hex typos in the design
+- Artboards whose visual layers are more than the threshold (default 90%) slices get flagged `sliceBoard: true` — a common designer habit of collecting all slices in one artboard; such artboards are not pages to reproduce; threshold adjustable via `SLICE_BOARD_RATIO`
 - Never serves stale cache after the design updates: each call re-checks freshness (zip by file mtime, folder by the latest inner-file mtime) and regenerates if the design is newer than list.json
 
 **analyze — layer analysis**
@@ -58,9 +59,9 @@ Four tools, available as both CLI and MCP tools (identical parameters):
 **compare — screenshot diff**
 
 - A pure two-image differ: `-b` base image (design side) vs `-s` implementation screenshot (page side), pixel-wise — the screenshot is scaled to the base width and the common height is diffed, returning a similarity score plus an amplified diff image, enabling a quantified "edit code → screenshot → compare → fix" loop; the tool itself carries no design-stack knowledge, localization happens upstream on each side
-- Base image sources: the artboard `previewPath` from `list` for a whole page; the region `previewPath` from `analyze -r` (already cropped to the rect) for a single component, paired with a Playwright element screenshot (`browser_take_screenshot` with an element selector) for component-level diffing
+- Base image sources: the artboard `previewPath` from `list` for a whole page; the region `previewPath` from `analyze -r` (already cropped to the rect) for a single component, paired with a playwright-cli element screenshot (`screenshot "{selector}"`) for component-level diffing
 - Diff images accumulate next to the base image at `compare/{timestamp}.webp`, so refinement rounds stay comparable
-- The browser screenshot comes from Playwright MCP (see [configuration below](#configure-playwright-mcp-optional-dependency-for-compare)), with which the AI opens the page, explores the rendered result, and takes screenshots
+- The browser screenshot is taken with playwright-cli (plain CLI, no MCP configuration or session restart; see [setup below](#install-playwright-cli-optional-dependency-for-compare))
 
 ## Usage
 
@@ -77,7 +78,7 @@ Select your platform interactively; files are written to:
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-The skill teaches the AI when and with which parameters to call the tools above (including three fixed commands: `/sketch init` to learn the project and check sketch-related configs (`.env.sketch`, `.gitignore` cache ignore, browser automation MCP), `/sketch overview` to overview a design, `/sketch draw` to draw a page). Existing files can be overwritten or skipped per file.
+The skill teaches the AI when and with which parameters to call the tools above (including three fixed commands: `/sketch init` to learn the project and check sketch-related configs (`.env.sketch`, `.gitignore` cache ignore, playwright-cli availability), `/sketch overview` to overview a design, `/sketch draw` to draw a page). Existing files can be overwritten or skipped per file.
 
 ### Configure the MCP server
 
@@ -113,13 +114,21 @@ Set `MCP_MODE=1` and register it as a local MCP server in your AI tool:
 }
 ```
 
-### Configure Playwright MCP (optional, dependency for compare)
+### Install playwright-cli (optional, dependency for compare)
 
-`compare` takes a browser screenshot as input. Playwright MCP is recommended so the AI can open the page, explore the rendered result, and capture screenshots on its own:
+`compare` takes a browser screenshot as input. playwright-cli opens the page, explores the rendered result, and takes the screenshot — plain CLI, no MCP configuration, no session restart:
 
-- [Claude Code setup](https://playwright.dev/mcp/clients/claude-code)
-- [OpenCode setup](https://playwright.dev/mcp/clients/other-clients#opencode)
-- [Keeping login state (browser extension approach)](https://playwright.dev/mcp/configuration/browser-extension)
+```bash
+# Option 1: global install
+npm install -g @playwright/cli@latest
+playwright-cli install      # installs the default chromium browser (large download)
+
+# Option 2: no global install, via npx; commands are equivalent (playwright-cli → npx -y @playwright/cli)
+npx -y @playwright/cli install
+```
+
+- A system browser channel (`--browser=msedge` or `chrome` on `open`) skips the browser download
+- Reusing login state: `attach --extension=chrome` attaches to the user's browser with the Playwright extension installed, or `open --persistent` keeps a persistent profile
 
 ### Use the CLI directly
 
@@ -149,15 +158,16 @@ mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 
 `.env.sketch` in the project root (optional):
 
-| Field             | Required | Default             | Description                                         |
-| ----------------- | -------- | ------------------- | --------------------------------------------------- |
-| `SERVER_COMMAND`  | No       | `npm run dev`       | Command to start the dev server                     |
-| `PREVIEW_URL`     | No       | -                   | Dev server URL; required when using `dev`           |
-| `CWD`             | No       | Current directory   | Project root                                        |
-| `ASSETS_PATH`     | No       | `src/assets/sketch` | Image asset output path                             |
-| `LAYER_DEDUP`     | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables |
-| `DESIGN_MEMO_MAX` | No       | `8`                 | In-process parse cache; analyze results disk-cached |
-| `LOG_LEVEL`       | No       | `info`              | Log level                                           |
+| Field               | Required | Default             | Description                                                                  |
+| ------------------- | -------- | ------------------- | ---------------------------------------------------------------------------- |
+| `SERVER_COMMAND`    | No       | `npm run dev`       | Command to start the dev server                                              |
+| `PREVIEW_URL`       | No       | -                   | Dev server URL; required when using `dev`                                    |
+| `CWD`               | No       | Current directory   | Project root                                                                 |
+| `ASSETS_PATH`       | No       | `src/assets/sketch` | Image asset output path                                                      |
+| `LAYER_DEDUP`       | No       | on                  | Repeated-layer collapse; `off`/`0`/`false` disables                          |
+| `SLICE_BOARD_RATIO` | No       | `0.9`               | Slice-board flag threshold; `sliceBoard` set when the slice share exceeds it |
+| `DESIGN_MEMO_MAX`   | No       | `8`                 | In-process parse cache; analyze results disk-cached                          |
+| `LOG_LEVEL`         | No       | `info`              | Log level                                                                    |
 
 > On **Linux / macOS / WSL**, the `dev` command requires tmux: `brew install tmux` (macOS) / `sudo apt install tmux` (Ubuntu/Debian/WSL). No extra setup needed on Windows
 

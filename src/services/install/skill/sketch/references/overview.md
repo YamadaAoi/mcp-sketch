@@ -38,12 +38,13 @@ npx -y mcp-sketch list -f "{file_path}"
 
 ### artboards array
 
-| Field        | Type   | Description                                                                                                           |
-| ------------ | ------ | --------------------------------------------------------------------------------------------------------------------- |
-| pageName     | string | Page name                                                                                                             |
-| artboardName | string | Artboard name                                                                                                         |
-| size         | number | Layer data size (bytes), same positional-rows measure as an analyze response; asset paths are excluded (empty arrays) |
-| previewPath  | string | Artboard preview image path (relative to project root)                                                                |
+| Field        | Type   | Description                                                                                                                                                                                                                |
+| ------------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pageName     | string | Page name                                                                                                                                                                                                                  |
+| artboardName | string | Artboard name                                                                                                                                                                                                              |
+| size         | number | Layer data size (bytes), estimated with the same measure as an analyze response; assets approximated by their original export references, slightly off from the exported path bytes                                        |
+| previewPath  | string | Artboard preview image path (relative to project root)                                                                                                                                                                     |
+| sliceBoard   | true   | Suspected asset board: present only when the slice share of visual layers exceeds `SLICE_BOARD_RATIO` (default 0.9). A collection board where the designer gathered slices — not a page to reproduce; skip it when drawing |
 
 ### tokens object
 

@@ -33,7 +33,11 @@
   - angular：是否使用类组件、装饰器等
   - 其他框架：根据实际情况判断组件编写规范
 
-## 3、将重要信息汇总到`AGENTS.md`文件中
+## 3、将重要信息汇总到当前智能体的记忆文件
+
+按当前智能体的约定选择目标文件：Claude Code 用 `CLAUDE.md`，OpenCode 用 `AGENTS.md`，其他智能体用其对应的记忆文件，不确定时询问用户
+
+汇总内容必须**用英文**书写，覆盖技术栈、代码风格、项目结构，以及下方检查到的 sketch 相关配置
 
 ## 4、检查 `.env.sketch` 配置
 
@@ -44,15 +48,16 @@
 
 可配置变量：
 
-| 变量              | 必填 | 默认值              | 说明                                                 |
-| ----------------- | ---- | ------------------- | ---------------------------------------------------- |
-| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                                     |
-| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填  |
-| `CWD`             | 否   | 当前目录            | 项目根目录                                           |
-| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                         |
-| `LAYER_DEDUP`     | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭          |
-| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存） |
-| `LOG_LEVEL`       | 否   | `info`              | 日志级别                                             |
+| 变量                | 必填 | 默认值              | 说明                                                  |
+| ------------------- | ---- | ------------------- | ----------------------------------------------------- |
+| `SERVER_COMMAND`    | 否   | `npm run dev`       | dev 服务启动命令                                      |
+| `PREVIEW_URL`       | 否   | -                   | dev 服务地址，使用 `dev` 工具（启动开发服务）时必填   |
+| `CWD`               | 否   | 当前目录            | 项目根目录                                            |
+| `ASSETS_PATH`       | 否   | `src/assets/sketch` | 切图输出路径                                          |
+| `LAYER_DEDUP`       | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭           |
+| `SLICE_BOARD_RATIO` | 否   | `0.9`               | 切图画板标记阈值，切图占比大于该值时标记 `sliceBoard` |
+| `DESIGN_MEMO_MAX`   | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存）  |
+| `LOG_LEVEL`         | 否   | `info`              | 日志级别                                              |
 
 ## 5、检查 `.gitignore` 中的缓存目录忽略
 
@@ -62,10 +67,11 @@ mcp-sketch 会把派生数据写入 `.sketch-cache/`（list.json、预览图、a
 - **未忽略**：向用户说明缓存可随时重新生成，**询问是否把 `.sketch-cache/` 加入 `.gitignore`，同意后再修改（项目没有 `.gitignore` 时则创建）**；只做追加，不动已有条目
 - `ASSETS_PATH`（如 `src/assets/sketch`）导出的切图是正式源码，绝不能加入忽略
 
-## 6、检查浏览器自动化 MCP 配置
+## 6、检查 playwright-cli（截图对比流程依赖）
 
-检查当前 AI 客户端的项目级 MCP 配置中是否已有浏览器自动化 MCP（如 Playwright，截图对比流程依赖它探索渲染结果并截图）：
+截图对比流程用 playwright-cli 打开页面、探索渲染结果并截图，纯命令行驱动，无需配置 MCP、无需重启会话：
 
-- **已配置**：跳过
-- **未配置**：向用户说明用途，**询问是否允许代为添加配置，同意后按当前 AI 客户端的方式自行配置**
-- 配置完成后通常需要重启会话生效，提醒用户
+- **检查可用性**：执行 `playwright-cli --version`（全局安装）或 `npx -y @playwright/cli --version`（npx 免安装）
+- **推荐安装浏览器**：按可用的方式建议用户执行一次 `playwright-cli install`（全局）或 `npx -y @playwright/cli install`（npx）——默认浏览器 chromium 依赖这份二进制；下载量大，由用户决定是否执行，不代跑
+- 使用系统浏览器通道（`open` 时配 `--browser=msedge` 或 `chrome`）可跳过浏览器安装
+- 两种调用方式命令等价：把 `playwright-cli` 换成 `npx -y @playwright/cli` 即可

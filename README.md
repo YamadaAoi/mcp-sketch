@@ -39,6 +39,7 @@ MCP 服务 & CLI：把 Sketch Meaxure 导出的设计稿（zip 或目录）解�
 
 - 输出全部画板的名称、预览图路径、图层数据量（`size` 按 analyze 同口径估算，用于估算单次取数量、决定是否按区域分批；切图按原始引用近似计量，与实际导出路径字节略有出入），写入 `.sketch-cache/{design}/list.json`
 - 附带设计 token 聚合：颜色 / 字号 / 字体 / 圆角 / 阴影 / 命名样式按使用频次排序，可直接用于建立主题变量，也能发现设计稿里的近似色号笔误
+- 切图类图层占比大于阈值（默认 90%）的画板标记 `sliceBoard: true`——设计师把切图集中成一个画板的常见习惯，这类画板不是待还原页面；阈值可经 `SLICE_BOARD_RATIO` 调整
 - 设计稿更新后不会返回过期缓存：再次调用时自动比对（zip 按文件 mtime，目录按内部文件最新 mtime），发现设计稿比 list.json 新则重新生成
 
 **analyze — 图层解析**
@@ -58,9 +59,9 @@ MCP 服务 & CLI：把 Sketch Meaxure 导出的设计稿（zip 或目录）解�
 **compare — 截图对比**
 
 - 纯两图差异器：`-b` 基准图（设计侧）与 `-s` 实现截图（页面侧）逐像素比对，截图按基准图宽度缩放后取共同高度计算差异，返回相似度分数与差异放大图，支持"改代码 → 截图 → 对比 → 修正"的量化收敛循环；工具本身不含设计栈知识，两侧的区域定位在上游完成
-- 基准图来源：整页比对用 `list` 返回的画板 `previewPath`；单个组件用 `analyze -r` 返回的区域 `previewPath`（已按 rect 裁剪），配合 Playwright 元素截图（`browser_take_screenshot` 传元素选择器）即可做组件级比对
+- 基准图来源：整页比对用 `list` 返回的画板 `previewPath`；单个组件用 `analyze -r` 返回的区域 `previewPath`（已按 rect 裁剪），配合 playwright-cli 元素截图（`screenshot "{selector}"`）即可做组件级比对
 - 差异图归档到基准图同目录的 `compare/{timestamp}.webp`，多轮修正结果可回溯对比
-- 浏览器截图依赖 Playwright MCP（见下方[配置](#配置-playwright-mcpcompare-截图依赖可选)），由 AI 打开页面、探索渲染结果并截图
+- 浏览器截图由 playwright-cli 完成（纯命令行，无需 MCP 配置与重启会话，见下方[安装](#安装-playwright-clicompare-截图依赖可选)）
 
 ## 使用
 
@@ -77,7 +78,7 @@ npx -y mcp-sketch install
 | **Claude Code** | `.claude/skills/`   |
 | **OpenCode**    | `.opencode/skills/` |
 
-skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目并检查 sketch 相关配置（`.env.sketch`、`.gitignore` 缓存忽略、浏览器自动化 MCP）、`/sketch overview` 概览设计稿、`/sketch draw` 绘制页面三个固定指令），已存在的文件可逐文件选择覆盖或跳过。
+skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sketch init` 了解项目并检查 sketch 相关配置（`.env.sketch`、`.gitignore` 缓存忽略、playwright-cli 可用性）、`/sketch overview` 概览设计稿、`/sketch draw` 绘制页面三个固定指令），已存在的文件可逐文件选择覆盖或跳过。
 
 ### 配置 MCP 服务
 
@@ -113,13 +114,21 @@ skill 会教 AI 在什么时机、用什么参数调用上述工具（含 `/sket
 }
 ```
 
-### 配置 Playwright MCP（compare 截图依赖，可选）
+### 安装 playwright-cli（compare 截图依赖，可选）
 
-`compare` 的输入是浏览器截图，推荐配置 Playwright MCP，让 AI 自主打开页面、探索渲染结果并截图：
+`compare` 的输入是浏览器截图，由 playwright-cli 打开页面、探索渲染结果并截图，纯命令行驱动，无需 MCP 配置、无需重启会话：
 
-- [Claude Code 配置](https://playwright.dev/mcp/clients/claude-code)
-- [OpenCode 配置](https://playwright.dev/mcp/clients/other-clients#opencode)
-- [保持登录状态（浏览器扩展方案）](https://playwright.dev/mcp/configuration/browser-extension)
+```bash
+# 方式一：全局安装
+npm install -g @playwright/cli@latest
+playwright-cli install      # 安装默认浏览器 chromium（下载量大）
+
+# 方式二：npx 免安装，两种方式的命令等价（playwright-cli → npx -y @playwright/cli）
+npx -y @playwright/cli install
+```
+
+- 使用系统浏览器通道（`open` 时配 `--browser=msedge` 或 `chrome`）可跳过浏览器安装
+- 复用登录状态：`attach --extension=chrome` 接管装了 Playwright 插件的浏览器，或 `open --persistent` 用持久化配置目录
 
 ### 直接使用 CLI
 
@@ -149,15 +158,16 @@ mcp-sketch compare -b "preview.webp" -s "screenshot.png"
 
 项目根目录 `.env.sketch`（可选）：
 
-| 字段              | 必填 | 默认值              | 说明                                                 |
-| ----------------- | ---- | ------------------- | ---------------------------------------------------- |
-| `SERVER_COMMAND`  | 否   | `npm run dev`       | dev 服务启动命令                                     |
-| `PREVIEW_URL`     | 否   | -                   | dev 服务地址，使用 `dev` 时必填                      |
-| `CWD`             | 否   | 当前目录            | 项目根目录                                           |
-| `ASSETS_PATH`     | 否   | `src/assets/sketch` | 切图输出路径                                         |
-| `LAYER_DEDUP`     | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭          |
-| `DESIGN_MEMO_MAX` | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存） |
-| `LOG_LEVEL`       | 否   | `info`              | 日志级别                                             |
+| 字段                | 必填 | 默认值              | 说明                                                  |
+| ------------------- | ---- | ------------------- | ----------------------------------------------------- |
+| `SERVER_COMMAND`    | 否   | `npm run dev`       | dev 服务启动命令                                      |
+| `PREVIEW_URL`       | 否   | -                   | dev 服务地址，使用 `dev` 时必填                       |
+| `CWD`               | 否   | 当前目录            | 项目根目录                                            |
+| `ASSETS_PATH`       | 否   | `src/assets/sketch` | 切图输出路径                                          |
+| `LAYER_DEDUP`       | 否   | 开启                | 重复图层折叠开关，配 `off`/`0`/`false` 关闭           |
+| `SLICE_BOARD_RATIO` | 否   | `0.9`               | 切图画板标记阈值，切图占比大于该值时标记 `sliceBoard` |
+| `DESIGN_MEMO_MAX`   | 否   | `8`                 | 设计稿解析进程内缓存上限（analyze 结果另有落盘缓存）  |
+| `LOG_LEVEL`         | 否   | `info`              | 日志级别                                              |
 
 > **Linux / macOS / WSL** 使用 `dev` 命令需安装 tmux：`brew install tmux`(macOS) / `sudo apt install tmux`(Ubuntu/Debian/WSL)，Windows 无需额外安装
 
