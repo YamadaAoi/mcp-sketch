@@ -1,5 +1,11 @@
 # mcp-sketch
 
+## 2.1.4
+
+### Patch Changes
+
+- 拼音转化问题修复；切图寻找逻辑优化
+
 ## 2.1.3
 
 ### Patch Changes
