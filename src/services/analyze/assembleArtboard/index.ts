@@ -22,16 +22,22 @@ import { getSharp } from '@/utils/imageProcessor'
 import { isNumber, roundIfExceeds } from '@/utils/util'
 import type { SketchAnalyzeInputSchema } from '..'
 
-function toPinyin(str: string): string {
+/**
+ * 转写为纯 ASCII 拼音文件名（页面/画板目录与切图文件名共用）
+ * - v: true：ü → v（绿色 → lv-se 而非 lü-se），pinyin-pro 去声调时无法把 ü 降级为 u，会原样保留非 ASCII 的 ü 到文件名里，造成 import 隐患
+ * - 末尾再按 [a-z0-9-] 兜底过滤一次：防止拼音输出携带其他意外非 ASCII 字符（如 ê）
+ */
+export function toPinyin(str: string): string {
   const cleaned = str.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, ' ').trim()
   const result = cleaned.replace(
     /[\u4e00-\u9fa5]+/g,
-    m => ` ${pinyin(m, { toneType: 'none' })} `
+    m => ` ${pinyin(m, { toneType: 'none', v: true })} `
   )
   const normalized = result
     .replace(/ +/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '')
   // 纯符号命名等场景下可能为空，回退为内容哈希，避免同名图层切图互相覆盖
   return (
     normalized ||

@@ -23,7 +23,8 @@ const ALL = [
   '07-install',
   '08-mcp',
   '09-analyze-cache',
-  '10-slice-flag'
+  '10-slice-flag',
+  '11-pinyin'
 ]
 
 const argv = process.argv.slice(2)
